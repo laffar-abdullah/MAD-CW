@@ -1,3 +1,23 @@
 <resources>
-    <string name="app_name">BuyNgo</string>
+    <string name="app_name">BuyNGo</string>
+    <string name="login">Login</string>
+    <string name="register">Register</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="add_to_cart">Add to Cart</string>
+    <string name="checkout">Checkout</string>
+    <string name="place_order">Place Order</string>
+    <string name="apply_coupon">Apply</string>
+    <string name="submit_feedback">Submit Feedback</string>
+    <string name="assign_rider">Assign Rider</string>
+    <string name="mark_picked">Mark as Picked</string>
+    <string name="mark_out_delivery">Mark as Out for Delivery</string>
+    <string name="mark_delivered">Mark as Delivered</string>
+    <string name="manage_products">Manage Products</string>
+    <string name="manage_orders">Manage Orders</string>
+    <string name="view_feedback">View Feedback</string>
+    <string name="add_new_product">Add New Product</string>
+    <string name="search_hint">Search products…</string>
+    <string name="coupon_hint">Enter coupon code</string>
+    <string name="order_confirmed">Order Confirmed! 🎉</string>
+    <string name="payment_success">Payment Successful!</string>
 </resources>

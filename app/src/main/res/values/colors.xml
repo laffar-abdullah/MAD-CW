@@ -1,16 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="purple_200">#FFBB86FC</color>
-    <color name="purple_500">#FF6200EE</color>
-    <color name="purple_700">#FF3700B3</color>
-    <color name="teal_200">#FF03DAC5</color>
-    <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
-    <!-- Added from colors.java -->
-    <color name="primary_green">#2E7D32</color>
-    <color name="accent_orange">#FF9800</color>
-    <color name="background_light">#F5F5F5</color>
+    <!-- BuyNGo White + Teal E-Commerce Palette -->
+    <!-- Single accent: Teal #00897B — clean, modern, consistent -->
+    <color name="navy_deepest">#FFFFFF</color>
+    <color name="navy_dark">#FFFFFF</color>
+    <color name="navy_mid">#E0F2F1</color>
+
+    <!-- Brand accent — ONE color used everywhere -->
+    <color name="gold">#00897B</color>
+    <color name="gold_bright">#00ACC1</color>
+
+    <!-- Semantic aliases (keep old names so Java still compiles) -->
+    <color name="primary_green">#00897B</color>
+    <color name="primary_green_dark">#00695C</color>
+    <color name="primary_green_light">#4DB6AC</color>
+    <color name="accent_orange">#00897B</color>
+    <color name="accent_orange_dark">#00695C</color>
+    <color name="background_light">#F4F6F8</color>
     <color name="text_dark">#212121</color>
+    <color name="text_light">#757575</color>
+    <color name="divider">#E0E0E0</color>
+    <color name="card_white">#FFFFFF</color>
+
+    <!-- Order Status Colors -->
+    <color name="status_ordered">#9E9E9E</color>
+    <color name="status_picked">#FFA726</color>
+    <color name="status_out_for_delivery">#29B6F6</color>
+    <color name="status_delivered">#66BB6A</color>
+
+    <!-- Badge / Alert -->
+    <color name="badge_red">#EF5350</color>
+    <color name="star_yellow">#FFA726</color>
+    <color name="chip_bg">#E0F2F1</color>
+    <color name="chip_text">#00897B</color>
+
+    <!-- Surface layers -->
+    <color name="surface_card">#FFFFFF</color>
+    <color name="surface_elevated">#F4F6F8</color>
+    <color name="on_gold">#FFFFFF</color>
+
+    <!-- Toolbar / App bar -->
+    <color name="toolbar_bg">#00897B</color>
+    <color name="toolbar_text">#FFFFFF</color>
+    <color name="bottom_nav_bg">#FFFFFF</color>
+    <color name="screen_bg">#F4F6F8</color>
 </resources>
