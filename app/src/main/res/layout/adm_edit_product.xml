@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/screen_bg">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/toolbar_bg"
+        app:title="Edit Product"
+        app:titleTextColor="@color/toolbar_text"
+        app:navigationIcon="?attr/homeAsUpIndicator" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Product Name" android:textSize="13sp"
+                android:textColor="@color/text_light" android:paddingBottom="4dp" />
+            <EditText
+                android:id="@+id/editProductName"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:hint="e.g. Fresh Apples"
+                android:text="Fresh Apples (1kg)"
+                android:textSize="14sp"
+                android:textColor="@color/text_dark"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:background="@color/white"
+                android:layout_marginBottom="14dp" />
+
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Category" android:textSize="13sp"
+                android:textColor="@color/text_light" android:paddingBottom="4dp" />
+            <EditText
+                android:id="@+id/editProductCategory"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:hint="e.g. Fresh Produce"
+                android:text="Fresh Produce"
+                android:textSize="14sp"
+                android:textColor="@color/text_dark"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:background="@color/white"
+                android:layout_marginBottom="14dp" />
+
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Price ($)" android:textSize="13sp"
+                android:textColor="@color/text_light" android:paddingBottom="4dp" />
+            <EditText
+                android:id="@+id/editProductPrice"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:hint="e.g. 2.99"
+                android:text="2.99"
+                android:textSize="14sp"
+                android:textColor="@color/text_dark"
+                android:inputType="numberDecimal"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:background="@color/white"
+                android:layout_marginBottom="14dp" />
+
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Stock Quantity" android:textSize="13sp"
+                android:textColor="@color/text_light" android:paddingBottom="4dp" />
+            <EditText
+                android:id="@+id/editProductStock"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:hint="e.g. 50"
+                android:text="50"
+                android:textSize="14sp"
+                android:textColor="@color/text_dark"
+                android:inputType="number"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:background="@color/white"
+                android:layout_marginBottom="24dp" />
+
+            <Button
+                android:id="@+id/btnSaveEdit"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:text="Save Changes"
+                android:textColor="@color/white"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:background="@drawable/search_bg"
+                android:layout_marginBottom="10dp" />
+
+            <Button
+                android:id="@+id/btnCancelEdit"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:text="Cancel"
+                android:textColor="@color/white"
+                android:textSize="15sp"
+                android:background="@drawable/search_bg" />
+
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>
