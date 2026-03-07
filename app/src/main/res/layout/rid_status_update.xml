@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:gravity="center_horizontal"
+    android:background="@color/screen_bg">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Update Delivery Status"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="@color/text_dark"
+        android:layout_marginTop="32dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Order: #12345"
+        android:layout_marginTop="8dp"
+        android:textColor="@color/primary_green" />
+
+    <Button
+        android:id="@+id/btnPickedUp"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginTop="48dp"
+        android:text="Mark as Picked Up"
+        android:textColor="@color/white"
+        android:background="@color/primary_green" />
+
+    <Button
+        android:id="@+id/btnOutForDelivery"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginTop="16dp"
+        android:text="Mark as Out for Delivery"
+        android:textColor="@color/white"
+        android:background="@color/primary_green" />
+
+    <Button
+        android:id="@+id/btnDelivered"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginTop="16dp"
+        android:text="Mark as Delivered"
+        android:textColor="@color/white"
+        android:background="@color/primary_green" />
+
+</LinearLayout>

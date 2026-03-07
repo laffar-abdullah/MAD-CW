@@ -11,12 +11,48 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.BuyNgo">
+
+        <!-- ── LAUNCHER: Role Selection ──────────────── -->
         <activity
-            android:name=".UI.colors"
-            android:exported="false" />
-        <activity
-            android:name=".colors"
-            android:exported="false" />
+            android:name=".UI.AuthWelcomeActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- ── CUSTOMER SCREENS ──────────────────────── -->
+        <activity android:name=".UI.CusLoginActivity"         android:exported="false" />
+        <activity android:name=".UI.CusSignupActivity"        android:exported="false" />
+        <activity android:name=".UI.CusHomeActivity"          android:exported="false" />
+        <activity android:name=".UI.CusProductDetailActivity" android:exported="false" />
+        <activity android:name=".UI.CusCartActivity"          android:exported="false" />
+        <activity android:name=".UI.CusCheckoutActivity"      android:exported="false" />
+        <activity android:name=".UI.CusTrackingActivity"      android:exported="false" />
+        <activity android:name=".UI.CusFeedbackActivity"      android:exported="false" />
+        <activity android:name=".UI.CusProfileActivity"       android:exported="false" />
+
+        <!-- ── ADMIN SCREENS ─────────────────────────── -->
+        <activity android:name=".UI.AdmLoginActivity"              android:exported="false" />
+        <activity android:name=".UI.AdmDashboardActivity"          android:exported="false" />
+        <activity android:name=".UI.AdmProductManagementActivity"  android:exported="false" />
+        <activity android:name=".UI.AdmAddProductActivity"          android:exported="false" />
+        <activity android:name=".UI.AdmOrderManagementActivity"    android:exported="false" />
+        <activity android:name=".UI.AdmRegisterRiderActivity"      android:exported="false" />
+        <activity android:name=".UI.AdmAssignRiderActivity"        android:exported="false" />
+
+        <!-- ── RIDER SCREENS ─────────────────────────── -->
+        <activity android:name=".UI.RidLoginActivity"           android:exported="false" />
+        <activity android:name=".UI.RidDashboardActivity"        android:exported="false" />
+        <activity android:name=".UI.RidStatusUpdateActivity"     android:exported="false" />
+        <activity android:name=".UI.RidReviewsActivity"          android:exported="false" />
+        <activity android:name=".UI.RidDeliveryHistoryActivity"  android:exported="false" />
+        <activity android:name=".UI.RidProfileActivity"          android:exported="false" />
+
+        <!-- ── ADMIN EXTRA SCREENS ───────────────────── -->
+        <activity android:name=".UI.AdmEditProductActivity"      android:exported="false" />
+
     </application>
 
 </manifest>
