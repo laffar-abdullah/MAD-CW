@@ -170,7 +170,7 @@
                 android:layout_height="wrap_content"
                 android:text="Logout"
                 android:layout_marginTop="20dp"
-                android:backgroundTint="#FF5252"
+                android:background="#EF5350"
                 android:textColor="@color/white" />
 
         </LinearLayout>
