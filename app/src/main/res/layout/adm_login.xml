@@ -11,7 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginBottom="8dp">
+        android:layout_marginBottom="16dp">
         <Button
             android:id="@+id/btnBack"
             android:layout_width="wrap_content"
@@ -22,9 +22,9 @@
     </LinearLayout>
 
     <ImageView
-        android:layout_width="120dp"
-        android:layout_height="120dp"
-        android:layout_marginTop="48dp"
+        android:layout_width="90dp"
+        android:layout_height="90dp"
+        android:layout_marginTop="16dp"
         android:src="@drawable/buyngologo"
         android:scaleType="fitCenter"
         android:contentDescription="BuyNGo Logo" />
@@ -32,89 +32,71 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Customer Login"
-        android:textSize="24sp"
+        android:layout_marginTop="16dp"
+        android:text="Admin Login"
+        android:textSize="26sp"
         android:textStyle="bold"
-        android:textColor="@color/text_dark"
-        android:layout_marginTop="16dp" />
+        android:textColor="@color/text_dark" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:layout_marginBottom="32dp"
+        android:text="Manage products, orders and feedback"
+        android:textSize="13sp"
+        android:textColor="@color/text_light" />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
         android:layout_marginBottom="4dp"
-        android:text="Email"
+        android:text="Admin Email"
         android:textSize="14sp"
         android:textColor="@color/text_light" />
 
     <EditText
-        android:id="@+id/emailEditText"
+        android:id="@+id/adminEmailEditText"
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:inputType="textEmailAddress"
-        android:hint="Enter your email"
+        android:hint="Enter admin email"
         android:textSize="15sp"
         android:textColor="@color/text_dark"
         android:textColorHint="@color/text_light"
         android:paddingStart="12dp"
         android:paddingEnd="12dp"
+        android:layout_marginBottom="16dp"
         android:background="@drawable/search_bg" />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
         android:layout_marginBottom="4dp"
         android:text="Password"
         android:textSize="14sp"
         android:textColor="@color/text_light" />
 
     <EditText
-        android:id="@+id/passwordEditText"
+        android:id="@+id/adminPasswordEditText"
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:inputType="textPassword"
-        android:hint="Enter your password"
+        android:hint="Enter password"
         android:textSize="15sp"
         android:textColor="@color/text_dark"
         android:textColorHint="@color/text_light"
         android:paddingStart="12dp"
         android:paddingEnd="12dp"
+        android:layout_marginBottom="24dp"
         android:background="@drawable/search_bg" />
 
     <Button
-        android:id="@+id/loginButton"
+        android:id="@+id/adminLoginButton"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:layout_marginTop="24dp"
-        android:text="Login"
+        android:layout_height="58dp"
+        android:text="Login as Admin"
         android:textColor="@color/white"
         android:background="@drawable/search_bg" />
-
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:orientation="horizontal">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Don't have an account? "
-            android:textSize="14sp"
-            android:textColor="@color/text_light" />
-
-        <TextView
-            android:id="@+id/signupLink"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Sign Up"
-            android:textSize="14sp"
-            android:textColor="@color/primary_green"
-            android:textStyle="bold"
-            android:clickable="true"
-            android:focusable="true"
-            android:background="?attr/selectableItemBackgroundBorderless" />
-    </LinearLayout>
 
 </LinearLayout>
