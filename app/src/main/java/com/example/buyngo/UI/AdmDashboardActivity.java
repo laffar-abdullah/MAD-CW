@@ -27,12 +27,14 @@ public class AdmDashboardActivity extends AppCompatActivity {
         findViewById(R.id.btnAssignRider).setOnClickListener(v ->
             startActivity(new Intent(this, AdmAssignRiderActivity.class)));
 
-        findViewById(R.id.btnViewFeedbacks).setOnClickListener(v -> {
-            // Logic for view feedbacks
-        });
+        findViewById(R.id.btnViewFeedbacks).setOnClickListener(v ->
+            startActivity(new Intent(this, CusFeedbackActivity.class)));
 
         findViewById(R.id.btnLogout).setOnClickListener(v -> {
-            // Logic for logout
+            Intent intent = new Intent(this, AuthWelcomeActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            finish();
         });
     }
 }
