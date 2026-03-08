@@ -22,6 +22,16 @@ public class AdmDashboardActivity extends AppCompatActivity {
             // Logic for manage orders
         });
 
+        findViewById(R.id.btnRegisterRider).setOnClickListener(v ->
+            startActivity(new Intent(this, AdmRegisterRiderActivity.class)));
+
+        findViewById(R.id.btnAssignRider).setOnClickListener(v ->
+            startActivity(new Intent(this, AdmAssignRiderActivity.class)));
+
+        findViewById(R.id.btnViewFeedbacks).setOnClickListener(v -> {
+            // Logic for view feedbacks
+        });
+
         findViewById(R.id.btnLogout).setOnClickListener(v -> {
             // Logic for logout
         });
