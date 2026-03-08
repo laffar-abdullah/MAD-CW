@@ -18,9 +18,8 @@ public class AdmDashboardActivity extends AppCompatActivity {
         findViewById(R.id.btnManageProducts).setOnClickListener(v ->
             startActivity(new Intent(this, AdmProductManagementActivity.class)));
 
-        findViewById(R.id.btnManageOrders).setOnClickListener(v -> {
-            // Logic for manage orders
-        });
+        findViewById(R.id.btnManageOrders).setOnClickListener(v ->
+            startActivity(new Intent(this, AdmOrderManagementActivity.class)));
 
         findViewById(R.id.btnRegisterRider).setOnClickListener(v ->
             startActivity(new Intent(this, AdmRegisterRiderActivity.class)));
