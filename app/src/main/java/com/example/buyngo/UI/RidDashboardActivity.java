@@ -11,8 +11,8 @@ public class RidDashboardActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.rid_dashboard);
 
-        // Task card -> update status
-        findViewById(R.id.sampleTaskCard).setOnClickListener(v ->
+        // Update Status button inside task card
+        findViewById(R.id.btnUpdateStatus).setOnClickListener(v ->
                 startActivity(new Intent(this, RidStatusUpdateActivity.class)));
 
         // My Reviews button
