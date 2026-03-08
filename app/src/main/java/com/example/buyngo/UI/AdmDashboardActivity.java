@@ -2,32 +2,42 @@ package com.example.buyngo.UI;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.Button;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import com.example.buyngo.R;
 
 public class AdmDashboardActivity extends AppCompatActivity {
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.adm_dashboard);
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        Button btnManageProducts = findViewById(R.id.btnManageProducts);
+        Button btnManageOrders = findViewById(R.id.btnManageOrders);
+        Button btnRegisterRider = findViewById(R.id.btnRegisterRider);
+        Button btnLogout = findViewById(R.id.btnLogout);
 
-        findViewById(R.id.btnManageProducts).setOnClickListener(v -> 
-            startActivity(new Intent(this, AdmProductManagementActivity.class)));
-
-        findViewById(R.id.btnViewProduct).setOnClickListener(v -> {
-            // Logic for view product
+        btnManageProducts.setOnClickListener(v -> {
+            // Intent intent = new Intent(AdmDashboardActivity.this, AdmProductManagementActivity.class);
+            // startActivity(intent);
         });
 
-        findViewById(R.id.btnManageOrders).setOnClickListener(v -> {
-            // Logic for manage orders
+        btnManageOrders.setOnClickListener(v -> {
+            Intent intent = new Intent(AdmDashboardActivity.this, AdmOrderManagementActivity.class);
+            startActivity(intent);
         });
 
-        findViewById(R.id.btnViewFeedbacks).setOnClickListener(v -> {
-            // Logic for view feedbacks
+        btnRegisterRider.setOnClickListener(v -> {
+            Intent intent = new Intent(AdmDashboardActivity.this, AdmRegisterRiderActivity.class);
+            startActivity(intent);
+        });
+
+        btnLogout.setOnClickListener(v -> {
+            Intent intent = new Intent(AdmDashboardActivity.this, AuthWelcomeActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            finish();
         });
     }
 }
