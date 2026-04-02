@@ -11,7 +11,7 @@ public class CusCartActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.cus_cart);
 
-        // Navigate to Checkout
+        // The checkout button moves the customer to the checkout screen.
         findViewById(R.id.checkoutButton).setOnClickListener(v -> {
             startActivity(new Intent(this, CusCheckoutActivity.class));
         });

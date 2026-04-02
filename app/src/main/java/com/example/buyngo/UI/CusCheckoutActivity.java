@@ -18,12 +18,14 @@ public class CusCheckoutActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.cus_checkout);
 
+        // These views belong to the payment choice area on the checkout screen.
         RadioGroup paymentMethodGroup = findViewById(R.id.paymentMethodGroup);
         View cardPaymentSection = findViewById(R.id.cardPaymentSection);
         EditText cardNumberInput = findViewById(R.id.cardNumberInput);
         EditText cardExpiryInput = findViewById(R.id.cardExpiryInput);
         EditText cardCvvInput = findViewById(R.id.cardCvvInput);
 
+        // Show the demo card form only when the customer picks card payment.
         paymentMethodGroup.setOnCheckedChangeListener((group, checkedId) -> {
             if (checkedId == R.id.radioCard) {
                 cardPaymentSection.setVisibility(View.VISIBLE);
@@ -35,6 +37,7 @@ public class CusCheckoutActivity extends AppCompatActivity {
             }
         });
 
+        // The place order button validates the payment choice before confirming the order.
         findViewById(R.id.placeOrderButton).setOnClickListener(v -> {
             int selectedPayment = paymentMethodGroup.getCheckedRadioButtonId();
             if (selectedPayment == -1) {
@@ -53,10 +56,12 @@ public class CusCheckoutActivity extends AppCompatActivity {
 
             String paymentLabel = selectedPayment == R.id.radioCard ? "Credit/Debit Card" : "Cash on Delivery";
 
+            // This dialog is the final check before the order is accepted.
             new AlertDialog.Builder(this)
                     .setTitle("Confirm Order")
                     .setMessage("Confirm this order using " + paymentLabel + "?")
                     .setPositiveButton("Confirm", (dialog, which) -> {
+                        // After confirmation the customer goes back to the home page and the back stack is cleared.
                         Intent intent = new Intent(this, CusHomeActivity.class);
                         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                         startActivity(intent);

@@ -6,6 +6,7 @@
     android:orientation="vertical"
     android:background="@color/screen_bg">
 
+    <!-- Feedback page toolbar with a close icon. -->
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
@@ -26,6 +27,7 @@
             android:padding="24dp"
             android:gravity="center_horizontal">
 
+            <!-- Friendly icon and heading make the review page feel inviting. -->
             <ImageView
                 android:layout_width="80dp"
                 android:layout_height="80dp"
@@ -51,6 +53,7 @@
                 android:textSize="13sp"
                 android:textColor="@color/text_light" />
 
+            <!-- Star rating control for the customer’s quick score. -->
             <RatingBar
                 android:id="@+id/ratingBar"
                 android:layout_width="wrap_content"
@@ -83,6 +86,7 @@
                 android:textSize="14sp"
                 android:textColor="@color/text_light" />
 
+            <!-- Free-text review box for extra comments. -->
             <EditText
                 android:id="@+id/reviewComment"
                 android:layout_width="match_parent"
@@ -98,6 +102,7 @@
                 android:paddingTop="10dp"
                 android:background="@drawable/search_bg" />
 
+            <!-- Submit sends the customer back home after the review. -->
             <Button
                 android:id="@+id/submitFeedbackButton"
                 android:layout_width="match_parent"
@@ -106,6 +111,7 @@
                 android:text="Submit Review"
                 android:textColor="@color/white"
                 android:background="@drawable/search_bg" />
+            <!-- Skip keeps the flow simple when the customer does not want to review. -->
             <TextView
                 android:id="@+id/skipReview"
                 android:layout_width="wrap_content"

@@ -6,6 +6,7 @@
     android:orientation="vertical"
     android:background="@color/screen_bg">
 
+    <!-- Header bar with app name and profile shortcut. -->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
@@ -32,6 +33,7 @@
             android:contentDescription="Profile" />
     </RelativeLayout>
 
+    <!-- Search field to help customers look up products quickly. -->
     <EditText
         android:id="@+id/searchBar"
         android:layout_width="match_parent"
@@ -55,6 +57,7 @@
             android:orientation="vertical"
             android:padding="12dp">
 
+            <!-- Sample product card #1. -->
             <androidx.cardview.widget.CardView
                 android:id="@+id/productCard1"
                 android:layout_width="match_parent"
@@ -81,6 +84,7 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
+            <!-- Sample product card #2. -->
             <androidx.cardview.widget.CardView
                 android:id="@+id/productCard2"
                 android:layout_width="match_parent"
@@ -107,6 +111,7 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
+            <!-- Sample product card #3. -->
             <androidx.cardview.widget.CardView
                 android:id="@+id/productCard3"
                 android:layout_width="match_parent"
@@ -136,6 +141,7 @@
         </LinearLayout>
     </ScrollView>
 
+    <!-- Bottom navigation for cart, orders, reviews, and profile. -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"

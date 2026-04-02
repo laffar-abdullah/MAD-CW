@@ -11,14 +11,14 @@ public class CusLoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.cus_login);
 
-        // Back to Welcome screen
+        // The back button returns the customer to the role-selection welcome screen.
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
 
-        // Login -> Customer Home
+        // Login takes the customer into the main shopping home page.
         findViewById(R.id.loginButton).setOnClickListener(v ->
                 startActivity(new Intent(this, CusHomeActivity.class)));
 
-        // Sign Up link -> Signup screen
+        // The sign-up link opens the account creation screen.
         findViewById(R.id.signupLink).setOnClickListener(v ->
                 startActivity(new Intent(this, CusSignupActivity.class)));
     }

@@ -6,6 +6,7 @@
     android:orientation="vertical"
     android:background="@color/screen_bg">
 
+    <!-- Tracking toolbar for the order status page. -->
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
@@ -24,6 +25,7 @@
             android:orientation="vertical"
             android:padding="20dp">
 
+            <!-- Current order status displayed clearly at the top. -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -32,6 +34,7 @@
                 android:textStyle="bold"
                 android:textColor="@color/primary_green" />
 
+            <!-- Placeholder visual for the delivery tracking section. -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="180dp"
@@ -47,6 +50,7 @@
                     android:alpha="0.7" />
             </androidx.cardview.widget.CardView>
 
+            <!-- The customer presses this when the order has been received. -->
             <Button
                 android:id="@+id/receivedButton"
                 android:layout_width="match_parent"

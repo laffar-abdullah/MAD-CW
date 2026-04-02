@@ -6,6 +6,7 @@
     android:orientation="vertical"
     android:background="@color/screen_bg">
 
+    <!-- Cart page toolbar with a back arrow. -->
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
@@ -25,6 +26,7 @@
             android:orientation="vertical"
             android:padding="12dp">
 
+            <!-- First sample cart item. -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -50,6 +52,7 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
+            <!-- Second sample cart item. -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -78,6 +81,7 @@
         </LinearLayout>
     </ScrollView>
 
+    <!-- Cart total and checkout button live in this summary card. -->
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

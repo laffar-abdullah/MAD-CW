@@ -11,7 +11,7 @@ public class CusProductDetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.cus_product_detail);
 
-        // Add to Cart and go to Cart screen
+        // Tapping Add to Cart sends the customer to the cart page.
         findViewById(R.id.addToCartButton).setOnClickListener(v -> {
             startActivity(new Intent(this, CusCartActivity.class));
         });

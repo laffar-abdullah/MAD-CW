@@ -6,6 +6,7 @@
     android:orientation="vertical"
     android:background="@color/screen_bg">
 
+    <!-- Product detail header with a close-style navigation icon. -->
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
@@ -25,6 +26,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
+            <!-- Large hero image for the product. -->
             <ImageView
                 android:id="@+id/productImage"
                 android:layout_width="match_parent"
@@ -39,6 +41,7 @@
                 android:orientation="vertical"
                 android:padding="20dp">
 
+                <!-- Product name and price are highlighted first so they are easy to scan. -->
                 <TextView
                     android:id="@+id/productName"
                     android:layout_width="wrap_content"
@@ -74,6 +77,7 @@
                     android:layout_marginBottom="16dp"
                     android:background="@color/divider" />
 
+                <!-- Description helps the customer decide before adding to cart. -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

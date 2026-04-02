@@ -14,12 +14,12 @@ public class CusHomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.cus_home);
 
-        // Profile icon -> Customer Profile
+        // The profile icon opens the customer's profile page.
         ImageButton btnProfile = findViewById(R.id.btnProfile);
         btnProfile.setOnClickListener(v ->
                 startActivity(new Intent(this, CusProfileActivity.class)));
 
-        // Product cards -> go to product detail
+        // Each product button opens the item details so the customer can add it to the cart.
         Button addBtn1 = findViewById(R.id.addToCartBtn1);
         Button addBtn2 = findViewById(R.id.addToCartBtn2);
         Button addBtn3 = findViewById(R.id.addToCartBtn3);
@@ -27,7 +27,7 @@ public class CusHomeActivity extends AppCompatActivity {
         addBtn2.setOnClickListener(v -> startActivity(new Intent(this, CusProductDetailActivity.class)));
         addBtn3.setOnClickListener(v -> startActivity(new Intent(this, CusProductDetailActivity.class)));
 
-        // Bottom Navigation
+        // Bottom navigation gives quick access to cart, orders, reviews, and profile.
         BottomNavigationView bottomNav = findViewById(R.id.bottomNavigation);
         bottomNav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();

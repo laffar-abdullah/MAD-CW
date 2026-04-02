@@ -11,12 +11,12 @@ public class CusSignupActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.cus_signup);
 
-        // Navigate back to Login
+        // This link takes the user back to the login screen if they already have an account.
         findViewById(R.id.loginLink).setOnClickListener(v -> {
             finish();
         });
 
-        // Navigate to Home after signup
+        // After sign-up, the customer goes straight into the home screen.
         findViewById(R.id.signupButton).setOnClickListener(v -> {
             startActivity(new Intent(this, CusHomeActivity.class));
         });

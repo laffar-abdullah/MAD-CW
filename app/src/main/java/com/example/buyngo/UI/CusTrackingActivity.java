@@ -9,7 +9,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.buyngo.R;
 
 public class CusTrackingActivity extends AppCompatActivity {
+
+    // This label shows the latest delivery status shared with the rider side.
     private TextView txtDeliveryStatus;
+
+    // The customer uses this button to confirm that the parcel has arrived.
     private Button receivedButton;
 
     @Override
@@ -17,15 +21,15 @@ public class CusTrackingActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.cus_tracking);
 
+        // Connect the screen widgets so we can update the status text and button state.
         txtDeliveryStatus = findViewById(R.id.txtDeliveryStatus);
         receivedButton = findViewById(R.id.receivedButton);
 
+        // Load the current delivery status as soon as the page opens.
         refreshTrackingStatus();
 
-        // Go to Feedback screen after receiving order
-        receivedButton.setOnClickListener(v -> {
-            startActivity(new Intent(this, CusFeedbackActivity.class));
-        });
+        // When the customer confirms receipt, we send them to the feedback screen.
+        receivedButton.setOnClickListener(v -> startActivity(new Intent(this, CusFeedbackActivity.class)));
     }
 
     @Override
@@ -39,7 +43,7 @@ public class CusTrackingActivity extends AppCompatActivity {
         String status = OrderStatusStore.getStatus(this);
         txtDeliveryStatus.setText("Status: " + status);
 
-        // "Received" is enabled only once rider marks the order as delivered.
+        // The confirm button only becomes active once the rider marks the order as delivered.
         boolean canConfirmReceived = OrderStatusStore.STATUS_DELIVERED.equals(status);
         receivedButton.setEnabled(canConfirmReceived);
         receivedButton.setAlpha(canConfirmReceived ? 1f : 0.5f);

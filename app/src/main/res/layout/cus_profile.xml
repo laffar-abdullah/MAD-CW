@@ -6,6 +6,7 @@
     android:orientation="vertical"
     android:background="@color/screen_bg">
 
+    <!-- Profile toolbar with back navigation. -->
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
@@ -24,7 +25,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- Avatar banner -->
+            <!-- Top banner shows the customer avatar and the account label. -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="160dp"
@@ -52,7 +53,7 @@
                     android:textSize="13sp" />
             </LinearLayout>
 
-            <!-- Details card -->
+            <!-- The details card lists the saved customer information. -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -67,7 +68,7 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
-                    <!-- Full Name -->
+                    <!-- Full name. -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -86,7 +87,7 @@
                     <View android:layout_width="match_parent" android:layout_height="1dp"
                         android:background="@color/divider" android:layout_marginBottom="14dp" />
 
-                    <!-- Email -->
+                    <!-- Email address. -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -104,7 +105,7 @@
                     <View android:layout_width="match_parent" android:layout_height="1dp"
                         android:background="@color/divider" android:layout_marginBottom="14dp" />
 
-                    <!-- Phone -->
+                    <!-- Phone number. -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -122,7 +123,7 @@
                     <View android:layout_width="match_parent" android:layout_height="1dp"
                         android:background="@color/divider" android:layout_marginBottom="14dp" />
 
-                    <!-- Address -->
+                    <!-- Delivery address. -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -140,7 +141,7 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- Logout button -->
+            <!-- Log out button at the bottom of the profile page. -->
             <Button
                 android:id="@+id/btnLogout"
                 android:layout_width="match_parent"
