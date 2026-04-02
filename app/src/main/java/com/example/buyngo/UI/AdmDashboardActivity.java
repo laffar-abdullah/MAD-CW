@@ -54,7 +54,7 @@ public class AdmDashboardActivity extends AppCompatActivity {
                 startActivity(new Intent(this, AdmAssignRiderActivity.class)));
 
         findViewById(R.id.btnViewFeedbacks).setOnClickListener(v ->
-                startActivity(new Intent(this, CusFeedbackActivity.class)));
+                startActivity(new Intent(this, AdmViewFeedbackActivity.class)));
 
         findViewById(R.id.btnLogout).setOnClickListener(v -> showLogoutDialog());
 

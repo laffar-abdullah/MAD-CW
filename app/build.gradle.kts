@@ -48,9 +48,10 @@ dependencies {
     implementation(libs.recyclerview)
     implementation(libs.cardview)
 
-    // Firebase BOM
+    // Firebase BOM — manages all Firebase versions together
     implementation(platform("com.google.firebase:firebase-bom:33.1.0"))
-    implementation("com.google.firebase:firebase-database")
+    implementation("com.google.firebase:firebase-database")   // Realtime Database (AdmViewFeedbackActivity)
+    implementation("com.google.firebase:firebase-firestore")  // Firestore (Admin product/order screens)
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-storage")
 

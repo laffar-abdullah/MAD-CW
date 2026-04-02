@@ -15,6 +15,13 @@
         app:titleTextColor="@color/toolbar_text"
         app:navigationIcon="?attr/homeAsUpIndicator" />
 
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:visibility="gone" />
+
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -39,14 +46,14 @@
                     android:padding="24dp">
 
                     <ImageView
-                        android:layout_width="100dp"
-                        android:layout_height="100dp"
+                        android:layout_width="80dp"
+                        android:layout_height="80dp"
                         android:layout_gravity="center_horizontal"
-                        android:layout_marginBottom="24dp"
+                        android:layout_marginBottom="20dp"
                         android:src="@android:drawable/ic_menu_add"
                         app:tint="@color/primary_green"
                         android:background="@drawable/search_bg"
-                        android:padding="20dp" />
+                        android:padding="16dp" />
 
                     <TextView
                         android:layout_width="match_parent"
@@ -55,13 +62,14 @@
                         android:textSize="18sp"
                         android:textStyle="bold"
                         android:textColor="@color/text_dark"
-                        android:layout_marginBottom="16dp" />
+                        android:layout_marginBottom="20dp" />
 
+                    <!-- Product Name -->
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Name"
-                        android:textSize="14sp"
+                        android:text="Product Name *"
+                        android:textSize="13sp"
                         android:textColor="@color/text_light"
                         android:layout_marginBottom="4dp" />
 
@@ -69,19 +77,21 @@
                         android:id="@+id/etProductName"
                         android:layout_width="match_parent"
                         android:layout_height="50dp"
-                        android:hint="Enter product name"
+                        android:hint="e.g. Basmati Rice 1kg"
                         android:textSize="15sp"
                         android:textColor="@color/text_dark"
-                        android:paddingStart="16dp"
-                        android:paddingEnd="16dp"
+                        android:paddingStart="14dp"
+                        android:paddingEnd="14dp"
                         android:background="@drawable/search_bg"
-                        android:layout_marginBottom="16dp" />
+                        android:layout_marginBottom="16dp"
+                        android:inputType="textCapWords" />
 
+                    <!-- Price -->
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Price (LKR)"
-                        android:textSize="14sp"
+                        android:text="Price (LKR) *"
+                        android:textSize="13sp"
                         android:textColor="@color/text_light"
                         android:layout_marginBottom="4dp" />
 
@@ -93,16 +103,17 @@
                         android:inputType="numberDecimal"
                         android:textSize="15sp"
                         android:textColor="@color/text_dark"
-                        android:paddingStart="16dp"
-                        android:paddingEnd="16dp"
+                        android:paddingStart="14dp"
+                        android:paddingEnd="14dp"
                         android:background="@drawable/search_bg"
                         android:layout_marginBottom="16dp" />
 
+                    <!-- Category -->
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Category"
-                        android:textSize="14sp"
+                        android:text="Category *"
+                        android:textSize="13sp"
                         android:textColor="@color/text_light"
                         android:layout_marginBottom="4dp" />
 
@@ -110,13 +121,101 @@
                         android:id="@+id/etProductCategory"
                         android:layout_width="match_parent"
                         android:layout_height="50dp"
-                        android:hint="Select or enter category"
+                        android:hint="e.g. Grocery, Beverages"
                         android:textSize="15sp"
                         android:textColor="@color/text_dark"
-                        android:paddingStart="16dp"
-                        android:paddingEnd="16dp"
+                        android:paddingStart="14dp"
+                        android:paddingEnd="14dp"
                         android:background="@drawable/search_bg"
-                        android:layout_marginBottom="32dp" />
+                        android:layout_marginBottom="16dp"
+                        android:inputType="textCapWords" />
+
+                    <!-- Stock -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Stock Quantity *"
+                        android:textSize="13sp"
+                        android:textColor="@color/text_light"
+                        android:layout_marginBottom="4dp" />
+
+                    <EditText
+                        android:id="@+id/etProductStock"
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:hint="0"
+                        android:inputType="number"
+                        android:textSize="15sp"
+                        android:textColor="@color/text_dark"
+                        android:paddingStart="14dp"
+                        android:paddingEnd="14dp"
+                        android:background="@drawable/search_bg"
+                        android:layout_marginBottom="16dp" />
+
+                    <!-- Description -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Description"
+                        android:textSize="13sp"
+                        android:textColor="@color/text_light"
+                        android:layout_marginBottom="4dp" />
+
+                    <EditText
+                        android:id="@+id/etProductDescription"
+                        android:layout_width="match_parent"
+                        android:layout_height="90dp"
+                        android:hint="Optional product description"
+                        android:textSize="15sp"
+                        android:textColor="@color/text_dark"
+                        android:paddingStart="14dp"
+                        android:paddingEnd="14dp"
+                        android:paddingTop="12dp"
+                        android:background="@drawable/search_bg"
+                        android:gravity="top"
+                        android:inputType="textMultiLine"
+                        android:layout_marginBottom="16dp" />
+
+                    <!-- Barcode Row -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Barcode"
+                        android:textSize="13sp"
+                        android:textColor="@color/text_light"
+                        android:layout_marginBottom="4dp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="28dp">
+
+                        <EditText
+                            android:id="@+id/etProductBarcode"
+                            android:layout_width="0dp"
+                            android:layout_height="50dp"
+                            android:layout_weight="1"
+                            android:hint="Scan or enter barcode"
+                            android:textSize="15sp"
+                            android:textColor="@color/text_dark"
+                            android:paddingStart="14dp"
+                            android:paddingEnd="14dp"
+                            android:background="@drawable/search_bg"
+                            android:inputType="text" />
+
+                        <Button
+                            android:id="@+id/btnScanBarcode"
+                            android:layout_width="wrap_content"
+                            android:layout_height="50dp"
+                            android:layout_marginStart="8dp"
+                            android:text="Scan"
+                            android:textColor="@color/white"
+                            android:textStyle="bold"
+                            android:background="@drawable/btn_primary"
+                            android:paddingStart="16dp"
+                            android:paddingEnd="16dp" />
+                    </LinearLayout>
 
                     <Button
                         android:id="@+id/btnAddProductSubmit"
