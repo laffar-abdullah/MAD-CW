@@ -83,6 +83,72 @@
         android:paddingEnd="12dp"
         android:background="@drawable/search_bg" />
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="4dp"
+        android:text="Phone Number"
+        android:textSize="14sp"
+        android:textColor="@color/text_light" />
+
+    <EditText
+        android:id="@+id/phoneEditText"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:inputType="phone"
+        android:hint="Enter your phone number"
+        android:textSize="15sp"
+        android:textColor="@color/text_dark"
+        android:textColorHint="@color/text_light"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:background="@drawable/search_bg" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="4dp"
+        android:text="Delivery Address"
+        android:textSize="14sp"
+        android:textColor="@color/text_light" />
+
+    <EditText
+        android:id="@+id/addressEditText"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:inputType="text"
+        android:hint="Enter your address"
+        android:textSize="15sp"
+        android:textColor="@color/text_dark"
+        android:textColorHint="@color/text_light"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:background="@drawable/search_bg" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="4dp"
+        android:text="City"
+        android:textSize="14sp"
+        android:textColor="@color/text_light" />
+
+    <EditText
+        android:id="@+id/cityEditText"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:inputType="text"
+        android:hint="Enter your city"
+        android:textSize="15sp"
+        android:textColor="@color/text_dark"
+        android:textColorHint="@color/text_light"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:background="@drawable/search_bg" />
+
     <Button
         android:id="@+id/signupButton"
         android:layout_width="match_parent"
