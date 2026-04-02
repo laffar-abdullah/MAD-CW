@@ -37,6 +37,7 @@
                     android:src="@mipmap/ic_launcher_round"
                     android:contentDescription="Profile picture" />
                 <TextView
+                    android:id="@+id/txtProfileNameHeader"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="James Rider"
@@ -69,7 +70,9 @@
 
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                         android:text="Full Name" android:textSize="12sp" android:textColor="@color/text_light" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    <TextView 
+                        android:id="@+id/txtFullNameValue"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
                         android:text=" ABC" android:textSize="15sp" android:textStyle="bold"
                         android:textColor="@color/text_dark" android:paddingBottom="14dp" />
 
@@ -78,7 +81,9 @@
 
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                         android:text="Email Address" android:textSize="12sp" android:textColor="@color/text_light" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    <TextView 
+                        android:id="@+id/txtEmailValue"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
                         android:text="abc.rider@buyngo.com" android:textSize="15sp"
                         android:textColor="@color/text_dark" android:paddingBottom="14dp" />
 
@@ -87,7 +92,9 @@
 
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                         android:text="Phone Number" android:textSize="12sp" android:textColor="@color/text_light" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    <TextView 
+                        android:id="@+id/txtPhoneValue"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
                         android:text="7777556688" android:textSize="15sp"
                         android:textColor="@color/text_dark" android:paddingBottom="14dp" />
 
@@ -96,7 +103,9 @@
 
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                         android:text="Vehicle" android:textSize="12sp" android:textColor="@color/text_light" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    <TextView 
+                        android:id="@+id/txtVehicleValue"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
                         android:text="Motorbike — XYZ 4521" android:textSize="15sp"
                         android:textColor="@color/text_dark" android:paddingBottom="14dp" />
 
@@ -105,12 +114,56 @@
 
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                         android:text="Total Deliveries" android:textSize="12sp" android:textColor="@color/text_light" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    <TextView 
+                        android:id="@+id/txtTotalDeliveriesValue"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
                         android:text="47 Deliveries" android:textSize="15sp" android:textStyle="bold"
                         android:textColor="@color/primary_green" android:paddingBottom="4dp" />
 
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
+
+            <!-- Bottom navigation -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:paddingTop="8dp">
+                <Button
+                    android:id="@+id/navDashboard"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="6dp"
+                    android:text="Dashboard"
+                    android:textColor="@color/white"
+                    android:textSize="13sp"
+                    android:background="@color/primary_green" />
+                <Button
+                    android:id="@+id/navHistory"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="6dp"
+                    android:text="History"
+                    android:textColor="@color/white"
+                    android:textSize="13sp"
+                    android:background="@color/primary_green" />
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/navReviews"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginStart="12dp"
+                android:layout_marginEnd="12dp"
+                android:layout_marginTop="8dp"
+                android:text="Reviews"
+                android:textColor="@color/white"
+                android:textSize="13sp"
+                android:background="@color/primary_green" />
 
             <!-- Logout button -->
             <Button

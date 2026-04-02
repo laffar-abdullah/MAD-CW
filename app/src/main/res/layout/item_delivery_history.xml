@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="3dp"
+    app:cardBackgroundColor="@color/white">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <TextView
+                android:id="@+id/txtHistoryOrderId"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Order #BNG-001"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_dark" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Delivered"
+                android:textSize="12sp"
+                android:textColor="@color/white"
+                android:background="@color/primary_green"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:paddingTop="3dp"
+                android:paddingBottom="3dp" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/txtHistoryCustomer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Customer: Alice Johnson"
+            android:textSize="13sp"
+            android:textColor="@color/text_light"
+            android:paddingTop="4dp" />
+
+        <TextView
+            android:id="@+id/txtHistoryAddress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Address: 12 Main Street, Springfield"
+            android:textSize="13sp"
+            android:textColor="@color/text_light" />
+
+        <TextView
+            android:id="@+id/txtHistoryDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Date: 12 Feb 2026"
+            android:textSize="12sp"
+            android:textColor="@color/text_light"
+            android:paddingTop="4dp" />
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

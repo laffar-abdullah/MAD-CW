@@ -38,6 +38,7 @@
                     android:src="@mipmap/ic_launcher_round"
                     android:contentDescription="Profile picture" />
                 <TextView
+                    android:id="@+id/tvProfileName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text=" Laffar Abdullah"
@@ -76,6 +77,7 @@
                         android:textSize="12sp"
                         android:textColor="@color/text_light" />
                     <TextView
+                        android:id="@+id/tvFullName"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Laffar Abdullah"
@@ -95,6 +97,7 @@
                         android:textSize="12sp"
                         android:textColor="@color/text_light" />
                     <TextView
+                        android:id="@+id/tvEmail"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="laffarabu@gmail.com"
@@ -113,6 +116,7 @@
                         android:textSize="12sp"
                         android:textColor="@color/text_light" />
                     <TextView
+                        android:id="@+id/tvPhoneNumber"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="776598078 "
@@ -131,6 +135,7 @@
                         android:textSize="12sp"
                         android:textColor="@color/text_light" />
                     <TextView
+                        android:id="@+id/tvAddress"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Dangedara, Galle"
