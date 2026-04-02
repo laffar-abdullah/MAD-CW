@@ -53,14 +53,6 @@ public class RidDashboardActivity extends AppCompatActivity {
         btnTaskUpdateStatus.setOnClickListener(v ->
                 startActivity(new Intent(this, RidStatusUpdateActivity.class)));
 
-        // These shortcut buttons link to the rider-only screens below.
-        findViewById(R.id.btnMyReviews).setOnClickListener(v ->
-                startActivity(new Intent(this, RidReviewsActivity.class)));
-
-        // Delivery History uses the same rider-scoped store as the profile count.
-        findViewById(R.id.btnDeliveryHistory).setOnClickListener(v ->
-                startActivity(new Intent(this, RidDeliveryHistoryActivity.class)));
-
         // Bottom navigation mirrors the three rider destinations for faster switching.
         navHistory.setOnClickListener(v -> startActivity(new Intent(this, RidDeliveryHistoryActivity.class)));
         navReviews.setOnClickListener(v -> startActivity(new Intent(this, RidReviewsActivity.class)));

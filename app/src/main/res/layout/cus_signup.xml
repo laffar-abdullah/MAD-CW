@@ -7,6 +7,7 @@
     android:gravity="center_horizontal"
     android:background="@color/screen_bg">
 
+    <!-- Simple title so the user knows this page is for creating a customer account. -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -91,6 +92,7 @@
         android:textColor="@color/white"
         android:background="@color/primary_green" />
 
+    <!-- Existing users can use this link to go back to login. -->
     <TextView
         android:id="@+id/loginLink"
         android:layout_width="wrap_content"
