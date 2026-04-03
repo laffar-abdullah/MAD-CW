@@ -45,7 +45,7 @@ public class CusHomeActivity extends AppCompatActivity {
         bottomNav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
             if (id == R.id.nav_cart) {
-                startActivity(new Intent(this, CusFeedbackActivity.class));
+                startActivity(new Intent(this, CusCartActivity.class));
             } else if (id == R.id.nav_orders) {
                 startActivity(new Intent(this, CusTrackingActivity.class));
             } else if (id == R.id.nav_reviews) {
