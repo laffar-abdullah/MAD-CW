@@ -2,24 +2,17 @@
 <!--
     rid_profile.xml
 
-    ── CHANGES ──────────────────────────────────────────────────────────────
-    1. imgProfilePicture — ImageView added inside the avatar banner so Glide
-       can load the rider's saved photo into it. Tapping it opens the picker.
+    External files needed (res/drawable/) — just these three small ones:
+    ┌─────────────────────────┬──────────────────────────────────────────────┐
+    │ shape_icon_box.xml      │ light teal rounded square for row icons      │
+    │ shape_ghost_pill.xml    │ semi-transparent pill for "Change Photo" btn │
+    │ shape_btn_slate.xml     │ dark slate rounded rect for Change Password  │
+    └─────────────────────────┴──────────────────────────────────────────────┘
+    All three are provided alongside this file.
 
-    2. btnChangePhoto — small button under the avatar for an explicit
-       "Change Photo" affordance (also triggers the image picker in Java).
-
-    3. btnChangePass → btnChangePassword — the critical ID fix.
-       The Java file does:
-           btnChangePassword = findViewById(R.id.btnChangePassword);
-           btnChangePassword.setOnClickListener(v -> showChangePasswordDialog());
-       The old layout had android:id="@+id/btnChangePass" — a mismatch that
-       made btnChangePassword null at runtime, so clicking it caused a
-       NullPointerException and nothing happened.
-       Fixed by renaming to android:id="@+id/btnChangePassword".
-
-    4. Logout and Change Password remain side-by-side in a horizontal row.
-    ─────────────────────────────────────────────────────────────────────────
+    btn_danger.xml already exists in your project (added in a previous session).
+    The avatar ring is achieved with a plain border View using android:background
+    set to a semi-white hex colour — no drawable file needed for that.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -28,6 +21,7 @@
     android:orientation="vertical"
     android:background="@color/screen_bg">
 
+    <!-- Toolbar -->
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
@@ -40,257 +34,306 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:overScrollMode="never">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- ── Avatar banner ─────────────────────────────────────────── -->
+            <!-- ── Banner ────────────────────────────────────────────────── -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:minHeight="180dp"
-                android:background="@color/toolbar_bg"
-                android:gravity="center"
+                android:background="#004D40"
                 android:orientation="vertical"
-                android:paddingTop="20dp"
-                android:paddingBottom="16dp">
+                android:gravity="center"
+                android:paddingTop="28dp"
+                android:paddingBottom="24dp">
 
                 <!--
-                    CHANGE 1: ImageView with id imgProfilePicture.
-                    Java loads the rider's photo here via Glide.
-                    Tapping it launches the same photo picker as btnChangePhoto.
+                    Avatar ring trick — NO drawable file needed:
+                    FrameLayout 96×96 with a semi-white background (#33FFFFFF)
+                    acts as the ring. The ImageView is 88×88 centred inside,
+                    with android:background="#004D40" (same as banner) so the
+                    4dp gap between them shows as the white ring colour.
                 -->
-                <ImageView
-                    android:id="@+id/imgProfilePicture"
-                    android:layout_width="88dp"
-                    android:layout_height="88dp"
-                    android:src="@mipmap/ic_launcher_round"
-                    android:scaleType="centerCrop"
-                    android:contentDescription="Profile picture"
-                    android:clickable="true"
-                    android:focusable="true" />
+                <FrameLayout
+                    android:layout_width="96dp"
+                    android:layout_height="96dp"
+                    android:background="#33FFFFFF">
 
-                <!--
-                    CHANGE 2: "Change Photo" button visible below the avatar.
-                    ID must match Java: R.id.btnChangePhoto.
-                -->
+                    <ImageView
+                        android:id="@+id/imgProfilePicture"
+                        android:layout_width="88dp"
+                        android:layout_height="88dp"
+                        android:layout_gravity="center"
+                        android:src="@mipmap/ic_launcher_round"
+                        android:scaleType="centerCrop"
+                        android:contentDescription="Profile picture"
+                        android:background="#004D40"
+                        android:clickable="true"
+                        android:focusable="true" />
+                </FrameLayout>
+
+                <!-- Ghost pill button — shape_ghost_pill.xml -->
                 <Button
                     android:id="@+id/btnChangePhoto"
                     android:layout_width="wrap_content"
                     android:layout_height="32dp"
-                    android:layout_marginTop="8dp"
-                    android:paddingStart="16dp"
-                    android:paddingEnd="16dp"
+                    android:layout_marginTop="10dp"
+                    android:paddingStart="18dp"
+                    android:paddingEnd="18dp"
                     android:text="Change Photo"
-                    android:textColor="@color/white"
-                    android:textSize="11sp"
-                    android:background="@color/primary_green_dark" />
+                    android:textColor="#FFFFFF"
+                    android:textSize="12sp"
+                    android:background="@drawable/shape_ghost_pill" />
 
                 <TextView
                     android:id="@+id/txtProfileNameHeader"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="James Rider"
-                    android:textColor="@color/toolbar_text"
-                    android:textSize="18sp"
+                    android:textColor="#FFFFFF"
+                    android:textSize="20sp"
                     android:textStyle="bold"
-                    android:paddingTop="10dp" />
+                    android:paddingTop="14dp" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Delivery Rider"
-                    android:textColor="@color/toolbar_text"
-                    android:textSize="13sp" />
-
+                    android:text="Delivery Rider · BuyNGo"
+                    android:textColor="#B2DFDB"
+                    android:textSize="13sp"
+                    android:paddingTop="3dp" />
             </LinearLayout>
 
-            <!-- ── Details card ──────────────────────────────────────────── -->
+            <!-- ── Stats strip ────────────────────────────────────────────── -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="72dp"
+                android:background="#00695C"
+                android:orientation="horizontal">
+
+                <LinearLayout android:layout_width="0dp" android:layout_height="match_parent"
+                    android:layout_weight="1" android:orientation="vertical" android:gravity="center">
+                    <TextView android:id="@+id/txtTotalDeliveriesValue"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="0" android:textColor="#FFFFFF"
+                        android:textSize="22sp" android:textStyle="bold" />
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="Deliveries" android:textColor="#B2DFDB" android:textSize="11sp" />
+                </LinearLayout>
+
+                <View android:layout_width="1dp" android:layout_height="36dp"
+                    android:layout_gravity="center_vertical" android:background="#4DB6AC" />
+
+                <LinearLayout android:layout_width="0dp" android:layout_height="match_parent"
+                    android:layout_weight="1" android:orientation="vertical" android:gravity="center">
+                    <TextView android:id="@+id/txtRatingValue"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="—" android:textColor="#FFFFFF"
+                        android:textSize="22sp" android:textStyle="bold" />
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="Rating" android:textColor="#B2DFDB" android:textSize="11sp" />
+                </LinearLayout>
+
+                <View android:layout_width="1dp" android:layout_height="36dp"
+                    android:layout_gravity="center_vertical" android:background="#4DB6AC" />
+
+                <LinearLayout android:layout_width="0dp" android:layout_height="match_parent"
+                    android:layout_weight="1" android:orientation="vertical" android:gravity="center">
+                    <TextView android:id="@+id/txtReviewCount"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="—" android:textColor="#FFFFFF"
+                        android:textSize="22sp" android:textStyle="bold" />
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="Reviews" android:textColor="#B2DFDB" android:textSize="11sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- ── Details card ───────────────────────────────────────────── -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="16dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="3dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="4dp"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="2dp"
                 app:cardBackgroundColor="@color/white">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="vertical">
 
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="Full Name" android:textSize="12sp" android:textColor="@color/text_light" />
-                    <TextView
-                        android:id="@+id/txtFullNameValue"
-                        android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="—" android:textSize="15sp" android:textStyle="bold"
-                        android:textColor="@color/text_dark" android:paddingBottom="14dp" />
+                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:text="Personal Details" android:textSize="11sp"
+                        android:textColor="@color/primary_green" android:textAllCaps="true"
+                        android:letterSpacing="0.08"
+                        android:paddingStart="16dp" android:paddingEnd="16dp"
+                        android:paddingTop="14dp" android:paddingBottom="10dp" />
 
-                    <View android:layout_width="match_parent" android:layout_height="1dp"
-                        android:background="@color/divider" android:layout_marginBottom="14dp" />
+                    <View android:layout_width="match_parent" android:layout_height="0.5dp"
+                        android:background="@color/divider" />
 
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="Email Address" android:textSize="12sp" android:textColor="@color/text_light" />
-                    <TextView
-                        android:id="@+id/txtEmailValue"
-                        android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="—" android:textSize="15sp"
-                        android:textColor="@color/text_dark" android:paddingBottom="14dp" />
+                    <!-- Row: Full Name -->
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="64dp"
+                        android:orientation="horizontal" android:gravity="center_vertical"
+                        android:paddingStart="16dp" android:paddingEnd="16dp">
+                        <!-- Icon box uses shape_icon_box.xml — 10dp corners, #E0F2F1 fill -->
+                        <ImageView android:layout_width="36dp" android:layout_height="36dp"
+                            android:padding="9dp"
+                            android:src="@android:drawable/ic_menu_my_calendar"
+                            app:tint="@color/primary_green"
+                            android:background="@drawable/shape_icon_box" />
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+                            android:layout_weight="1" android:orientation="vertical" android:paddingStart="14dp">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:text="Full Name" android:textSize="11sp" android:textColor="@color/text_light" />
+                            <TextView android:id="@+id/txtFullNameValue"
+                                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:text="—" android:textSize="15sp" android:textStyle="bold"
+                                android:textColor="@color/text_dark" android:paddingTop="2dp" />
+                        </LinearLayout>
+                    </LinearLayout>
 
-                    <View android:layout_width="match_parent" android:layout_height="1dp"
-                        android:background="@color/divider" android:layout_marginBottom="14dp" />
+                    <View android:layout_width="match_parent" android:layout_height="0.5dp"
+                        android:background="#F5F5F5" android:layout_marginStart="66dp" />
 
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="Phone Number" android:textSize="12sp" android:textColor="@color/text_light" />
-                    <TextView
-                        android:id="@+id/txtPhoneValue"
-                        android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="—" android:textSize="15sp"
-                        android:textColor="@color/text_dark" android:paddingBottom="14dp" />
+                    <!-- Row: Email -->
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="64dp"
+                        android:orientation="horizontal" android:gravity="center_vertical"
+                        android:paddingStart="16dp" android:paddingEnd="16dp">
+                        <ImageView android:layout_width="36dp" android:layout_height="36dp"
+                            android:padding="9dp"
+                            android:src="@android:drawable/ic_dialog_email"
+                            app:tint="@color/primary_green"
+                            android:background="@drawable/shape_icon_box" />
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+                            android:layout_weight="1" android:orientation="vertical" android:paddingStart="14dp">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:text="Email Address" android:textSize="11sp" android:textColor="@color/text_light" />
+                            <TextView android:id="@+id/txtEmailValue"
+                                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:text="—" android:textSize="15sp"
+                                android:textColor="@color/text_dark" android:paddingTop="2dp" />
+                        </LinearLayout>
+                    </LinearLayout>
 
-                    <View android:layout_width="match_parent" android:layout_height="1dp"
-                        android:background="@color/divider" android:layout_marginBottom="14dp" />
+                    <View android:layout_width="match_parent" android:layout_height="0.5dp"
+                        android:background="#F5F5F5" android:layout_marginStart="66dp" />
 
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="Vehicle" android:textSize="12sp" android:textColor="@color/text_light" />
-                    <TextView
-                        android:id="@+id/txtVehicleValue"
-                        android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="—" android:textSize="15sp"
-                        android:textColor="@color/text_dark" android:paddingBottom="14dp" />
+                    <!-- Row: Phone -->
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="64dp"
+                        android:orientation="horizontal" android:gravity="center_vertical"
+                        android:paddingStart="16dp" android:paddingEnd="16dp">
+                        <ImageView android:layout_width="36dp" android:layout_height="36dp"
+                            android:padding="9dp"
+                            android:src="@android:drawable/ic_menu_call"
+                            app:tint="@color/primary_green"
+                            android:background="@drawable/shape_icon_box" />
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+                            android:layout_weight="1" android:orientation="vertical" android:paddingStart="14dp">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:text="Phone Number" android:textSize="11sp" android:textColor="@color/text_light" />
+                            <TextView android:id="@+id/txtPhoneValue"
+                                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:text="—" android:textSize="15sp"
+                                android:textColor="@color/text_dark" android:paddingTop="2dp" />
+                        </LinearLayout>
+                    </LinearLayout>
 
-                    <View android:layout_width="match_parent" android:layout_height="1dp"
-                        android:background="@color/divider" android:layout_marginBottom="14dp" />
+                    <View android:layout_width="match_parent" android:layout_height="0.5dp"
+                        android:background="#F5F5F5" android:layout_marginStart="66dp" />
 
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="Total Deliveries" android:textSize="12sp" android:textColor="@color/text_light" />
-                    <TextView
-                        android:id="@+id/txtTotalDeliveriesValue"
-                        android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="0 Deliveries" android:textSize="15sp" android:textStyle="bold"
-                        android:textColor="@color/primary_green" android:paddingBottom="4dp" />
+                    <!-- Row: Vehicle -->
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="64dp"
+                        android:orientation="horizontal" android:gravity="center_vertical"
+                        android:paddingStart="16dp" android:paddingEnd="16dp">
+                        <ImageView android:layout_width="36dp" android:layout_height="36dp"
+                            android:padding="9dp"
+                            android:src="@android:drawable/ic_menu_directions"
+                            app:tint="@color/primary_green"
+                            android:background="@drawable/shape_icon_box" />
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+                            android:layout_weight="1" android:orientation="vertical" android:paddingStart="14dp">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:text="Vehicle" android:textSize="11sp" android:textColor="@color/text_light" />
+                            <TextView android:id="@+id/txtVehicleValue"
+                                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:text="—" android:textSize="15sp"
+                                android:textColor="@color/text_dark" android:paddingTop="2dp" />
+                        </LinearLayout>
+                    </LinearLayout>
 
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <!--
-                ── Action buttons row ──────────────────────────────────────
-                Both buttons share the full width equally via layout_weight="1".
-
-                CHANGE 3: right button ID changed from btnChangePass to
-                btnChangePassword — must match Java's:
-                    btnChangePassword = findViewById(R.id.btnChangePassword)
-                Without this the Java field is null and the click listener
-                is never set, so the dialog never opens.
-            -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+            <!-- ── Action buttons ─────────────────────────────────────────── -->
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                android:paddingBottom="28dp"
-                android:gravity="center_vertical">
+                android:paddingStart="16dp" android:paddingEnd="16dp"
+                android:paddingTop="16dp" android:paddingBottom="28dp">
 
-                <!-- Deep red — signals a destructive / exit action -->
-                <Button
-                    android:id="@+id/btnLogout"
-                    android:layout_width="0dp"
-                    android:layout_height="52dp"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="8dp"
-                    android:background="#C0392B"
-                    android:text="Log Out"
-                    android:textColor="@color/white"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
+                <Button android:id="@+id/btnLogout"
+                    android:layout_width="0dp" android:layout_height="52dp"
+                    android:layout_weight="1" android:layout_marginEnd="8dp"
+                    android:background="@drawable/btn_danger"
+                    android:text="Log Out" android:textColor="@color/white"
+                    android:textSize="14sp" android:textStyle="bold" />
 
-                <!--
-                    CHANGE 3: was android:id="@+id/btnChangePass"
-                    now  android:id="@+id/btnChangePassword"
-                -->
-                <Button
-                    android:id="@+id/btnChangePassword"
-                    android:layout_width="0dp"
-                    android:layout_height="52dp"
-                    android:layout_weight="1"
-                    android:layout_marginStart="8dp"
-                    android:background="#37474F"
-                    android:text="Change Password"
-                    android:textColor="@color/white"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
+                <Button android:id="@+id/btnChangePassword"
+                    android:layout_width="0dp" android:layout_height="52dp"
+                    android:layout_weight="1" android:layout_marginStart="8dp"
+                    android:background="@drawable/shape_btn_slate"
+                    android:text="Change Password" android:textColor="@color/white"
+                    android:textSize="14sp" android:textStyle="bold" />
 
             </LinearLayout>
 
         </LinearLayout>
     </ScrollView>
 
-    <!-- ── Bottom navigation bar ─────────────────────────────────────────── -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="64dp"
-        android:orientation="horizontal"
-        android:background="@color/white"
-        android:elevation="8dp">
+    <!-- ── Bottom navigation ─────────────────────────────────────────────── -->
+    <LinearLayout android:layout_width="match_parent" android:layout_height="64dp"
+        android:orientation="horizontal" android:background="@color/white" android:elevation="8dp">
 
-        <LinearLayout
-            android:id="@+id/navDashboard"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center">
-            <ImageView android:layout_width="24dp" android:layout_height="24dp"
+        <LinearLayout android:id="@+id/navDashboard"
+            android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
+            android:orientation="vertical" android:gravity="center">
+            <ImageView android:layout_width="22dp" android:layout_height="22dp"
                 android:src="@android:drawable/ic_menu_today" />
             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="Tasks" android:textSize="10sp" />
+                android:text="Tasks" android:textSize="10sp" android:textColor="@color/text_light" />
         </LinearLayout>
 
-        <LinearLayout
-            android:id="@+id/navHistory"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center">
-            <ImageView android:layout_width="24dp" android:layout_height="24dp"
+        <LinearLayout android:id="@+id/navHistory"
+            android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
+            android:orientation="vertical" android:gravity="center">
+            <ImageView android:layout_width="22dp" android:layout_height="22dp"
                 android:src="@android:drawable/ic_menu_recent_history" />
             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="History" android:textSize="10sp" />
+                android:text="History" android:textSize="10sp" android:textColor="@color/text_light" />
         </LinearLayout>
 
-        <LinearLayout
-            android:id="@+id/navReviews"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center">
-            <ImageView android:layout_width="24dp" android:layout_height="24dp"
+        <LinearLayout android:id="@+id/navReviews"
+            android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
+            android:orientation="vertical" android:gravity="center">
+            <ImageView android:layout_width="22dp" android:layout_height="22dp"
                 android:src="@android:drawable/btn_star_big_on" />
             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="Reviews" android:textSize="10sp" />
+                android:text="Reviews" android:textSize="10sp" android:textColor="@color/text_light" />
         </LinearLayout>
 
-        <LinearLayout
-            android:id="@+id/navProfile"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center">
-            <ImageView android:layout_width="24dp" android:layout_height="24dp"
-                android:src="@android:drawable/ic_menu_myplaces"
-                app:tint="@color/primary_green" />
+        <LinearLayout android:id="@+id/navProfile"
+            android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
+            android:orientation="vertical" android:gravity="center">
+            <ImageView android:layout_width="22dp" android:layout_height="22dp"
+                android:src="@android:drawable/ic_menu_myplaces" app:tint="@color/primary_green" />
             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="Profile" android:textSize="10sp"
-                android:textColor="@color/primary_green" />
+                android:text="Profile" android:textSize="10sp" android:textColor="@color/primary_green" />
         </LinearLayout>
 
     </LinearLayout>
