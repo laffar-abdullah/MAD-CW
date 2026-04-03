@@ -115,14 +115,24 @@ public class RidProfileActivity extends AppCompatActivity {
             return;
         }
 
-        // Delivery count mirrors the rider-scoped history used in History screen.
-        int completedDeliveries = OrderStatusStore.getDeliveryHistory(this).size();
-
         txtProfileNameHeader.setText(profile.name);
         txtFullNameValue.setText(profile.name);
         txtEmailValue.setText(profile.email);
         txtPhoneValue.setText(profile.phone);
         txtVehicleValue.setText(profile.vehicle);
-        txtTotalDeliveriesValue.setText(completedDeliveries + " Deliveries");
+
+        FirebaseRiderRepository.getDeliveredOrdersForRider(
+                profile.email,
+                new FirebaseRiderRepository.ResultCallback<java.util.List<FirebaseRiderRepository.RiderOrder>>() {
+                    @Override
+                    public void onSuccess(java.util.List<FirebaseRiderRepository.RiderOrder> result) {
+                        txtTotalDeliveriesValue.setText(result.size() + " Deliveries");
+                    }
+
+                    @Override
+                    public void onError(String message) {
+                        txtTotalDeliveriesValue.setText("0 Deliveries");
+                    }
+                });
     }
 }

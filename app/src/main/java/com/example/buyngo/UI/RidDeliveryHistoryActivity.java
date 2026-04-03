@@ -123,43 +123,54 @@ public class RidDeliveryHistoryActivity extends AppCompatActivity {
      * container in the fixed layout) is always reachable.
      */
     private void renderHistory() {
-        List<OrderStatusStore.DeliveryRecord> records =
-                OrderStatusStore.getDeliveryHistory(this);
-
-        if (records.isEmpty()) {
-            // BUG FIX: txtEmptyHistory is now a sibling of historyContainer
-            // in the layout, so removeAllViews() can never detach it.
-            // Simply make it visible — no need to touch historyContainer.
-            txtEmptyHistory.setVisibility(View.VISIBLE);
-            historyContainer.removeAllViews();   // clear any stale cards
+        RiderSessionStore.RiderProfile profile = RiderSessionStore.getCurrentRider(this);
+        if (profile == null) {
+            startActivity(new Intent(this, RidLoginActivity.class));
+            finish();
             return;
         }
 
-        // We have records — hide the empty state and rebuild the card list.
-        txtEmptyHistory.setVisibility(View.GONE);
-        historyContainer.removeAllViews();
+        FirebaseRiderRepository.getDeliveredOrdersForRider(
+                profile.email,
+                new FirebaseRiderRepository.ResultCallback<List<FirebaseRiderRepository.RiderOrder>>() {
+                    @Override
+                    public void onSuccess(List<FirebaseRiderRepository.RiderOrder> records) {
+                        if (records.isEmpty()) {
+                            txtEmptyHistory.setVisibility(View.VISIBLE);
+                            historyContainer.removeAllViews();
+                            return;
+                        }
 
-        LayoutInflater inflater   = LayoutInflater.from(this);
-        DateFormat     dateFormat = android.text.format.DateFormat.getMediumDateFormat(this);
+                        txtEmptyHistory.setVisibility(View.GONE);
+                        historyContainer.removeAllViews();
 
-        // Iterate in reverse so the newest delivery appears at the top.
-        for (int i = records.size() - 1; i >= 0; i--) {
-            OrderStatusStore.DeliveryRecord record = records.get(i);
+                        LayoutInflater inflater = LayoutInflater.from(RidDeliveryHistoryActivity.this);
+                        DateFormat dateFormat = android.text.format.DateFormat
+                                .getMediumDateFormat(RidDeliveryHistoryActivity.this);
 
-            View card = inflater.inflate(
-                    R.layout.item_delivery_history, historyContainer, false);
+                        for (FirebaseRiderRepository.RiderOrder record : records) {
+                            View card = inflater.inflate(
+                                    R.layout.item_delivery_history, historyContainer, false);
 
-            TextView txtOrderId  = card.findViewById(R.id.txtHistoryOrderId);
-            TextView txtCustomer = card.findViewById(R.id.txtHistoryCustomer);
-            TextView txtAddress  = card.findViewById(R.id.txtHistoryAddress);
-            TextView txtDate     = card.findViewById(R.id.txtHistoryDate);
+                            TextView txtOrderId = card.findViewById(R.id.txtHistoryOrderId);
+                            TextView txtCustomer = card.findViewById(R.id.txtHistoryCustomer);
+                            TextView txtAddress = card.findViewById(R.id.txtHistoryAddress);
+                            TextView txtDate = card.findViewById(R.id.txtHistoryDate);
 
-            txtOrderId.setText("Order #"     + record.orderId);
-            txtCustomer.setText("Customer: " + record.customerName);
-            txtAddress.setText("Address: "   + record.customerAddress);
-            txtDate.setText("Date: "         + dateFormat.format(record.deliveredAt));
+                            txtOrderId.setText("Order #" + record.orderId);
+                            txtCustomer.setText("Customer: " + record.customerName);
+                            txtAddress.setText("Address: " + record.customerAddress);
+                            txtDate.setText("Date: " + dateFormat.format(record.deliveredAt));
 
-            historyContainer.addView(card);
-        }
+                            historyContainer.addView(card);
+                        }
+                    }
+
+                    @Override
+                    public void onError(String message) {
+                        txtEmptyHistory.setVisibility(View.VISIBLE);
+                        historyContainer.removeAllViews();
+                    }
+                });
     }
 }

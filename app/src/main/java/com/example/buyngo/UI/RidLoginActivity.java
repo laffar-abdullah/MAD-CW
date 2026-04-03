@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Patterns;
 import android.widget.EditText;
+import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -27,27 +28,34 @@ public class RidLoginActivity extends AppCompatActivity {
 
     private EditText riderEmailEditText;
     private EditText riderPasswordEditText;
+    private Button riderLoginButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Skip login when a rider session is already active (e.g. app restart).
-        if (RiderSessionStore.isLoggedIn(this)) {
-            startActivity(new Intent(this, RidDashboardActivity.class));
-            finish();
-            return;
-        }
-
         setContentView(R.layout.rid_login);
 
         riderEmailEditText    = findViewById(R.id.riderEmailEditText);
         riderPasswordEditText = findViewById(R.id.riderPasswordEditText);
+        riderLoginButton      = findViewById(R.id.riderLoginButton);
 
         // Back arrow returns to the Welcome / role-selection screen.
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
 
-        findViewById(R.id.riderLoginButton).setOnClickListener(v -> handleLogin());
+        riderLoginButton.setOnClickListener(v -> handleLogin());
+
+        FirebaseRiderRepository.ensureDefaultOrderSeeded(new FirebaseRiderRepository.VoidCallback() {
+            @Override
+            public void onSuccess() {
+                // No-op: seeded data just guarantees assign flow has an order.
+            }
+
+            @Override
+            public void onError(String message) {
+                Toast.makeText(RidLoginActivity.this, message, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     /** Validates the form then delegates authentication to RiderSessionStore. */
@@ -69,20 +77,30 @@ public class RidLoginActivity extends AppCompatActivity {
         }
 
         // Verify credentials against the known rider accounts.
-        RiderSessionStore.RiderProfile profile =
-                RiderSessionStore.authenticate(email, password);
+        riderLoginButton.setEnabled(false);
 
-        if (profile == null) {
-            Toast.makeText(this, "Invalid rider credentials", Toast.LENGTH_SHORT).show();
-            return;
-        }
+        FirebaseRiderRepository.authenticateRider(email, password,
+                new FirebaseRiderRepository.ResultCallback<FirebaseRiderRepository.RiderAccount>() {
+                    @Override
+                    public void onSuccess(FirebaseRiderRepository.RiderAccount account) {
+                        RiderSessionStore.RiderProfile profile = new RiderSessionStore.RiderProfile(
+                                account.name,
+                                account.email,
+                                account.phone,
+                                account.vehicle == null ? "Motorbike" : account.vehicle);
 
-        // Persist session and seed default order data so the dashboard always
-        // has a delivery task to display on first login.
-        RiderSessionStore.saveSession(this, profile);
-        OrderStatusStore.initializeDefaultsIfMissing(this);
+                        RiderSessionStore.saveSession(RidLoginActivity.this, profile);
+                        OrderStatusStore.initializeDefaultsIfMissing(RidLoginActivity.this);
+                        riderLoginButton.setEnabled(true);
+                        startActivity(new Intent(RidLoginActivity.this, RidDashboardActivity.class));
+                        finish();
+                    }
 
-        startActivity(new Intent(this, RidDashboardActivity.class));
-        finish();
+                    @Override
+                    public void onError(String message) {
+                        riderLoginButton.setEnabled(true);
+                        Toast.makeText(RidLoginActivity.this, message, Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 }
