@@ -11,9 +11,9 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="@color/toolbar_bg"
+        android:background="@color/primary_green"
         app:title="Rate Your Order"
-        app:titleTextColor="@color/toolbar_text"
+        app:titleTextColor="@color/white"
         app:navigationIcon="@android:drawable/ic_menu_close_clear_cancel" />
 
     <ScrollView
@@ -110,7 +110,9 @@
                 android:layout_marginTop="24dp"
                 android:text="Submit Review"
                 android:textColor="@color/white"
-                android:background="@drawable/search_bg" />
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:background="@color/primary_green" />
             <!-- Skip keeps the flow simple when the customer does not want to review. -->
             <TextView
                 android:id="@+id/skipReview"

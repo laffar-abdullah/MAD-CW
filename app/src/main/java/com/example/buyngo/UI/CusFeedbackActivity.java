@@ -216,7 +216,20 @@ public class CusFeedbackActivity extends AppCompatActivity {
 
     private void updateOrderAsReviewed(String orderId) {
         if (orderId != null) {
-            Log.d(TAG, "Order " + orderId + " review completed");
+            Log.d(TAG, "Updating order " + orderId + " to Delivered Successfully");
+            // Mark order as completed after review
+            android.content.Context context = this;
+            com.google.firebase.database.FirebaseDatabase.getInstance(DB_URL)
+                    .getReference("orders")
+                    .child(orderId)
+                    .child("status")
+                    .setValue("Delivered Successfully")
+                    .addOnSuccessListener(unused -> {
+                        Log.d(TAG, "Order " + orderId + " marked as Delivered Successfully");
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e(TAG, "Failed to update order status: " + e.getMessage());
+                    });
         }
     }
 }

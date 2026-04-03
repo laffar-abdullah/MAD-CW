@@ -226,6 +226,17 @@ public class CusTrackingActivity extends AppCompatActivity {
             orderLayout.addView(btnFeedback);
         }
 
+        // Show "Order Delivered Successfully" status when review is completed
+        if (order.getStatus() != null && order.getStatus().equals("Delivered Successfully")) {
+            TextView tvDeliveredStatus = new TextView(this);
+            tvDeliveredStatus.setText("✓ Order Delivered Successfully");
+            tvDeliveredStatus.setTextSize(14);
+            tvDeliveredStatus.setTypeface(null, android.graphics.Typeface.BOLD);
+            tvDeliveredStatus.setTextColor(getResources().getColor(R.color.primary_green, null));
+            tvDeliveredStatus.setPadding(0, 12, 0, 0);
+            orderLayout.addView(tvDeliveredStatus);
+        }
+
         View separator = new View(this);
         separator.setLayoutParams(new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, 2));
