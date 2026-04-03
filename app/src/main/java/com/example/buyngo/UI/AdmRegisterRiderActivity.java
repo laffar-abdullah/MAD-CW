@@ -18,6 +18,8 @@ public class AdmRegisterRiderActivity extends AppCompatActivity {
 
     private EditText etRiderName;
     private EditText etRiderPhone;
+    private EditText etVehicleType;
+    private EditText etVehicleNumber;
     private EditText etRiderEmail;
     private EditText etRiderPassword;
     private Button btnRegisterRider;
@@ -33,6 +35,8 @@ public class AdmRegisterRiderActivity extends AppCompatActivity {
 
         etRiderName = findViewById(R.id.etRiderName);
         etRiderPhone = findViewById(R.id.etRiderPhone);
+        etVehicleType = findViewById(R.id.etVehicleType);
+        etVehicleNumber = findViewById(R.id.etVehicleNumber);
         etRiderEmail = findViewById(R.id.etRiderEmail);
         etRiderPassword = findViewById(R.id.etRiderPassword);
         btnRegisterRider = findViewById(R.id.btnRegisterRider);
@@ -43,6 +47,8 @@ public class AdmRegisterRiderActivity extends AppCompatActivity {
     private void registerRider() {
         String name = etRiderName.getText().toString().trim();
         String phone = etRiderPhone.getText().toString().trim();
+        String vehicleType = etVehicleType.getText().toString().trim();
+        String vehicleNumber = etVehicleNumber.getText().toString().trim().toUpperCase();
         String email = etRiderEmail.getText().toString().trim().toLowerCase();
         String password = etRiderPassword.getText().toString();
 
@@ -56,6 +62,16 @@ public class AdmRegisterRiderActivity extends AppCompatActivity {
         if (TextUtils.isEmpty(phone)) {
             etRiderPhone.setError("Enter phone number");
             etRiderPhone.requestFocus();
+            return;
+        }
+        if (TextUtils.isEmpty(vehicleType)) {
+            etVehicleType.setError("Enter vehicle type");
+            etVehicleType.requestFocus();
+            return;
+        }
+        if (TextUtils.isEmpty(vehicleNumber)) {
+            etVehicleNumber.setError("Enter vehicle number");
+            etVehicleNumber.requestFocus();
             return;
         }
         if (TextUtils.isEmpty(email) || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
@@ -73,6 +89,8 @@ public class AdmRegisterRiderActivity extends AppCompatActivity {
         FirebaseRiderRepository.registerRider(
                 name,
                 phone,
+                vehicleType,
+                vehicleNumber,
                 email,
                 password,
                 new FirebaseRiderRepository.ResultCallback<FirebaseRiderRepository.RiderAccount>() {

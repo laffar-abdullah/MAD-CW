@@ -37,14 +37,10 @@ tasks.withType<JavaCompile> {
 }
 
 dependencies {
-<<<<<<< HEAD
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.database)
-
-=======
->>>>>>> cc33148f16efd7cd1a6422a65c9b53b87be2e710
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)

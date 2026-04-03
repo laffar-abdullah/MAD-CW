@@ -83,11 +83,16 @@ public class RidLoginActivity extends AppCompatActivity {
                 new FirebaseRiderRepository.ResultCallback<FirebaseRiderRepository.RiderAccount>() {
                     @Override
                     public void onSuccess(FirebaseRiderRepository.RiderAccount account) {
+                        String vehicleDisplay = account.vehicle == null ? "Motorbike" : account.vehicle;
+                        if (!TextUtils.isEmpty(account.vehicleNumber)) {
+                            vehicleDisplay = vehicleDisplay + " - " + account.vehicleNumber;
+                        }
+
                         RiderSessionStore.RiderProfile profile = new RiderSessionStore.RiderProfile(
                                 account.name,
                                 account.email,
                                 account.phone,
-                                account.vehicle == null ? "Motorbike" : account.vehicle);
+                                vehicleDisplay);
 
                         RiderSessionStore.saveSession(RidLoginActivity.this, profile);
                         OrderStatusStore.initializeDefaultsIfMissing(RidLoginActivity.this);

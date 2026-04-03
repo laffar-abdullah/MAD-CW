@@ -43,7 +43,7 @@ public class AdmAddProductActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.adm_add_product);
 
-        // ✅ Replace with your actual Firebase Realtime Database URL
+        // Firebase Connection (Thuryas db)
         db = FirebaseDatabase.getInstance("https://buyngo-5b43e-default-rtdb.firebaseio.com/").getReference();
 
         Toolbar toolbar = findViewById(R.id.toolbar);

@@ -38,6 +38,7 @@ final class FirebaseRiderRepository {
         public String email;
         public String password;
         public String vehicle;
+        public String vehicleNumber;
         public long createdAt;
 
         public RiderAccount() {
@@ -91,6 +92,8 @@ final class FirebaseRiderRepository {
     static void registerRider(
             String name,
             String phone,
+            String vehicleType,
+            String vehicleNumber,
             String email,
             String password,
             ResultCallback<RiderAccount> callback) {
@@ -112,7 +115,8 @@ final class FirebaseRiderRepository {
                     account.phone = phone;
                     account.email = email;
                     account.password = password;
-                    account.vehicle = "Motorbike";
+                    account.vehicle = vehicleType;
+                    account.vehicleNumber = vehicleNumber;
                     account.createdAt = System.currentTimeMillis();
 
                     riderRef.setValue(account)

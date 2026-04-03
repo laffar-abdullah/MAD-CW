@@ -19,16 +19,12 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 public class AdmOrderManagementActivity extends AppCompatActivity {
-<<<<<<< HEAD
-
     private static final String EXTRA_ORDER_ID = "extra_order_id";
     private static final String EXTRA_CUSTOMER_NAME = "extra_customer_name";
     private static final String EXTRA_CUSTOMER_ADDRESS = "extra_customer_address";
-=======
     private LinearLayout ordersContainer;
     private FirebaseDatabase firebaseDatabase;
     private LayoutInflater layoutInflater;
->>>>>>> cc33148f16efd7cd1a6422a65c9b53b87be2e710
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,24 +39,6 @@ public class AdmOrderManagementActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         toolbar.setNavigationOnClickListener(v -> finish());
 
-<<<<<<< HEAD
-        findViewById(R.id.btnAssignRider).setOnClickListener(v ->
-            openAssignRider("BNG-001", "Alice Smith", "12 Main Street, Springfield"));
-
-        findViewById(R.id.btnAssignRiderOrder2).setOnClickListener(v ->
-            openAssignRider("BNG-002", "Bob Jones", "78 Hill Road, Brookfield"));
-
-        findViewById(R.id.btnAssignRiderOrder3).setOnClickListener(v ->
-            openAssignRider("BNG-003", "Carol Lee", "45 Lake Avenue, Maple Town"));
-        }
-
-        private void openAssignRider(String orderId, String customerName, String customerAddress) {
-        Intent intent = new Intent(this, AdmAssignRiderActivity.class);
-        intent.putExtra(EXTRA_ORDER_ID, orderId);
-        intent.putExtra(EXTRA_CUSTOMER_NAME, customerName);
-        intent.putExtra(EXTRA_CUSTOMER_ADDRESS, customerAddress);
-        startActivity(intent);
-=======
         loadOrdersFromFirebase();
     }
 
@@ -86,7 +64,15 @@ public class AdmOrderManagementActivity extends AppCompatActivity {
                             try {
                                 Order order = orderSnapshot.getValue(Order.class);
                                 if (order != null) {
-                                    inflateOrderCard(order);
+                                    String customerName = order.getCustomerName() == null
+                                            ? "Customer"
+                                            : order.getCustomerName();
+                                    String customerAddress = orderSnapshot.child("customerAddress")
+                                            .getValue(String.class);
+                                    if (customerAddress == null || customerAddress.trim().isEmpty()) {
+                                        customerAddress = "Address unavailable";
+                                    }
+                                    inflateOrderCard(order, customerName, customerAddress);
                                 }
                             } catch (Exception e) {
                                 Toast.makeText(AdmOrderManagementActivity.this,
@@ -103,7 +89,7 @@ public class AdmOrderManagementActivity extends AppCompatActivity {
                 });
     }
 
-    private void inflateOrderCard(Order order) {
+    private void inflateOrderCard(Order order, String customerName, String customerAddress) {
         LinearLayout cardView = (LinearLayout) layoutInflater
                 .inflate(R.layout.item_order_card, ordersContainer, false);
 
@@ -114,17 +100,23 @@ public class AdmOrderManagementActivity extends AppCompatActivity {
         Button btnAssignRider = cardView.findViewById(R.id.btnAssignRider);
 
         tvOrderId.setText("Order #" + order.getOrderId());
-        tvCustomerName.setText("Customer: " + order.getCustomerName());
+        tvCustomerName.setText("Customer: " + customerName);
         tvItemsAndTotal.setText("Items: " + order.getItemsAsString() + "  |  Total: " + order.getTotalFormatted());
-        tvStatus.setText("Status: " + order.getStatus());
+        tvStatus.setText("Status: " + (order.getStatus() == null ? "Pending" : order.getStatus()));
 
-        btnAssignRider.setOnClickListener(v -> {
-            Intent intent = new Intent(this, AdmAssignRiderActivity.class);
-            intent.putExtra("orderId", order.getOrderId());
-            startActivity(intent);
-        });
+        btnAssignRider.setOnClickListener(v ->
+                openAssignRider(order.getOrderId(), customerName, customerAddress));
 
         ordersContainer.addView(cardView);
->>>>>>> cc33148f16efd7cd1a6422a65c9b53b87be2e710
+    }
+
+    private void openAssignRider(String orderId, String customerName, String customerAddress) {
+        Intent intent = new Intent(this, AdmAssignRiderActivity.class);
+        intent.putExtra(EXTRA_ORDER_ID, orderId);
+        intent.putExtra(EXTRA_CUSTOMER_NAME, customerName);
+        intent.putExtra(EXTRA_CUSTOMER_ADDRESS, customerAddress);
+        // Backward-compat key in case other paths still read this.
+        intent.putExtra("orderId", orderId);
+        startActivity(intent);
     }
 }
