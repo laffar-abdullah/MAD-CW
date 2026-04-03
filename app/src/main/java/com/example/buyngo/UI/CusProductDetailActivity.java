@@ -81,7 +81,7 @@ public class CusProductDetailActivity extends AppCompatActivity {
 
             Toast.makeText(this, quantity + " x " + currentProduct.getName() + " added to cart!", Toast.LENGTH_SHORT).show();
 
-            startActivity(new Intent(this, CusCartActivity.class));
+            finish();
         });
     }
 
