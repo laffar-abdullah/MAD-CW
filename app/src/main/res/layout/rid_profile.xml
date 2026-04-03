@@ -17,7 +17,8 @@
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="0dp"
+        android:layout_weight="1">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -70,7 +71,7 @@
 
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                         android:text="Full Name" android:textSize="12sp" android:textColor="@color/text_light" />
-                    <TextView 
+                    <TextView
                         android:id="@+id/txtFullNameValue"
                         android:layout_width="wrap_content" android:layout_height="wrap_content"
                         android:text=" ABC" android:textSize="15sp" android:textStyle="bold"
@@ -81,7 +82,7 @@
 
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                         android:text="Email Address" android:textSize="12sp" android:textColor="@color/text_light" />
-                    <TextView 
+                    <TextView
                         android:id="@+id/txtEmailValue"
                         android:layout_width="wrap_content" android:layout_height="wrap_content"
                         android:text="abc.rider@buyngo.com" android:textSize="15sp"
@@ -92,7 +93,7 @@
 
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                         android:text="Phone Number" android:textSize="12sp" android:textColor="@color/text_light" />
-                    <TextView 
+                    <TextView
                         android:id="@+id/txtPhoneValue"
                         android:layout_width="wrap_content" android:layout_height="wrap_content"
                         android:text="7777556688" android:textSize="15sp"
@@ -103,7 +104,7 @@
 
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                         android:text="Vehicle" android:textSize="12sp" android:textColor="@color/text_light" />
-                    <TextView 
+                    <TextView
                         android:id="@+id/txtVehicleValue"
                         android:layout_width="wrap_content" android:layout_height="wrap_content"
                         android:text="Motorbike — XYZ 4521" android:textSize="15sp"
@@ -114,7 +115,7 @@
 
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                         android:text="Total Deliveries" android:textSize="12sp" android:textColor="@color/text_light" />
-                    <TextView 
+                    <TextView
                         android:id="@+id/txtTotalDeliveriesValue"
                         android:layout_width="wrap_content" android:layout_height="wrap_content"
                         android:text="47 Deliveries" android:textSize="15sp" android:textStyle="bold"
@@ -181,5 +182,83 @@
 
         </LinearLayout>
     </ScrollView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:orientation="horizontal"
+        android:background="@color/white"
+        android:elevation="8dp">
+        <LinearLayout
+            android:id="@+id/navDashboard"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@android:drawable/ic_menu_today" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tasks"
+                android:textSize="10sp" />
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/navHistory"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@android:drawable/ic_menu_recent_history" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="History"
+                android:textSize="10sp" />
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/navReviews"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@android:drawable/btn_star_big_on" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Reviews"
+                android:textSize="10sp" />
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/navProfile"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@android:drawable/ic_menu_myplaces"
+                app:tint="@color/primary_green" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Profile"
+                android:textSize="10sp"
+                android:textColor="@color/primary_green" />
+        </LinearLayout>
+    </LinearLayout>
 
 </LinearLayout>

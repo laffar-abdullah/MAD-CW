@@ -1,63 +1,114 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    rid_status_update.xml
+
+    ── CHANGES FROM ORIGINAL ────────────────────────────────────────────────
+    BUG FIX — Button label / status constant mismatch.
+    The middle button originally said "Mark as Out for Delivery" while the
+    Java code wrote the constant STATUS_ON_THE_WAY ("On the Way") when it was
+    tapped.  The confirmation toast therefore said "Status updated: On the Way"
+    but the button had said "Out for Delivery" — confusing for the rider.
+    FIX: the button label is now "Mark as On the Way" so the UI and the stored
+    value agree.  The stored constant STATUS_ON_THE_WAY is unchanged because
+    it drives the customer-tracking colour coding and state-machine guards.
+
+    IMPROVEMENT — Added a Toolbar with an up/back navigation icon so the
+    rider can return to the Dashboard without the Android system back gesture.
+    Previously there was NO toolbar on this screen at all.
+    ─────────────────────────────────────────────────────────────────────────
+-->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="24dp"
-    android:gravity="center_horizontal"
     android:background="@color/screen_bg">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Update Delivery Status"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:textColor="@color/text_dark"
-        android:layout_marginTop="32dp" />
-
-    <TextView
-        android:id="@+id/txtOrderNumber"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Order: #12345"
-        android:layout_marginTop="8dp"
-        android:textColor="@color/primary_green" />
-
-    <TextView
-        android:id="@+id/txtCurrentStatus"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Current status: Awaiting Pickup"
-        android:layout_marginTop="4dp"
-        android:textSize="12sp"
-        android:textColor="@color/text_light" />
-
-    <Button
-        android:id="@+id/btnPickedUp"
+    <!--
+        IMPROVEMENT: Toolbar added so the rider has an explicit back button.
+        RidStatusUpdateActivity.setSupportActionBar() and
+        toolbar.setNavigationOnClickListener(v -> finish()) handle it in Java.
+    -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:layout_marginTop="48dp"
-        android:text="Mark as Picked Up"
-        android:textColor="@color/white"
-        android:background="@color/primary_green" />
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/toolbar_bg"
+        app:title="Update Status"
+        app:titleTextColor="@color/toolbar_text"
+        app:navigationIcon="?attr/homeAsUpIndicator" />
 
-    <Button
-        android:id="@+id/btnOutForDelivery"
+    <!-- Content centred below the toolbar -->
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:layout_marginTop="16dp"
-        android:text="Mark as Out for Delivery"
-        android:textColor="@color/white"
-        android:background="@color/primary_green" />
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:gravity="center_horizontal">
 
-    <Button
-        android:id="@+id/btnDelivered"
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:layout_marginTop="16dp"
-        android:text="Mark as Delivered"
-        android:textColor="@color/white"
-        android:background="@color/primary_green" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Update Delivery Status"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_dark"
+            android:layout_marginTop="16dp" />
+
+        <!-- Bound in Java to show "Order: #BNG-001" -->
+        <TextView
+            android:id="@+id/txtOrderNumber"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Order: #12345"
+            android:layout_marginTop="8dp"
+            android:textColor="@color/primary_green" />
+
+        <!-- Bound in Java to show "Current status: Awaiting Pickup" -->
+        <TextView
+            android:id="@+id/txtCurrentStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Current Status: Awaiting Pickup"
+            android:layout_marginTop="8dp"
+            android:textColor="@color/text_light" />
+
+        <!-- Step 1 — enabled only when status is "Awaiting Pickup" -->
+        <Button
+            android:id="@+id/btnPickedUp"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginTop="48dp"
+            android:text="Mark as Picked Up"
+            android:textColor="@color/white"
+            android:background="@color/primary_green" />
+
+        <!--
+            Step 2 — enabled only when status is "Picked Up".
+            BUG FIX: label was "Mark as Out for Delivery" but the store writes
+            STATUS_ON_THE_WAY ("On the Way").  Label now reads "Mark as On the Way"
+            so the button text matches the toast and the stored value.
+        -->
+        <Button
+            android:id="@+id/btnOutForDelivery"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginTop="16dp"
+            android:text="Mark as On the Way"
+            android:textColor="@color/white"
+            android:background="@color/primary_green" />
+
+        <!-- Step 3 — enabled only when status is "On the Way" -->
+        <Button
+            android:id="@+id/btnDelivered"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginTop="16dp"
+            android:text="Mark as Delivered"
+            android:textColor="@color/white"
+            android:background="@color/primary_green" />
+
+    </LinearLayout>
 
 </LinearLayout>
