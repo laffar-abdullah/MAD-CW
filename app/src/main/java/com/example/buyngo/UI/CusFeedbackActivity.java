@@ -63,27 +63,41 @@ public class CusFeedbackActivity extends AppCompatActivity {
         isMandatory = getIntent().getBooleanExtra("mandatory", false);
         Log.d(TAG, "Mandatory feedback: " + isMandatory);
         
+        // If no orderId provided (coming from nav_reviews), show info message
+        if (orderId == null || orderId.trim().isEmpty()) {
+            ratingLabel.setText("Select an order from 'Orders' tab to add a review");
+            findViewById(R.id.submitFeedbackButton).setEnabled(false);
+            findViewById(R.id.submitFeedbackButton).setAlpha(0.5f);
+            Button skipButton = findViewById(R.id.skipReview);
+            if (skipButton != null) {
+                skipButton.setVisibility(View.GONE);
+            }
+            return;
+        }
+        
         // Show/hide skip button based on mandatory flag
         Button skipButton = findViewById(R.id.skipReview);
-        skipButton.setVisibility(View.VISIBLE);
-        
-        // Set skip button click listener
-        skipButton.setOnClickListener(v -> {
-            if (isMandatory) {
-                // Show confirmation dialog when skipping mandatory feedback
-                new AlertDialog.Builder(this)
-                        .setTitle("Skip Review?")
-                        .setMessage("Are you sure you want to skip providing a review? Your feedback helps us improve the service.")
-                        .setPositiveButton("Skip", (dialog, which) -> {
-                            updateOrderAsReviewed(orderId);
-                            navigateHome();
-                        })
-                        .setNegativeButton("Add Review", (dialog, which) -> dialog.dismiss())
-                        .show();
-            } else {
-                navigateHome();
-            }
-        });
+        if (skipButton != null) {
+            skipButton.setVisibility(View.VISIBLE);
+            
+            // Set skip button click listener
+            skipButton.setOnClickListener(v -> {
+                if (isMandatory) {
+                    // Show confirmation dialog when skipping mandatory feedback
+                    new AlertDialog.Builder(this)
+                            .setTitle("Skip Review?")
+                            .setMessage("Are you sure you want to skip providing a review? Your feedback helps us improve the service.")
+                            .setPositiveButton("Skip", (dialog, which) -> {
+                                updateOrderAsReviewed(orderId);
+                                navigateHome();
+                            })
+                            .setNegativeButton("Add Review", (dialog, which) -> dialog.dismiss())
+                            .show();
+                } else {
+                    navigateHome();
+                }
+            });
+        }
 
         ratingBar.setOnRatingBarChangeListener((bar, rating, fromUser) -> {
             if (rating <= 0f) {
@@ -92,15 +106,6 @@ public class CusFeedbackActivity extends AppCompatActivity {
             }
             ratingLabel.setText((int) rating + " / 5");
         });
-
-        // If no orderId provided (coming from nav_reviews), show info message
-        if (orderId == null || orderId.trim().isEmpty()) {
-            TextView infoText = findViewById(R.id.ratingLabel);
-            infoText.setText("Select an order from 'Orders' tab to add a review");
-            findViewById(R.id.submitFeedbackButton).setEnabled(false);
-            findViewById(R.id.submitFeedbackButton).setAlpha(0.5f);
-            skipButton.setVisibility(View.GONE);
-        }
 
         findViewById(R.id.submitFeedbackButton).setOnClickListener(v -> {
             int rating = Math.round(ratingBar.getRating());

@@ -253,14 +253,13 @@ final class FirebaseRiderRepository {
             String riderEmail,
             VoidCallback callback) {
 
-        // First get the rider's name
-        Query query = db().child(NODE_RIDERS).orderByChild("email").equalTo(riderEmail);
-        query.get().addOnSuccessListener(snapshot -> {
+        // Get all riders and find the one with matching email
+        db().child(NODE_RIDERS).get().addOnSuccessListener(snapshot -> {
             String riderName = "Assigned Rider";
             for (DataSnapshot child : snapshot.getChildren()) {
                 RiderAccount rider = child.getValue(RiderAccount.class);
-                if (rider != null && rider.name != null) {
-                    riderName = rider.name;
+                if (rider != null && rider.email != null && rider.email.equals(riderEmail)) {
+                    riderName = rider.name != null ? rider.name : "Assigned Rider";
                     break;
                 }
             }
