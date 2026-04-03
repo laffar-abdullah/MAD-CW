@@ -6,6 +6,7 @@
     android:orientation="vertical"
     android:background="@color/screen_bg">
 
+    <!-- Header bar with app name and profile shortcut. -->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
@@ -32,6 +33,7 @@
             android:contentDescription="Profile" />
     </RelativeLayout>
 
+    <!-- Search field to help customers look up products quickly. -->
     <EditText
         android:id="@+id/searchBar"
         android:layout_width="match_parent"
@@ -50,92 +52,14 @@
         android:layout_height="0dp"
         android:layout_weight="1">
         <LinearLayout
+            android:id="@+id/productContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="12dp">
-
-            <androidx.cardview.widget.CardView
-                android:id="@+id/productCard1"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="3dp"
-                app:cardBackgroundColor="@color/white">
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:orientation="horizontal" android:padding="12dp" android:gravity="center_vertical">
-                    <ImageView android:layout_width="70dp" android:layout_height="70dp"
-                        android:background="@color/divider" android:contentDescription="Product image" />
-                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
-                        android:layout_weight="1" android:orientation="vertical" android:paddingStart="12dp">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="Fresh Apples (1kg)" android:textSize="15sp" android:textStyle="bold" android:textColor="@color/text_dark" />
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="Fresh Produce" android:textSize="12sp" android:textColor="@color/text_light" />
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="$2.99" android:textSize="16sp" android:textStyle="bold" android:textColor="@color/primary_green" />
-                    </LinearLayout>
-                    <Button android:id="@+id/addToCartBtn1" android:layout_width="wrap_content" android:layout_height="40dp"
-                        android:text="+ Add" android:textSize="12sp" android:textColor="@color/white" android:background="@color/primary_green" />
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:id="@+id/productCard2"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="3dp"
-                app:cardBackgroundColor="@color/white">
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:orientation="horizontal" android:padding="12dp" android:gravity="center_vertical">
-                    <ImageView android:layout_width="70dp" android:layout_height="70dp"
-                        android:background="@color/divider" android:contentDescription="Product image" />
-                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
-                        android:layout_weight="1" android:orientation="vertical" android:paddingStart="12dp">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="Full Cream Milk (1L)" android:textSize="15sp" android:textStyle="bold" android:textColor="@color/text_dark" />
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="Dairy" android:textSize="12sp" android:textColor="@color/text_light" />
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="$1.49" android:textSize="16sp" android:textStyle="bold" android:textColor="@color/primary_green" />
-                    </LinearLayout>
-                    <Button android:id="@+id/addToCartBtn2" android:layout_width="wrap_content" android:layout_height="40dp"
-                        android:text="+ Add" android:textSize="12sp" android:textColor="@color/white" android:background="@color/primary_green" />
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:id="@+id/productCard3"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="3dp"
-                app:cardBackgroundColor="@color/white">
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:orientation="horizontal" android:padding="12dp" android:gravity="center_vertical">
-                    <ImageView android:layout_width="70dp" android:layout_height="70dp"
-                        android:background="@color/divider" android:contentDescription="Product image" />
-                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
-                        android:layout_weight="1" android:orientation="vertical" android:paddingStart="12dp">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="Whole Wheat Bread" android:textSize="15sp" android:textStyle="bold" android:textColor="@color/text_dark" />
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="Bakery" android:textSize="12sp" android:textColor="@color/text_light" />
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="$2.49" android:textSize="16sp" android:textStyle="bold" android:textColor="@color/primary_green" />
-                    </LinearLayout>
-                    <Button android:id="@+id/addToCartBtn3" android:layout_width="wrap_content" android:layout_height="40dp"
-                        android:text="+ Add" android:textSize="12sp" android:textColor="@color/white" android:background="@color/primary_green" />
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-        </LinearLayout>
+            android:padding="12dp" />
     </ScrollView>
 
+    <!-- Bottom navigation for cart, orders, reviews, and profile. -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
