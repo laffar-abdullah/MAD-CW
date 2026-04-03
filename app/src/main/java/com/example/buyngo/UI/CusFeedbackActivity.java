@@ -93,6 +93,15 @@ public class CusFeedbackActivity extends AppCompatActivity {
             ratingLabel.setText((int) rating + " / 5");
         });
 
+        // If no orderId provided (coming from nav_reviews), show info message
+        if (orderId == null || orderId.trim().isEmpty()) {
+            TextView infoText = findViewById(R.id.ratingLabel);
+            infoText.setText("Select an order from 'Orders' tab to add a review");
+            findViewById(R.id.submitFeedbackButton).setEnabled(false);
+            findViewById(R.id.submitFeedbackButton).setAlpha(0.5f);
+            skipButton.setVisibility(View.GONE);
+        }
+
         findViewById(R.id.submitFeedbackButton).setOnClickListener(v -> {
             int rating = Math.round(ratingBar.getRating());
             String comment = reviewComment.getText().toString().trim();

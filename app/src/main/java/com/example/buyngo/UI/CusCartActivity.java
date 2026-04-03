@@ -42,6 +42,8 @@ public class CusCartActivity extends AppCompatActivity {
                 Toast.makeText(this, "Cart is empty", Toast.LENGTH_SHORT).show();
                 return;
             }
+            // Debug: show number of items
+            Toast.makeText(this, "Checking out " + items.size() + " items", Toast.LENGTH_SHORT).show();
             startActivity(new Intent(this, CusCheckoutActivity.class));
         });
     }

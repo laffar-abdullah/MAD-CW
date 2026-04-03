@@ -80,7 +80,7 @@ public class CusProductDetailActivity extends AppCompatActivity {
             );
 
             Toast.makeText(this, quantity + " x " + currentProduct.getName() + " added to cart!", Toast.LENGTH_SHORT).show();
-
+            quantityInput.setText(""); // Clear the quantity input for next product
             finish();
         });
     }

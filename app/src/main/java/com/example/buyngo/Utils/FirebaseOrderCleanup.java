@@ -25,7 +25,11 @@ public class FirebaseOrderCleanup {
                 "ORD-1775203846042",
                 "ORD-1775210104399",
                 "ORD-1775212292735",
-                "ORD-1775214024285"
+                "ORD-1775214024285",
+                "ORD-1775214047385",
+                "ORD-1775215098069",
+                "ORD-1775215301426",
+                "ORD-1775215647551"
         };
 
         for (String orderId : orderIdsToDelete) {

@@ -50,11 +50,17 @@ public class AdmOrderManagementActivity extends AppCompatActivity {
         loadOrdersFromFirebase();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadOrdersFromFirebase();
+    }
+
     private void loadOrdersFromFirebase() {
         ordersContainer.removeAllViews();
 
         firebaseDatabase.getReference("orders")
-                .addListenerForSingleValueEvent(new ValueEventListener() {
+                .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot snapshot) {
                         ordersContainer.removeAllViews();
