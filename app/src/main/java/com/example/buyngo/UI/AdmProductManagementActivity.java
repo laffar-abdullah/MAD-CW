@@ -61,7 +61,7 @@ public class AdmProductManagementActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.adm_product_management);
 
-        db = FirebaseDatabase.getInstance().getReference();
+        db = FirebaseDatabase.getInstance("https://buyngo-5b43e-default-rtdb.firebaseio.com/").getReference();
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -92,7 +92,7 @@ public class AdmProductManagementActivity extends AppCompatActivity {
             ScanOptions options = new ScanOptions();
             options.setPrompt("Scan barcode to find product");
             options.setBeepEnabled(true);
-            options.setOrientationLocked(true); // ✅ Fixed: locks to portrait, prevents scrambled preview
+            options.setOrientationLocked(true);
             barcodeLauncher.launch(options);
         });
 

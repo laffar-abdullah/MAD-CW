@@ -12,7 +12,12 @@ import androidx.appcompat.widget.Toolbar;
 
 import com.example.buyngo.R;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class CusFeedbackActivity extends AppCompatActivity {
+
+    private static final String DB_URL = "https://buyngo-5b43e-default-rtdb.firebaseio.com/";
 
     private RatingBar ratingBar;
     private TextView ratingLabel;

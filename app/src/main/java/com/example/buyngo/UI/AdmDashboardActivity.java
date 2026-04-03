@@ -31,34 +31,67 @@ public class AdmDashboardActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.adm_dashboard);
 
-        // Manage Products
-        findViewById(R.id.btnManageProducts).setOnClickListener(v -> {
-            // startActivity(new Intent(this, AdmProductManagementActivity.class));
-        });
+        db    = FirebaseDatabase.getInstance("https://buyngo-5b43e-default-rtdb.firebaseio.com/").getReference();
+        mAuth = FirebaseAuth.getInstance();
 
-        // Manage Orders
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        tvTotalProducts = findViewById(R.id.tvTotalProducts);
+        tvTotalOrders   = findViewById(R.id.tvTotalOrders);
+        tvPendingOrders = findViewById(R.id.tvPendingOrders);
+
+        findViewById(R.id.btnManageProducts).setOnClickListener(v ->
+                startActivity(new Intent(this, AdmProductManagementActivity.class)));
+
         findViewById(R.id.btnManageOrders).setOnClickListener(v ->
                 startActivity(new Intent(this, AdmOrderManagementActivity.class)));
 
-        // Register Rider
         findViewById(R.id.btnRegisterRider).setOnClickListener(v ->
                 startActivity(new Intent(this, AdmRegisterRiderActivity.class)));
 
-        // Assign Rider
-        findViewById(R.id.btnAssignRider).setOnClickListener(v -> {
-            // startActivity(new Intent(this, AdmAssignRiderActivity.class));
+        findViewById(R.id.btnAssignRider).setOnClickListener(v ->
+                startActivity(new Intent(this, AdmAssignRiderActivity.class)));
+
+        findViewById(R.id.btnViewFeedbacks).setOnClickListener(v ->
+                startActivity(new Intent(this, AdmViewFeedbackActivity.class)));
+
+        findViewById(R.id.btnLogout).setOnClickListener(v -> showLogoutDialog());
+
+        loadDashboardStats();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadDashboardStats();
+    }
+
+    /** Fetches product count, total orders, and pending orders from Realtime Database. */
+    private void loadDashboardStats() {
+
+        // Total products
+        db.child("products").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (tvTotalProducts != null)
+                    tvTotalProducts.setText(String.valueOf(snapshot.getChildrenCount()));
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(AdmDashboardActivity.this, "Failed to load product stats", Toast.LENGTH_SHORT).show();
+            }
         });
 
-        // View Feedbacks
-        findViewById(R.id.btnViewFeedbacks).setOnClickListener(v -> {
-            // startActivity(new Intent(this, AdmViewFeedbacksActivity.class));
-        });
-
-        // Logout
-        findViewById(R.id.btnLogout).setOnClickListener(v -> {
-            Intent intent = new Intent(this, AuthWelcomeActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(intent);
+        // Total orders
+        db.child("orders").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (tvTotalOrders != null)
+                    tvTotalOrders.setText(String.valueOf(snapshot.getChildrenCount()));
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) { }
         });
 
         // Pending orders (status == "Ordered")
