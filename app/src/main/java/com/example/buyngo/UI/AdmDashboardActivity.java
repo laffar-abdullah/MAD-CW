@@ -44,54 +44,29 @@ public class AdmDashboardActivity extends AppCompatActivity {
         findViewById(R.id.btnManageProducts).setOnClickListener(v ->
                 startActivity(new Intent(this, AdmProductManagementActivity.class)));
 
+        // Manage Orders
         findViewById(R.id.btnManageOrders).setOnClickListener(v ->
                 startActivity(new Intent(this, AdmOrderManagementActivity.class)));
 
+        // Register Rider
         findViewById(R.id.btnRegisterRider).setOnClickListener(v ->
                 startActivity(new Intent(this, AdmRegisterRiderActivity.class)));
 
-        findViewById(R.id.btnAssignRider).setOnClickListener(v ->
-                startActivity(new Intent(this, AdmAssignRiderActivity.class)));
-
-        findViewById(R.id.btnViewFeedbacks).setOnClickListener(v ->
-                startActivity(new Intent(this, AdmViewFeedbackActivity.class)));
-
-        findViewById(R.id.btnLogout).setOnClickListener(v -> showLogoutDialog());
-
-        loadDashboardStats();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        loadDashboardStats();
-    }
-
-    /** Fetches product count, total orders, and pending orders from Realtime Database. */
-    private void loadDashboardStats() {
-
-        // Total products
-        db.child("products").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (tvTotalProducts != null)
-                    tvTotalProducts.setText(String.valueOf(snapshot.getChildrenCount()));
-            }
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(AdmDashboardActivity.this, "Failed to load product stats", Toast.LENGTH_SHORT).show();
-            }
+        // Assign Rider
+        findViewById(R.id.btnAssignRider).setOnClickListener(v -> {
+            // startActivity(new Intent(this, AdmAssignRiderActivity.class));
         });
 
-        // Total orders
-        db.child("orders").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (tvTotalOrders != null)
-                    tvTotalOrders.setText(String.valueOf(snapshot.getChildrenCount()));
-            }
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) { }
+        // View Feedbacks
+        findViewById(R.id.btnViewFeedbacks).setOnClickListener(v -> {
+            // startActivity(new Intent(this, AdmViewFeedbacksActivity.class));
+        });
+
+        // Logout
+        findViewById(R.id.btnLogout).setOnClickListener(v -> {
+            Intent intent = new Intent(this, AuthWelcomeActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
         });
 
         // Pending orders (status == "Ordered")
