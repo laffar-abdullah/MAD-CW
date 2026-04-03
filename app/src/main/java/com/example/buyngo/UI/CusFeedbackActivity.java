@@ -10,6 +10,7 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
@@ -37,10 +38,16 @@ public class CusFeedbackActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setNavigationOnClickListener(v -> {
-            if (!isMandatory) {
-                finish();
+            if (isMandatory) {
+                // Show confirmation dialog for back button on mandatory feedback
+                new AlertDialog.Builder(this)
+                        .setTitle("Skip Feedback?")
+                        .setMessage("Are you sure you want to skip providing feedback? Your feedback helps us improve the service.")
+                        .setPositiveButton("Skip", (dialog, which) -> finish())
+                        .setNegativeButton("Add Feedback", (dialog, which) -> dialog.dismiss())
+                        .show();
             } else {
-                Toast.makeText(this, "Please provide feedback before proceeding", Toast.LENGTH_SHORT).show();
+                finish();
             }
         });
 
@@ -58,18 +65,20 @@ public class CusFeedbackActivity extends AppCompatActivity {
         
         // Show/hide skip button based on mandatory flag
         Button skipButton = findViewById(R.id.skipReview);
-        if (isMandatory) {
-            skipButton.setVisibility(View.GONE);
-        } else {
-            skipButton.setVisibility(View.VISIBLE);
-        }
+        skipButton.setVisibility(View.VISIBLE);
         
         // Set skip button click listener
         skipButton.setOnClickListener(v -> {
-            if (!isMandatory) {
-                navigateHome();
+            if (isMandatory) {
+                // Show confirmation dialog when skipping mandatory feedback
+                new AlertDialog.Builder(this)
+                        .setTitle("Skip Feedback?")
+                        .setMessage("Are you sure you want to skip providing feedback? Your feedback helps us improve the service.")
+                        .setPositiveButton("Skip", (dialog, which) -> navigateHome())
+                        .setNegativeButton("Add Feedback", (dialog, which) -> dialog.dismiss())
+                        .show();
             } else {
-                Toast.makeText(this, "Please provide feedback before proceeding", Toast.LENGTH_SHORT).show();
+                navigateHome();
             }
         });
 
