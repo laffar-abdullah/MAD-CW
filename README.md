@@ -1,9 +1,13 @@
+# Grocery App
 
 ## About
-This project is a mobile app Buy N Go  built to provide a simple and focused user experience.
+This project is a grocery application designed to make ordering, managing, and delivering groceries easier through a simple mobile experience.
 
 ## Features
-- Clean and responsive interface
-- Core app functionality tailored for everyday use
-- Organized screens and smooth navigation
-- Basic support for app data and user actions
+- User sign up and login
+- Browse grocery items and categories
+- Add items to cart and place orders
+- Track orders and delivery status
+- Admin panel for managing products, orders, and users
+- Rider management for assigning and tracking deliveries
+- Search and filter grocery items
