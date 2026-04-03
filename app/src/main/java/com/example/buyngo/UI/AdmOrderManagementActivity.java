@@ -161,12 +161,7 @@ public class AdmOrderManagementActivity extends AppCompatActivity {
 
 
     private void openAssignRider(String orderId, String customerName, String customerAddress) {
-        Intent intent = new Intent(this, AdmAssignRiderActivity.class);
-        intent.putExtra(EXTRA_ORDER_ID, orderId);
-        intent.putExtra(EXTRA_CUSTOMER_NAME, customerName);
-        intent.putExtra(EXTRA_CUSTOMER_ADDRESS, customerAddress);
-        // Backward-compat key in case other paths still read this.
-        intent.putExtra("orderId", orderId);
+        Intent intent = new Intent(this, AdmViewFeedbackActivity.class);
         startActivity(intent);
     }
 }

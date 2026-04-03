@@ -433,31 +433,6 @@ final class FirebaseRiderRepository {
                         e.getMessage() == null ? "Failed to load delivered order" : e.getMessage()));
     }
 
-    static void ensureDefaultOrderSeeded(VoidCallback callback) {
-        DatabaseReference orderRef = db().child(NODE_ORDERS).child("BNG-001");
-        orderRef.get()
-                .addOnSuccessListener(snapshot -> {
-                    if (snapshot.exists()) {
-                        callback.onSuccess();
-                        return;
-                    }
-                    RiderOrder order = new RiderOrder();
-                    order.orderId = "BNG-001";
-                    order.customerName = "Alice Johnson";
-                    order.customerAddress = "12 Main Street, Springfield";
-                    order.status = OrderStatusStore.DEFAULT_STATUS;
-                    order.assignedRiderEmail = "";
-                    order.updatedAt = System.currentTimeMillis();
-                    order.deliveredAt = 0L;
-                    orderRef.setValue(order)
-                            .addOnSuccessListener(unused -> callback.onSuccess())
-                            .addOnFailureListener(e -> callback.onError(
-                                    e.getMessage() == null ? "Failed to seed order" : e.getMessage()));
-                })
-                .addOnFailureListener(e -> callback.onError(
-                        e.getMessage() == null ? "Failed to seed order" : e.getMessage()));
-    }
-
     private static boolean isValidTransition(String current, String next) {
         if (current == null || current.trim().isEmpty()) {
             return OrderStatusStore.DEFAULT_STATUS.equals(next)

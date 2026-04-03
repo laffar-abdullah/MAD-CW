@@ -79,6 +79,7 @@ public class CusTrackingActivity extends AppCompatActivity {
                         }
 
                         Log.d(TAG, "Total orders in Firebase: " + snapshot.getChildrenCount());
+                        Log.d(TAG, "Current customer ID: " + customerId);
                         boolean foundOrder = false;
 
                         for (DataSnapshot orderSnapshot : snapshot.getChildren()) {
@@ -86,12 +87,19 @@ public class CusTrackingActivity extends AppCompatActivity {
                                 Order order = orderSnapshot.getValue(Order.class);
 
                                 if (order != null) {
-                                    Log.d(TAG, "Found order: " + order.getOrderId() + ", customerId: " + order.getCustomerId() + ", status: " + order.getStatus());
-                                    if (customerId.equals(order.getCustomerId())) {
+                                    String orderCustomerId = order.getCustomerId();
+                                    Log.d(TAG, "Found order: " + order.getOrderId() + ", customerId: " + orderCustomerId + ", status: " + order.getStatus());
+                                    
+                                    // Match if customerId is set and equals current user, or if no customerId is set (legacy orders)
+                                    if (orderCustomerId != null && customerId.equals(orderCustomerId)) {
                                         foundOrder = true;
-                                        Log.d(TAG, "Displaying order: " + order.getOrderId());
+                                        Log.d(TAG, "✓ Displaying order: " + order.getOrderId());
                                         displayOrderStatus(order);
+                                    } else if (orderCustomerId == null || orderCustomerId.isEmpty()) {
+                                        Log.d(TAG, "⚠ Order has no customerId: " + order.getOrderId());
                                     }
+                                } else {
+                                    Log.w(TAG, "Order is null from snapshot");
                                 }
                             } catch (Exception e) {
                                 Log.e(TAG, "Error loading order", e);

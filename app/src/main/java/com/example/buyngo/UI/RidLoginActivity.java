@@ -44,18 +44,6 @@ public class RidLoginActivity extends AppCompatActivity {
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
 
         riderLoginButton.setOnClickListener(v -> handleLogin());
-
-        FirebaseRiderRepository.ensureDefaultOrderSeeded(new FirebaseRiderRepository.VoidCallback() {
-            @Override
-            public void onSuccess() {
-                // No-op: seeded data just guarantees assign flow has an order.
-            }
-
-            @Override
-            public void onError(String message) {
-                Toast.makeText(RidLoginActivity.this, message, Toast.LENGTH_SHORT).show();
-            }
-        });
     }
 
     /** Validates the form then delegates authentication to RiderSessionStore. */
