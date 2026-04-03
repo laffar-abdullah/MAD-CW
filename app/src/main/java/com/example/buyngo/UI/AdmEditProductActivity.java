@@ -1,44 +1,84 @@
 package com.example.buyngo.UI;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.FileProvider;
 
+import com.bumptech.glide.Glide;
 import com.example.buyngo.R;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
 
-import androidx.activity.result.ActivityResultLauncher;
-
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public class AdmEditProductActivity extends AppCompatActivity {
 
+    private static final String DB_URL = "https://buyngo-5b43e-default-rtdb.firebaseio.com/";
+
     private EditText etName, etPrice, etCategory, etDescription, etStock, etBarcode;
+    private ImageView ivProductImage;
     private ProgressBar progressBar;
     private DatabaseReference db;
+    private StorageReference storageRef;
     private String productId;
+    private String existingImageUrl = ""; // keeps current image if user doesn't change it
 
-    // ZXing barcode scanner launcher
+    private Uri selectedImageUri = null;
+    private Uri cameraImageUri   = null;
+
+    // ── Barcode scanner ──────────────────────────────────────────────────────
     private final ActivityResultLauncher<ScanOptions> barcodeLauncher =
             registerForActivityResult(new ScanContract(), result -> {
                 if (result.getContents() != null) {
                     etBarcode.setText(result.getContents());
-                    Toast.makeText(this, "Barcode scanned: " + result.getContents(),
+                    Toast.makeText(this, "Barcode: " + result.getContents(),
                             Toast.LENGTH_SHORT).show();
+                }
+            });
+
+    // ── Gallery picker ───────────────────────────────────────────────────────
+    private final ActivityResultLauncher<Intent> galleryLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    selectedImageUri = result.getData().getData();
+                    Glide.with(this).load(selectedImageUri).centerCrop().into(ivProductImage);
+                }
+            });
+
+    // ── Camera capture ───────────────────────────────────────────────────────
+    private final ActivityResultLauncher<Uri> cameraLauncher =
+            registerForActivityResult(new ActivityResultContracts.TakePicture(), success -> {
+                if (success && cameraImageUri != null) {
+                    selectedImageUri = cameraImageUri;
+                    Glide.with(this).load(selectedImageUri).centerCrop().into(ivProductImage);
                 }
             });
 
@@ -47,7 +87,8 @@ public class AdmEditProductActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.adm_edit_product);
 
-        db = FirebaseDatabase.getInstance("https://buyngo-5b43e-default-rtdb.firebaseio.com/").getReference();
+        db         = FirebaseDatabase.getInstance(DB_URL).getReference();
+        storageRef = FirebaseStorage.getInstance().getReference("product_images");
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -56,15 +97,15 @@ public class AdmEditProductActivity extends AppCompatActivity {
         toolbar.setNavigationOnClickListener(v -> finish());
 
         // Bind views
-        etName        = findViewById(R.id.etProductName);
-        etPrice       = findViewById(R.id.etProductPrice);
-        etCategory    = findViewById(R.id.etProductCategory);
-        etDescription = findViewById(R.id.etProductDescription);
-        etStock       = findViewById(R.id.etProductStock);
-        etBarcode     = findViewById(R.id.etProductBarcode);
-        progressBar   = findViewById(R.id.progressBar);
+        etName         = findViewById(R.id.etProductName);
+        etPrice        = findViewById(R.id.etProductPrice);
+        etCategory     = findViewById(R.id.etProductCategory);
+        etDescription  = findViewById(R.id.etProductDescription);
+        etStock        = findViewById(R.id.etProductStock);
+        etBarcode      = findViewById(R.id.etProductBarcode);
+        progressBar    = findViewById(R.id.progressBar);
+        ivProductImage = findViewById(R.id.ivProductImage);
 
-        // Get product ID passed from AdmProductManagementActivity
         productId = getIntent().getStringExtra("productId");
         if (productId == null || productId.isEmpty()) {
             Toast.makeText(this, "Invalid product ID", Toast.LENGTH_SHORT).show();
@@ -72,7 +113,10 @@ public class AdmEditProductActivity extends AppCompatActivity {
             return;
         }
 
-        // Scan barcode button
+        // Image picker button
+        findViewById(R.id.btnPickImage).setOnClickListener(v -> showImagePickerDialog());
+
+        // Barcode scanner button
         findViewById(R.id.btnScanBarcode).setOnClickListener(v -> {
             ScanOptions options = new ScanOptions();
             options.setPrompt("Scan new barcode for product");
@@ -84,11 +128,44 @@ public class AdmEditProductActivity extends AppCompatActivity {
         // Update button
         findViewById(R.id.btnUpdateProductSubmit).setOnClickListener(v -> updateProduct());
 
-        // Load existing product data into the form
         loadProductData();
     }
 
-    /** Fetches the product from Firebase and pre-fills all fields. */
+    private void showImagePickerDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("Change Image")
+                .setItems(new String[]{"Take Photo", "Choose from Gallery"}, (dialog, which) -> {
+                    if (which == 0) openCamera();
+                    else openGallery();
+                })
+                .show();
+    }
+
+    private void openCamera() {
+        try {
+            File photoFile = createImageFile();
+            cameraImageUri = FileProvider.getUriForFile(this,
+                    getPackageName() + ".provider", photoFile);
+            cameraLauncher.launch(cameraImageUri);
+        } catch (IOException e) {
+            Toast.makeText(this, "Failed to create image file", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void openGallery() {
+        Intent intent = new Intent(Intent.ACTION_PICK,
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        galleryLauncher.launch(intent);
+    }
+
+    private File createImageFile() throws IOException {
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
+                .format(new Date());
+        File storageDir = getExternalFilesDir(null);
+        return File.createTempFile("IMG_" + timeStamp, ".jpg", storageDir);
+    }
+
+    /** Loads existing product data from Firebase and fills the form. */
     private void loadProductData() {
         progressBar.setVisibility(View.VISIBLE);
 
@@ -105,11 +182,11 @@ public class AdmEditProductActivity extends AppCompatActivity {
                             return;
                         }
 
-                        // Pre-fill each field if the value exists
                         String name        = snapshot.child("name").getValue(String.class);
                         String category    = snapshot.child("category").getValue(String.class);
                         String description = snapshot.child("description").getValue(String.class);
                         String barcode     = snapshot.child("barcode").getValue(String.class);
+                        String imageUrl    = snapshot.child("imageUrl").getValue(String.class);
                         Object price       = snapshot.child("price").getValue();
                         Object stock       = snapshot.child("stock").getValue();
 
@@ -120,6 +197,16 @@ public class AdmEditProductActivity extends AppCompatActivity {
                         if (price       != null) etPrice.setText(String.valueOf(price));
                         if (stock       != null) etStock.setText(
                                 String.valueOf(((Long) stock).intValue()));
+
+                        // Load existing product image
+                        if (imageUrl != null && !imageUrl.isEmpty()) {
+                            existingImageUrl = imageUrl;
+                            Glide.with(AdmEditProductActivity.this)
+                                    .load(imageUrl)
+                                    .placeholder(R.drawable.ic_launcher_foreground)
+                                    .centerCrop()
+                                    .into(ivProductImage);
+                        }
                     }
 
                     @Override
@@ -132,7 +219,6 @@ public class AdmEditProductActivity extends AppCompatActivity {
                 });
     }
 
-    /** Validates inputs then writes the updated fields to Firebase. */
     private void updateProduct() {
         String name        = etName.getText().toString().trim();
         String priceStr    = etPrice.getText().toString().trim();
@@ -141,26 +227,21 @@ public class AdmEditProductActivity extends AppCompatActivity {
         String stockStr    = etStock.getText().toString().trim();
         String barcode     = etBarcode.getText().toString().trim();
 
-        // Validation
         if (TextUtils.isEmpty(name)) {
             etName.setError("Product name is required");
-            etName.requestFocus();
-            return;
+            etName.requestFocus(); return;
         }
         if (TextUtils.isEmpty(priceStr)) {
             etPrice.setError("Price is required");
-            etPrice.requestFocus();
-            return;
+            etPrice.requestFocus(); return;
         }
         if (TextUtils.isEmpty(category)) {
             etCategory.setError("Category is required");
-            etCategory.requestFocus();
-            return;
+            etCategory.requestFocus(); return;
         }
         if (TextUtils.isEmpty(stockStr)) {
             etStock.setError("Stock quantity is required");
-            etStock.requestFocus();
-            return;
+            etStock.requestFocus(); return;
         }
 
         double price;
@@ -173,7 +254,40 @@ public class AdmEditProductActivity extends AppCompatActivity {
             return;
         }
 
-        // Build update map
+        progressBar.setVisibility(View.VISIBLE);
+        findViewById(R.id.btnUpdateProductSubmit).setEnabled(false);
+
+        // If a new image was selected, upload it first
+        if (selectedImageUri != null) {
+            uploadImageThenUpdate(name, price, category, description, stock, barcode);
+        } else {
+            // Keep the existing image URL
+            saveUpdatesToDatabase(name, price, category, description,
+                    stock, barcode, existingImageUrl);
+        }
+    }
+
+    private void uploadImageThenUpdate(String name, double price, String category,
+                                       String description, int stock, String barcode) {
+        String fileName = "product_" + System.currentTimeMillis() + ".jpg";
+        StorageReference imageRef = storageRef.child(fileName);
+
+        imageRef.putFile(selectedImageUri)
+                .addOnSuccessListener(taskSnapshot ->
+                        imageRef.getDownloadUrl().addOnSuccessListener(uri ->
+                                saveUpdatesToDatabase(name, price, category, description,
+                                        stock, barcode, uri.toString())))
+                .addOnFailureListener(e -> {
+                    progressBar.setVisibility(View.GONE);
+                    findViewById(R.id.btnUpdateProductSubmit).setEnabled(true);
+                    Toast.makeText(this, "Image upload failed: " + e.getMessage(),
+                            Toast.LENGTH_LONG).show();
+                });
+    }
+
+    private void saveUpdatesToDatabase(String name, double price, String category,
+                                       String description, int stock, String barcode,
+                                       String imageUrl) {
         Map<String, Object> updates = new HashMap<>();
         updates.put("name",        name);
         updates.put("price",       price);
@@ -181,10 +295,7 @@ public class AdmEditProductActivity extends AppCompatActivity {
         updates.put("description", description);
         updates.put("stock",       stock);
         updates.put("barcode",     barcode);
-
-        // Show loading
-        progressBar.setVisibility(View.VISIBLE);
-        findViewById(R.id.btnUpdateProductSubmit).setEnabled(false);
+        updates.put("imageUrl",    imageUrl);
 
         db.child("products").child(productId).updateChildren(updates)
                 .addOnSuccessListener(unused -> {
