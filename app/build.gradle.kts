@@ -47,24 +47,22 @@ dependencies {
     implementation(libs.constraintlayout)
     implementation(libs.recyclerview)
     implementation(libs.cardview)
+    implementation(libs.gson)
 
-    // Firebase BOM — manages all Firebase versions together
-    implementation(platform("com.google.firebase:firebase-bom:33.1.0"))
-    implementation("com.google.firebase:firebase-database")   // Realtime Database (AdmViewFeedbackActivity)
-    implementation("com.google.firebase:firebase-firestore")  // Firestore (Admin product/order screens)
+    // Firebase BOM
+    implementation(platform("com.google.firebase:firebase-bom:34.2.0"))
+    implementation("com.google.firebase:firebase-database")
+    implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.firebase:firebase-auth")
-    implementation("com.google.firebase:firebase-storage")
+    implementation("com.google.firebase:firebase-storage")   // ✅ Image uploads
 
     // ZXing barcode scanner
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")
     implementation("com.google.zxing:core:3.5.3")
 
-    // Glide for loading product images
+    // Glide — loads images from Firebase Storage URLs
     implementation("com.github.bumptech.glide:glide:4.16.0")
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
-
-    // Gson for JSON serialization (cart storage)
-    implementation("com.google.code.gson:gson:2.10.1")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
