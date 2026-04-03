@@ -33,27 +33,45 @@ public class CusFeedbackActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.cus_feedback);
+        try {
+            setContentView(R.layout.cus_feedback);
+            Log.d(TAG, "Layout inflated successfully");
+        } catch (Exception e) {
+            Log.e(TAG, "Error inflating layout: " + e.getMessage());
+            finish();
+            return;
+        }
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        toolbar.setNavigationOnClickListener(v -> {
-            if (isMandatory) {
-                // Show confirmation dialog for back button on mandatory feedback
-                new AlertDialog.Builder(this)
-                        .setTitle("Skip Feedback?")
-                        .setMessage("Are you sure you want to skip providing feedback? Your feedback helps us improve the service.")
-                        .setPositiveButton("Skip", (dialog, which) -> finish())
-                        .setNegativeButton("Add Feedback", (dialog, which) -> dialog.dismiss())
-                        .show();
-            } else {
-                finish();
-            }
-        });
+        try {
+            Toolbar toolbar = findViewById(R.id.toolbar);
+            setSupportActionBar(toolbar);
+            toolbar.setNavigationOnClickListener(v -> {
+                if (isMandatory) {
+                    // Show confirmation dialog for back button on mandatory feedback
+                    new AlertDialog.Builder(this)
+                            .setTitle("Skip Feedback?")
+                            .setMessage("Are you sure you want to skip providing feedback? Your feedback helps us improve the service.")
+                            .setPositiveButton("Skip", (dialog, which) -> finish())
+                            .setNegativeButton("Add Feedback", (dialog, which) -> dialog.dismiss())
+                            .show();
+                } else {
+                    finish();
+                }
+            });
+        } catch (Exception e) {
+            Log.e(TAG, "Error setting up toolbar: " + e.getMessage());
+        }
 
-        ratingBar = findViewById(R.id.ratingBar);
-        ratingLabel = findViewById(R.id.ratingLabel);
-        reviewComment = findViewById(R.id.reviewComment);
+        try {
+            ratingBar = findViewById(R.id.ratingBar);
+            ratingLabel = findViewById(R.id.ratingLabel);
+            reviewComment = findViewById(R.id.reviewComment);
+            Log.d(TAG, "Views found - ratingBar: " + (ratingBar != null) + ", ratingLabel: " + (ratingLabel != null) + ", reviewComment: " + (reviewComment != null));
+        } catch (Exception e) {
+            Log.e(TAG, "Error finding views: " + e.getMessage());
+            finish();
+            return;
+        }
         
         // Get orderId from intent
         orderId = getIntent().getStringExtra("orderId");
@@ -68,114 +86,126 @@ public class CusFeedbackActivity extends AppCompatActivity {
             ratingLabel.setText("Select an order from 'Orders' tab to add a review");
             findViewById(R.id.submitFeedbackButton).setEnabled(false);
             findViewById(R.id.submitFeedbackButton).setAlpha(0.5f);
-            Button skipButton = findViewById(R.id.skipReview);
-            if (skipButton != null) {
-                skipButton.setVisibility(View.GONE);
+            TextView skipTextView = findViewById(R.id.skipReview);
+            if (skipTextView != null) {
+                skipTextView.setVisibility(View.GONE);
             }
             return;
         }
         
         // Show/hide skip button based on mandatory flag
-        Button skipButton = findViewById(R.id.skipReview);
-        if (skipButton != null && ratingBar != null && reviewComment != null) {
-            skipButton.setVisibility(View.VISIBLE);
-            
-            // Set skip button click listener
-            skipButton.setOnClickListener(v -> {
-                if (isMandatory) {
-                    // Show confirmation dialog when skipping mandatory feedback
-                    new AlertDialog.Builder(this)
-                            .setTitle("Skip Review?")
-                            .setMessage("Are you sure you want to skip providing a review? Your feedback helps us improve the service.")
-                            .setPositiveButton("Skip", (dialog, which) -> {
-                                updateOrderAsReviewed(orderId);
-                                navigateHome();
-                            })
-                            .setNegativeButton("Add Review", (dialog, which) -> dialog.dismiss())
-                            .show();
-                } else {
-                    navigateHome();
-                }
-            });
+        try {
+            TextView skipTextView = findViewById(R.id.skipReview);
+            if (skipTextView != null && ratingBar != null && reviewComment != null) {
+                skipTextView.setVisibility(View.VISIBLE);
+                
+                // Set skip button click listener
+                skipTextView.setOnClickListener(v -> {
+                    if (isMandatory) {
+                        // Show confirmation dialog when skipping mandatory feedback
+                        new AlertDialog.Builder(this)
+                                .setTitle("Skip Review?")
+                                .setMessage("Are you sure you want to skip providing a review? Your feedback helps us improve the service.")
+                                .setPositiveButton("Skip", (dialog, which) -> {
+                                    updateOrderAsReviewed(orderId);
+                                    navigateHome();
+                                })
+                                .setNegativeButton("Add Review", (dialog, which) -> dialog.dismiss())
+                                .show();
+                    } else {
+                        navigateHome();
+                    }
+                });
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error setting up skip button: " + e.getMessage());
         }
 
-        if (ratingBar != null && ratingLabel != null) {
-            ratingBar.setOnRatingBarChangeListener((bar, rating, fromUser) -> {
-                if (rating <= 0f) {
-                    ratingLabel.setText("Tap a star to rate");
+        try {
+            if (ratingBar != null && ratingLabel != null) {
+                ratingBar.setOnRatingBarChangeListener((bar, rating, fromUser) -> {
+                    if (rating <= 0f) {
+                        ratingLabel.setText("Tap a star to rate");
+                        return;
+                    }
+                    ratingLabel.setText((int) rating + " / 5");
+                });
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error setting up rating bar listener: " + e.getMessage());
+        }
+
+        try {
+            findViewById(R.id.submitFeedbackButton).setOnClickListener(v -> {
+                if (ratingBar == null || reviewComment == null) {
+                    Toast.makeText(this, "Form not loaded properly", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                ratingLabel.setText((int) rating + " / 5");
-            });
-        }
+                
+                int rating = Math.round(ratingBar.getRating());
+                String comment = reviewComment.getText().toString().trim();
+                if (rating < 1) {
+                    Toast.makeText(this, "Please select a star rating", Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
-        findViewById(R.id.submitFeedbackButton).setOnClickListener(v -> {
-            if (ratingBar == null || reviewComment == null) {
-                Toast.makeText(this, "Form not loaded properly", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            
-            int rating = Math.round(ratingBar.getRating());
-            String comment = reviewComment.getText().toString().trim();
-            if (rating < 1) {
-                Toast.makeText(this, "Please select a star rating", Toast.LENGTH_SHORT).show();
-                return;
-            }
+                // Use the orderId passed from intent
+                if (orderId == null || orderId.trim().isEmpty()) {
+                    Toast.makeText(CusFeedbackActivity.this,
+                            "Order ID not provided",
+                            Toast.LENGTH_SHORT).show();
+                    navigateHome();
+                    return;
+                }
 
-            // Use the orderId passed from intent
-            if (orderId == null || orderId.trim().isEmpty()) {
-                Toast.makeText(CusFeedbackActivity.this,
-                        "Order ID not provided",
-                        Toast.LENGTH_SHORT).show();
-                navigateHome();
-                return;
-            }
+                // Get the order to find rider email
+                FirebaseRiderRepository.getOrderById(orderId, 
+                        new FirebaseRiderRepository.ResultCallback<FirebaseRiderRepository.RiderOrder>() {
+                            @Override
+                            public void onSuccess(FirebaseRiderRepository.RiderOrder order) {
+                                if (order == null || order.assignedRiderEmail == null
+                                        || order.assignedRiderEmail.trim().isEmpty()) {
+                                    Toast.makeText(CusFeedbackActivity.this,
+                                            "No rider assigned to this order",
+                                            Toast.LENGTH_SHORT).show();
+                                    navigateHome();
+                                    return;
+                                }
 
-            // Get the order to find rider email
-            FirebaseRiderRepository.getOrderById(orderId, 
-                    new FirebaseRiderRepository.ResultCallback<FirebaseRiderRepository.RiderOrder>() {
-                        @Override
-                        public void onSuccess(FirebaseRiderRepository.RiderOrder order) {
-                            if (order == null || order.assignedRiderEmail == null
-                                    || order.assignedRiderEmail.trim().isEmpty()) {
-                                Toast.makeText(CusFeedbackActivity.this,
-                                        "No rider assigned to this order",
-                                        Toast.LENGTH_SHORT).show();
-                                navigateHome();
-                                return;
+                                FirebaseRiderRepository.addReview(
+                                        orderId,
+                                        order.assignedRiderEmail,
+                                        order.customerName == null ? "Customer" : order.customerName,
+                                        rating,
+                                        comment,
+                                        new FirebaseRiderRepository.VoidCallback() {
+                                            @Override
+                                            public void onSuccess() {
+                                                Toast.makeText(CusFeedbackActivity.this,
+                                                        "Thanks for your feedback!",
+                                                        Toast.LENGTH_SHORT).show();
+                                                updateOrderAsReviewed(orderId);
+                                                navigateHome();
+                                            }
+
+                                            @Override
+                                            public void onError(String message) {
+                                                Toast.makeText(CusFeedbackActivity.this,
+                                                        message,
+                                                        Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
                             }
 
-                            FirebaseRiderRepository.addReview(
-                                    orderId,
-                                    order.assignedRiderEmail,
-                                    order.customerName == null ? "Customer" : order.customerName,
-                                    rating,
-                                    comment,
-                                    new FirebaseRiderRepository.VoidCallback() {
-                                        @Override
-                                        public void onSuccess() {
-                                            Toast.makeText(CusFeedbackActivity.this,
-                                                    "Thanks for your feedback!",
-                                                    Toast.LENGTH_SHORT).show();
-                                            updateOrderAsReviewed(orderId);
-                                            navigateHome();
-                                        }
-
-                                        @Override
-                                        public void onError(String message) {
-                                            Toast.makeText(CusFeedbackActivity.this,
-                                                    message,
-                                                    Toast.LENGTH_SHORT).show();
-                                        }
-                                    });
-                        }
-
-                        @Override
-                        public void onError(String message) {
-                            Toast.makeText(CusFeedbackActivity.this, message, Toast.LENGTH_SHORT).show();
-                        }
-                    });
-        });
+                            @Override
+                            public void onError(String message) {
+                                Toast.makeText(CusFeedbackActivity.this, message, Toast.LENGTH_SHORT).show();
+                            }
+                        });
+            });
+        } catch (Exception e) {
+            Log.e(TAG, "Error setting up submit button: " + e.getMessage());
+        }
     }
 
     private void navigateHome() {
