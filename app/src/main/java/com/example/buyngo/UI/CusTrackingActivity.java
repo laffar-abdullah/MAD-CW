@@ -162,7 +162,7 @@ public class CusTrackingActivity extends AppCompatActivity {
 
         // Show rider details if order is confirmed and has a rider assigned
         if (order.getStatus() != null && (order.getStatus().equals("Confirmed") || order.getStatus().equals("Awaiting Pickup") || order.getStatus().equals("Delivered"))) {
-            if (order.getRiderId() != null && !order.getRiderId().isEmpty()) {
+            if (order.getRiderName() != null && !order.getRiderName().isEmpty()) {
                 TextView tvRiderLabel = new TextView(this);
                 tvRiderLabel.setText("Assigned Rider:");
                 tvRiderLabel.setTextSize(14);
@@ -172,11 +172,19 @@ public class CusTrackingActivity extends AppCompatActivity {
                 orderLayout.addView(tvRiderLabel);
 
                 TextView tvRider = new TextView(this);
-                tvRider.setText("Name: " + (order.getRiderName() != null ? order.getRiderName() : "Assigned"));
+                tvRider.setText("Name: " + order.getRiderName());
                 tvRider.setTextSize(13);
                 tvRider.setTextColor(getResources().getColor(R.color.text_light, null));
                 tvRider.setPadding(0, 4, 0, 0);
                 orderLayout.addView(tvRider);
+
+                // Show delivery status
+                TextView tvDeliveryStatus = new TextView(this);
+                tvDeliveryStatus.setText("Status: " + order.getStatus());
+                tvDeliveryStatus.setTextSize(13);
+                tvDeliveryStatus.setTextColor(getResources().getColor(R.color.primary_green, null));
+                tvDeliveryStatus.setPadding(0, 4, 0, 0);
+                orderLayout.addView(tvDeliveryStatus);
             }
         } else if (order.getStatus() != null && order.getStatus().equals("Pending")) {
             TextView tvPendingInfo = new TextView(this);
@@ -187,8 +195,8 @@ public class CusTrackingActivity extends AppCompatActivity {
             orderLayout.addView(tvPendingInfo);
         }
 
-        // Show "I have received" button for confirmed orders that are awaiting pickup or delivered
-        if (order.getStatus() != null && (order.getStatus().equals("Confirmed") || order.getStatus().equals("Awaiting Pickup") || order.getStatus().equals("Delivered"))) {
+        // Show "I have received" button ONLY when driver has marked order as Delivered
+        if (order.getStatus() != null && order.getStatus().equals("Delivered")) {
             if (!order.getStatus().equals("Received")) {
                 Button btnReceived = new Button(this);
                 btnReceived.setText("I have received the order");

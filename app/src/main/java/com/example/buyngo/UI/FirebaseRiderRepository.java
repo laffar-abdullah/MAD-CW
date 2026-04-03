@@ -268,8 +268,8 @@ final class FirebaseRiderRepository {
             DatabaseReference orderRef = db().child(NODE_ORDERS).child(orderId);
             final String finalRiderName = riderName;
             
-            // Update only rider-related fields
-            orderRef.child("riderId").setValue(riderEmail);
+            // Update only rider-related fields - use assignedRiderEmail for filtering
+            orderRef.child("assignedRiderEmail").setValue(riderEmail);
             orderRef.child("riderName").setValue(finalRiderName)
                     .addOnSuccessListener(unused -> callback.onSuccess())
                     .addOnFailureListener(e -> callback.onError(
