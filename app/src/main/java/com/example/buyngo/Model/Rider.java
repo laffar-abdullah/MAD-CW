@@ -6,6 +6,7 @@ public class Rider {
     private String phoneNumber;
     private String email;
     private String status; // Available, Busy, Offline
+    private String profileImageUrl;
     private long registrationDate;
 
     // Default constructor required for Firebase
@@ -60,6 +61,14 @@ public class Rider {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getProfileImageUrl() {
+        return profileImageUrl;
+    }
+
+    public void setProfileImageUrl(String profileImageUrl) {
+        this.profileImageUrl = profileImageUrl;
     }
 
     public long getRegistrationDate() {

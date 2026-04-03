@@ -1,11 +1,22 @@
 package com.example.buyngo.UI;
 
+import android.app.AlertDialog;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.text.InputType;
+import android.text.TextUtils;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import com.bumptech.glide.Glide;
 import com.example.buyngo.R;
 
 /**
@@ -30,12 +41,17 @@ import com.example.buyngo.R;
  */
 public class RidProfileActivity extends AppCompatActivity {
 
+    private ActivityResultLauncher<String> profileImagePicker;
+
     private TextView txtProfileNameHeader;
     private TextView txtFullNameValue;
     private TextView txtEmailValue;
     private TextView txtPhoneValue;
     private TextView txtVehicleValue;
     private TextView txtTotalDeliveriesValue;
+    private ImageView imgProfilePicture;
+    private Button btnChangePhoto;
+    private Button btnChangePassword;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +66,10 @@ public class RidProfileActivity extends AppCompatActivity {
 
         setContentView(R.layout.rid_profile);
 
+        profileImagePicker = registerForActivityResult(
+            new ActivityResultContracts.GetContent(),
+            this::handleProfileImageSelected);
+
         // ── Toolbar ────────────────────────────────────────────────────────
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -63,6 +83,13 @@ public class RidProfileActivity extends AppCompatActivity {
         txtPhoneValue           = findViewById(R.id.txtPhoneValue);
         txtVehicleValue         = findViewById(R.id.txtVehicleValue);
         txtTotalDeliveriesValue = findViewById(R.id.txtTotalDeliveriesValue);
+//        imgProfilePicture       = findViewById(R.id.imgProfilePicture);
+//        btnChangePhoto          = findViewById(R.id.btnChangePhoto);
+        btnChangePassword       = findViewById(R.id.btnChangePass);
+
+        imgProfilePicture.setOnClickListener(v -> profileImagePicker.launch("image/*"));
+        btnChangePhoto.setOnClickListener(v -> profileImagePicker.launch("image/*"));
+        btnChangePassword.setOnClickListener(v -> showChangePasswordDialog());
 
         // ── Bottom navigation ──────────────────────────────────────────────
         findViewById(R.id.navDashboard).setOnClickListener(v ->
@@ -121,6 +148,16 @@ public class RidProfileActivity extends AppCompatActivity {
         txtPhoneValue.setText(profile.phone);
         txtVehicleValue.setText(profile.vehicle);
 
+        if (!TextUtils.isEmpty(profile.profileImageUrl)) {
+            Glide.with(this)
+                    .load(profile.profileImageUrl)
+                    .placeholder(R.mipmap.ic_launcher_round)
+                    .error(R.mipmap.ic_launcher_round)
+                    .into(imgProfilePicture);
+        } else {
+            imgProfilePicture.setImageResource(R.mipmap.ic_launcher_round);
+        }
+
         FirebaseRiderRepository.getDeliveredOrdersForRider(
                 profile.email,
                 new FirebaseRiderRepository.ResultCallback<java.util.List<FirebaseRiderRepository.RiderOrder>>() {
@@ -134,5 +171,118 @@ public class RidProfileActivity extends AppCompatActivity {
                         txtTotalDeliveriesValue.setText("0 Deliveries");
                     }
                 });
+    }
+
+    private void handleProfileImageSelected(Uri imageUri) {
+        if (imageUri == null) {
+            return;
+        }
+
+        RiderSessionStore.RiderProfile profile = RiderSessionStore.getCurrentRider(this);
+        if (profile == null) {
+            startActivity(new Intent(this, RidLoginActivity.class));
+            finish();
+            return;
+        }
+
+        FirebaseRiderRepository.updateRiderProfileImage(
+                profile.email,
+                imageUri,
+                new FirebaseRiderRepository.ResultCallback<FirebaseRiderRepository.RiderAccount>() {
+                    @Override
+                    public void onSuccess(FirebaseRiderRepository.RiderAccount account) {
+                        String vehicleDisplay = account.vehicle == null ? profile.vehicle : account.vehicle;
+                        if (account.vehicleNumber != null && !account.vehicleNumber.trim().isEmpty()) {
+                            vehicleDisplay = vehicleDisplay + " - " + account.vehicleNumber;
+                        }
+
+                        RiderSessionStore.saveSession(
+                                RidProfileActivity.this,
+                                new RiderSessionStore.RiderProfile(
+                                        account.name,
+                                        account.email,
+                                        account.phone,
+                                        vehicleDisplay,
+                                        account.profileImageUrl));
+                        bindRiderData();
+                        Toast.makeText(RidProfileActivity.this, "Profile picture updated", Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onError(String message) {
+                        Toast.makeText(RidProfileActivity.this, message, Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    private void showChangePasswordDialog() {
+        RiderSessionStore.RiderProfile profile = RiderSessionStore.getCurrentRider(this);
+        if (profile == null) {
+            startActivity(new Intent(this, RidLoginActivity.class));
+            finish();
+            return;
+        }
+
+        int padding = (int) (16 * getResources().getDisplayMetrics().density);
+        android.widget.LinearLayout container = new android.widget.LinearLayout(this);
+        container.setOrientation(android.widget.LinearLayout.VERTICAL);
+        container.setPadding(padding, padding, padding, padding);
+
+        EditText currentPassword = new EditText(this);
+        currentPassword.setHint("Current password");
+        currentPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        container.addView(currentPassword);
+
+        EditText newPassword = new EditText(this);
+        newPassword.setHint("New password");
+        newPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        container.addView(newPassword);
+
+        EditText confirmPassword = new EditText(this);
+        confirmPassword.setHint("Confirm new password");
+        confirmPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        container.addView(confirmPassword);
+
+        new AlertDialog.Builder(this)
+                .setTitle("Change Password")
+                .setView(container)
+                .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
+                .setPositiveButton("Save", (dialog, which) -> {
+                    String current = currentPassword.getText().toString().trim();
+                    String next = newPassword.getText().toString();
+                    String confirm = confirmPassword.getText().toString();
+
+                    if (TextUtils.isEmpty(current) || TextUtils.isEmpty(next) || TextUtils.isEmpty(confirm)) {
+                        Toast.makeText(this, "Fill in all password fields", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    if (!next.equals(confirm)) {
+                        Toast.makeText(this, "New passwords do not match", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    if (next.length() < 6) {
+                        Toast.makeText(this, "Password must be at least 6 characters", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    FirebaseRiderRepository.changeRiderPassword(
+                            profile.email,
+                            current,
+                            next,
+                            new FirebaseRiderRepository.ResultCallback<FirebaseRiderRepository.RiderAccount>() {
+                                @Override
+                                public void onSuccess(FirebaseRiderRepository.RiderAccount account) {
+                                    Toast.makeText(RidProfileActivity.this, "Password updated", Toast.LENGTH_SHORT).show();
+                                }
+
+                                @Override
+                                public void onError(String message) {
+                                    Toast.makeText(RidProfileActivity.this, message, Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                })
+                .show();
     }
 }
