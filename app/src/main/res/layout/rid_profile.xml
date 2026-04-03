@@ -124,71 +124,63 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- Bottom navigation -->
+            <!--
+                CHANGE: Logout and Change Password are now side by side in a
+                horizontal row.  Each button takes equal width via layout_weight="1".
+                Logout colour changed from #E67E00 (burnt orange) to #C0392B
+                (a deeper, more clearly "danger" red) so it reads as a
+                destructive action without clashing with the teal brand colour.
+                Change Password keeps a neutral dark slate tone to distinguish
+                it from the red logout.
+            -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:paddingStart="12dp"
-                android:paddingEnd="12dp"
-                android:paddingTop="8dp">
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:paddingBottom="28dp"
+                android:gravity="center_vertical">
+
+                <!-- Logout — deeper red to signal a destructive / exit action -->
                 <Button
-                    android:id="@+id/navDashboard"
+                    android:id="@+id/btnLogout"
                     android:layout_width="0dp"
-                    android:layout_height="48dp"
+                    android:layout_height="52dp"
                     android:layout_weight="1"
-                    android:layout_marginEnd="6dp"
-                    android:text="Dashboard"
+                    android:layout_marginEnd="8dp"
+                    android:background="#C0392B"
+                    android:text="Log Out"
                     android:textColor="@color/white"
-                    android:textSize="13sp"
-                    android:background="@color/primary_green" />
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <!-- Change Password — dark slate, clearly secondary to logout -->
                 <Button
-                    android:id="@+id/navHistory"
+                    android:id="@+id/btnChangePass"
                     android:layout_width="0dp"
-                    android:layout_height="48dp"
+                    android:layout_height="52dp"
                     android:layout_weight="1"
-                    android:layout_marginStart="6dp"
-                    android:text="History"
+                    android:layout_marginStart="8dp"
+                    android:background="#37474F"
+                    android:text="Change Password"
                     android:textColor="@color/white"
-                    android:textSize="13sp"
-                    android:background="@color/primary_green" />
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
             </LinearLayout>
-
-            <Button
-                android:id="@+id/navReviews"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginStart="12dp"
-                android:layout_marginEnd="12dp"
-                android:layout_marginTop="8dp"
-                android:text="Reviews"
-                android:textColor="@color/white"
-                android:textSize="13sp"
-                android:background="@color/primary_green" />
-
-            <!-- Logout button -->
-            <Button
-                android:id="@+id/btnLogout"
-                android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:layout_marginBottom="24dp"
-                android:text="Log Out"
-                android:textColor="@color/white"
-                android:textSize="15sp"
-                android:textStyle="bold"
-                android:background="#EF5350" />
 
         </LinearLayout>
     </ScrollView>
 
+    <!-- Bottom navigation bar -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="64dp"
         android:orientation="horizontal"
         android:background="@color/white"
         android:elevation="8dp">
+
         <LinearLayout
             android:id="@+id/navDashboard"
             android:layout_width="0dp"
@@ -206,6 +198,7 @@
                 android:text="Tasks"
                 android:textSize="10sp" />
         </LinearLayout>
+
         <LinearLayout
             android:id="@+id/navHistory"
             android:layout_width="0dp"
@@ -223,6 +216,7 @@
                 android:text="History"
                 android:textSize="10sp" />
         </LinearLayout>
+
         <LinearLayout
             android:id="@+id/navReviews"
             android:layout_width="0dp"
@@ -240,6 +234,7 @@
                 android:text="Reviews"
                 android:textSize="10sp" />
         </LinearLayout>
+
         <LinearLayout
             android:id="@+id/navProfile"
             android:layout_width="0dp"
@@ -259,6 +254,7 @@
                 android:textSize="10sp"
                 android:textColor="@color/primary_green" />
         </LinearLayout>
+
     </LinearLayout>
 
 </LinearLayout>

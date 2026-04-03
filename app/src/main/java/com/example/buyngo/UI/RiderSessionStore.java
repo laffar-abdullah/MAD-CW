@@ -4,17 +4,10 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 /**
- * RiderSessionStore — lightweight session manager for the delivery rider.
- *
- * Stores rider credentials in SharedPreferences so the app remembers who is
- * logged in across activity re-starts.  All methods are package-private so
- * only rider UI classes can call them.
- *
- * ── CHANGES FROM ORIGINAL ──────────────────────────────────────────────────
- *  • No logic changes were needed here — the session store was correct.
- *  • Added full Javadoc so every method's purpose is documented.
- * ───────────────────────────────────────────────────────────────────────────
- */
+   Stores rider credentials in SharedPreferences so the app remembers who is
+   logged in across activity re-starts.  All methods are package-private so
+   only rider UI classes can call them.
+*/
 final class RiderSessionStore {
 
     // SharedPreferences file used exclusively for rider session data.
@@ -26,38 +19,10 @@ final class RiderSessionStore {
     private static final String KEY_NAME         = "name";
     private static final String KEY_PHONE        = "phone";
     private static final String KEY_VEHICLE      = "vehicle";
+    private static final String KEY_PROFILE_IMAGE_URL = "profile_image_url";
 
     // Utility class — no instances.
     private RiderSessionStore() { }
-
-    // ── Authentication ──────────────────────────────────────────────────────
-
-    /**
-     * Validates the given email/password against the demo credential set.
-     *
-     * @return a populated {@link RiderProfile} on success, or {@code null}
-     *         when credentials do not match any known rider account.
-     *
-     * WHY: Keeps auth logic in one place; activities only call authenticate()
-     * and never hard-code credentials themselves.
-     */
-    static RiderProfile authenticate(String email, String password) {
-        if ("rider@buyngo.com".equalsIgnoreCase(email) && "rider123".equals(password)) {
-            return new RiderProfile(
-                    "James Rider",
-                    "rider@buyngo.com",
-                    "077 775 5668",
-                    "Motorbike - XYZ 4521");
-        }
-        if ("abc.rider@buyngo.com".equalsIgnoreCase(email) && "abc123".equals(password)) {
-            return new RiderProfile(
-                    "Alex Rider",
-                    "abc.rider@buyngo.com",
-                    "071 224 1188",
-                    "Scooter - BNG 1092");
-        }
-        return null;
-    }
 
     // ── Session persistence ─────────────────────────────────────────────────
 
@@ -73,6 +38,7 @@ final class RiderSessionStore {
                 .putString(KEY_NAME,    profile.name)
                 .putString(KEY_PHONE,   profile.phone)
                 .putString(KEY_VEHICLE, profile.vehicle)
+                .putString(KEY_PROFILE_IMAGE_URL, profile.profileImageUrl)
                 .apply();
     }
 
@@ -100,7 +66,8 @@ final class RiderSessionStore {
                 prefs.getString(KEY_NAME,    "James Rider"),
                 prefs.getString(KEY_EMAIL,   "rider@buyngo.com"),
                 prefs.getString(KEY_PHONE,   "077 775 5668"),
-                prefs.getString(KEY_VEHICLE, "Motorbike - XYZ 4521"));
+            prefs.getString(KEY_VEHICLE, "Motorbike - XYZ 4521"),
+            prefs.getString(KEY_PROFILE_IMAGE_URL, null));
     }
 
     /**
@@ -137,12 +104,14 @@ final class RiderSessionStore {
         final String email;
         final String phone;
         final String vehicle;
+        final String profileImageUrl;
 
-        RiderProfile(String name, String email, String phone, String vehicle) {
-            this.name    = name;
-            this.email   = email;
-            this.phone   = phone;
-            this.vehicle = vehicle;
+        RiderProfile(String name, String email, String phone, String vehicle, String profileImageUrl) {
+            this.name            = name;
+            this.email           = email;
+            this.phone           = phone;
+            this.vehicle         = vehicle;
+            this.profileImageUrl = profileImageUrl;
         }
     }
 }
