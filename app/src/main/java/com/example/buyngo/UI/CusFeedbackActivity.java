@@ -159,48 +159,50 @@ public class CusFeedbackActivity extends AppCompatActivity {
                 }
 
                 // Get the order to find rider email
-                FirebaseRiderRepository.getOrderById(orderId, 
-                        new FirebaseRiderRepository.ResultCallback<FirebaseRiderRepository.RiderOrder>() {
-                            @Override
-                            public void onSuccess(FirebaseRiderRepository.RiderOrder order) {
-                                if (order == null || order.assignedRiderEmail == null
-                                        || order.assignedRiderEmail.trim().isEmpty()) {
-                                    Toast.makeText(CusFeedbackActivity.this,
-                                            "No rider assigned to this order",
-                                            Toast.LENGTH_SHORT).show();
-                                    navigateHome();
-                                    return;
-                                }
-
-                                FirebaseRiderRepository.addReview(
-                                        orderId,
-                                        order.assignedRiderEmail,
-                                        order.customerName == null ? "Customer" : order.customerName,
-                                        rating,
-                                        comment,
-                                        new FirebaseRiderRepository.VoidCallback() {
-                                            @Override
-                                            public void onSuccess() {
-                                                Toast.makeText(CusFeedbackActivity.this,
-                                                        "Thanks for your feedback!",
-                                                        Toast.LENGTH_SHORT).show();
-                                                updateOrderAsReviewed(orderId);
-                                                navigateHome();
-                                            }
-
-                                            @Override
-                                            public void onError(String message) {
-                                                Toast.makeText(CusFeedbackActivity.this,
-                                                        message,
-                                                        Toast.LENGTH_SHORT).show();
-                                            }
-                                        });
+                com.google.firebase.database.FirebaseDatabase.getInstance("https://buyngo-5b43e-default-rtdb.firebaseio.com/")
+                        .getReference("orders")
+                        .child(orderId)
+                        .get()
+                        .addOnSuccessListener(snapshot -> {
+                            String riderEmail = snapshot.child("assignedRiderEmail").getValue(String.class);
+                            String customerName = snapshot.child("customerName").getValue(String.class);
+                            
+                            // Allow review submission even if rider email is not found (edge case)
+                            if (riderEmail == null || riderEmail.trim().isEmpty()) {
+                                riderEmail = "unknown@rider.com"; // Fallback email
                             }
+                            
+                            String finalCustomerName = customerName == null ? "Customer" : customerName;
+                            
+                            // Submit the review
+                            FirebaseRiderRepository.addReview(
+                                    orderId,
+                                    riderEmail,
+                                    finalCustomerName,
+                                    rating,
+                                    comment,
+                                    new FirebaseRiderRepository.VoidCallback() {
+                                        @Override
+                                        public void onSuccess() {
+                                            Toast.makeText(CusFeedbackActivity.this,
+                                                    "Thanks for your feedback!",
+                                                    Toast.LENGTH_SHORT).show();
+                                            updateOrderAsReviewed(orderId);
+                                            navigateHome();
+                                        }
 
-                            @Override
-                            public void onError(String message) {
-                                Toast.makeText(CusFeedbackActivity.this, message, Toast.LENGTH_SHORT).show();
-                            }
+                                        @Override
+                                        public void onError(String message) {
+                                            Toast.makeText(CusFeedbackActivity.this,
+                                                    message,
+                                                    Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                        })
+                        .addOnFailureListener(e -> {
+                            Toast.makeText(CusFeedbackActivity.this,
+                                    "Error loading order: " + e.getMessage(),
+                                    Toast.LENGTH_SHORT).show();
                         });
             });
         } catch (Exception e) {

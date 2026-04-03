@@ -279,16 +279,13 @@ final class FirebaseRiderRepository {
     }
 
     static void getAssignedOrdersForRider(String riderEmail, ResultCallback<List<RiderOrder>> callback) {
-        Query query = db().child(NODE_ORDERS)
-                .orderByChild("assignedRiderEmail")
-                .equalTo(riderEmail);
-
-        query.get()
+        // Fetch all orders and filter by assignedRiderEmail on client-side to avoid index requirements
+        db().child(NODE_ORDERS).get()
                 .addOnSuccessListener(snapshot -> {
                     List<RiderOrder> orders = new ArrayList<>();
                     for (DataSnapshot child : snapshot.getChildren()) {
                         RiderOrder order = child.getValue(RiderOrder.class);
-                        if (order != null) {
+                        if (order != null && riderEmail.equals(order.assignedRiderEmail)) {
                             orders.add(order);
                         }
                     }
