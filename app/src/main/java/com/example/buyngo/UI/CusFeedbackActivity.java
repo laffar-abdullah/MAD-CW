@@ -101,21 +101,31 @@ public class CusFeedbackActivity extends AppCompatActivity {
                 return;
             }
 
-            FirebaseRiderRepository.getLatestDeliveredOrderForAnyRider(
+            // Use the orderId passed from intent
+            if (orderId == null || orderId.trim().isEmpty()) {
+                Toast.makeText(CusFeedbackActivity.this,
+                        "Order ID not provided",
+                        Toast.LENGTH_SHORT).show();
+                navigateHome();
+                return;
+            }
+
+            // Get the order to find rider email
+            FirebaseRiderRepository.getOrderById(orderId, 
                     new FirebaseRiderRepository.ResultCallback<FirebaseRiderRepository.RiderOrder>() {
                         @Override
                         public void onSuccess(FirebaseRiderRepository.RiderOrder order) {
                             if (order == null || order.assignedRiderEmail == null
                                     || order.assignedRiderEmail.trim().isEmpty()) {
                                 Toast.makeText(CusFeedbackActivity.this,
-                                        "No delivered order found to review",
+                                        "No rider assigned to this order",
                                         Toast.LENGTH_SHORT).show();
                                 navigateHome();
                                 return;
                             }
 
                             FirebaseRiderRepository.addReview(
-                                    order.orderId,
+                                    orderId,
                                     order.assignedRiderEmail,
                                     order.customerName == null ? "Customer" : order.customerName,
                                     rating,

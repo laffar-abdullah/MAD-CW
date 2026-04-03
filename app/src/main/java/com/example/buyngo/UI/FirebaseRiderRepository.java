@@ -452,4 +452,14 @@ final class FirebaseRiderRepository {
         }
         return false;
     }
+
+    static void getOrderById(String orderId, ResultCallback<RiderOrder> callback) {
+        db().child(NODE_ORDERS).child(orderId).get()
+                .addOnSuccessListener(snapshot -> {
+                    RiderOrder order = snapshot.getValue(RiderOrder.class);
+                    callback.onSuccess(order);
+                })
+                .addOnFailureListener(e -> callback.onError(
+                        e.getMessage() == null ? "Failed to load order" : e.getMessage()));
+    }
 }

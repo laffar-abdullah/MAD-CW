@@ -64,7 +64,7 @@ public class CusTrackingActivity extends AppCompatActivity {
         ordersContainer.removeAllViews();
 
         firebaseDatabase.getReference("orders")
-                .addListenerForSingleValueEvent(new ValueEventListener() {
+                .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot snapshot) {
                         ordersContainer.removeAllViews();

@@ -44,7 +44,10 @@ public class CusHomeActivity extends AppCompatActivity {
         BottomNavigationView bottomNav = findViewById(R.id.bottomNavigation);
         bottomNav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
-            if (id == R.id.nav_cart) {
+            if (id == R.id.nav_home) {
+                // Already on home, do nothing
+                return true;
+            } else if (id == R.id.nav_cart) {
                 startActivity(new Intent(this, CusCartActivity.class));
             } else if (id == R.id.nav_orders) {
                 startActivity(new Intent(this, CusTrackingActivity.class));
@@ -112,9 +115,11 @@ public class CusHomeActivity extends AppCompatActivity {
                     productCategory.setText(product.getCategory() != null ? product.getCategory() : "N/A");
                     productPrice.setText(String.format("$%.2f", product.getPrice()));
 
+                    // Create final copy to avoid closure issue with loop variable
+                    final Product currentProduct = product;
                     addBtn.setOnClickListener(v -> {
                         Intent intent = new Intent(CusHomeActivity.this, CusProductDetailActivity.class);
-                        intent.putExtra("productId", product.getId());
+                        intent.putExtra("productId", currentProduct.getId());
                         startActivity(intent);
                     });
 
