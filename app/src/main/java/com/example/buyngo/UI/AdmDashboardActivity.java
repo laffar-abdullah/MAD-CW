@@ -31,10 +31,18 @@ public class AdmDashboardActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.adm_dashboard);
 
-        // Manage Products
-        findViewById(R.id.btnManageProducts).setOnClickListener(v -> {
-            // startActivity(new Intent(this, AdmProductManagementActivity.class));
-        });
+        db    = FirebaseDatabase.getInstance("https://buyngo-5b43e-default-rtdb.firebaseio.com/").getReference();
+        mAuth = FirebaseAuth.getInstance();
+
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        tvTotalProducts = findViewById(R.id.tvTotalProducts);
+        tvTotalOrders   = findViewById(R.id.tvTotalOrders);
+        tvPendingOrders = findViewById(R.id.tvPendingOrders);
+
+        findViewById(R.id.btnManageProducts).setOnClickListener(v ->
+                startActivity(new Intent(this, AdmProductManagementActivity.class)));
 
         // Manage Orders
         findViewById(R.id.btnManageOrders).setOnClickListener(v ->
