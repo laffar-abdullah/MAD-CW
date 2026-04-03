@@ -45,16 +45,6 @@
                     android:orientation="vertical"
                     android:padding="24dp">
 
-                    <ImageView
-                        android:layout_width="80dp"
-                        android:layout_height="80dp"
-                        android:layout_gravity="center_horizontal"
-                        android:layout_marginBottom="20dp"
-                        android:src="@android:drawable/ic_menu_add"
-                        app:tint="@color/primary_green"
-                        android:background="@drawable/search_bg"
-                        android:padding="16dp" />
-
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -62,6 +52,34 @@
                         android:textSize="18sp"
                         android:textStyle="bold"
                         android:textColor="@color/text_dark"
+                        android:layout_marginBottom="20dp" />
+
+                    <!-- Product Image Preview -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Product Image"
+                        android:textSize="13sp"
+                        android:textColor="@color/text_light"
+                        android:layout_marginBottom="8dp" />
+
+                    <ImageView
+                        android:id="@+id/ivProductImage"
+                        android:layout_width="match_parent"
+                        android:layout_height="180dp"
+                        android:scaleType="centerCrop"
+                        android:background="@drawable/search_bg"
+                        android:src="@android:drawable/ic_menu_gallery"
+                        android:layout_marginBottom="8dp" />
+
+                    <Button
+                        android:id="@+id/btnPickImage"
+                        android:layout_width="match_parent"
+                        android:layout_height="46dp"
+                        android:text="📷  Select Image"
+                        android:textColor="@color/primary_green"
+                        android:textStyle="bold"
+                        android:backgroundTint="@color/chip_bg"
                         android:layout_marginBottom="20dp" />
 
                     <!-- Product Name -->

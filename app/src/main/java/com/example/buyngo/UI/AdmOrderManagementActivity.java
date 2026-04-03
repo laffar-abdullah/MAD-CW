@@ -119,25 +119,28 @@ public class AdmOrderManagementActivity extends AppCompatActivity {
         // Hide confirm button if order is already confirmed
         if (order.getStatus() != null && order.getStatus().equals("Confirmed")) {
             btnConfirmOrder.setVisibility(View.GONE);
+        } else {
+            btnConfirmOrder.setOnClickListener(v -> confirmOrder(order.getOrderId(), tvStatus, btnConfirmOrder));
         }
 
-        btnConfirmOrder.setOnClickListener(v -> confirmOrder(order.getOrderId(), tvStatus));
         btnAssignRider.setOnClickListener(v ->
                 openAssignRider(order.getOrderId(), customerName, customerAddress));
 
         ordersContainer.addView(cardView);
     }
 
-    private void confirmOrder(String orderId, TextView tvStatus) {
+    private void confirmOrder(String orderId, TextView tvStatus, Button btnConfirmOrder) {
         firebaseDatabase.getReference("orders").child(orderId)
                 .child("status").setValue("Confirmed")
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(this, "Order Confirmed!", Toast.LENGTH_SHORT).show();
                     tvStatus.setText("Status: Confirmed");
-                    loadOrdersFromFirebase();
+                    btnConfirmOrder.setVisibility(View.GONE);
+                    Log.d(TAG, "Order " + orderId + " confirmed and button hidden");
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(this, "Failed to confirm order", Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, "Failed to confirm order: " + e.getMessage());
                 });
     }
 

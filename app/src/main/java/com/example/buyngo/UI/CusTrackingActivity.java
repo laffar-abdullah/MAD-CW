@@ -179,33 +179,28 @@ public class CusTrackingActivity extends AppCompatActivity {
             orderLayout.addView(tvPendingInfo);
         }
 
-        Button btnReceived = new Button(this);
-        btnReceived.setText("I have received the order");
-        btnReceived.setTextSize(14);
-        btnReceived.setTextColor(getResources().getColor(R.color.white, null));
-        btnReceived.setBackgroundColor(getResources().getColor(R.color.primary_green, null));
-        LinearLayout.LayoutParams btnParams = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT);
-        btnParams.setMargins(0, 12, 0, 0);
-        btnReceived.setLayoutParams(btnParams);
-
-        final String orderId = order.getOrderId();
-        final String currentStatus = order.getStatus();
-        
-        // Show "I have received the order" button only if order is Delivered
-        boolean isDelivered = currentStatus != null && currentStatus.equals("Delivered");
-        if (!isDelivered) {
-            btnReceived.setVisibility(View.GONE);
+        // Show "I have received" button for confirmed orders that are awaiting pickup or delivered
+        if (order.getStatus() != null && (order.getStatus().equals("Confirmed") || order.getStatus().equals("Awaiting Pickup") || order.getStatus().equals("Delivered"))) {
+            if (!order.getStatus().equals("Received")) {
+                Button btnReceived = new Button(this);
+                btnReceived.setText("I have received the order");
+                btnReceived.setTextSize(14);
+                btnReceived.setTextColor(getResources().getColor(R.color.white, null));
+                btnReceived.setBackgroundColor(getResources().getColor(R.color.primary_green, null));
+                LinearLayout.LayoutParams btnParams = new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT);
+                btnParams.setMargins(0, 12, 0, 0);
+                btnReceived.setLayoutParams(btnParams);
+                btnReceived.setOnClickListener(v -> updateOrderAndNavigateToFeedback(order.getOrderId()));
+                orderLayout.addView(btnReceived);
+            }
         }
 
-        btnReceived.setOnClickListener(v -> updateOrderAndNavigateToFeedback(orderId));
-        orderLayout.addView(btnReceived);
-
-        // Show "Add Feedback" button if order has been Received (to go back to feedback)
-        if (currentStatus != null && currentStatus.equals("Received")) {
+        // Show "Add Review" button if order has been Received
+        if (order.getStatus() != null && order.getStatus().equals("Received")) {
             Button btnFeedback = new Button(this);
-            btnFeedback.setText("Add Feedback");
+            btnFeedback.setText("Add Review");
             btnFeedback.setTextSize(14);
             btnFeedback.setTextColor(getResources().getColor(R.color.white, null));
             btnFeedback.setBackgroundColor(getResources().getColor(R.color.primary_green, null));
@@ -216,7 +211,8 @@ public class CusTrackingActivity extends AppCompatActivity {
             btnFeedback.setLayoutParams(feedbackParams);
             btnFeedback.setOnClickListener(v -> {
                 Intent intent = new Intent(CusTrackingActivity.this, CusFeedbackActivity.class);
-                intent.putExtra("orderId", orderId);
+                intent.putExtra("orderId", order.getOrderId());
+                intent.putExtra("mandatory", true);
                 startActivity(intent);
             });
             orderLayout.addView(btnFeedback);
