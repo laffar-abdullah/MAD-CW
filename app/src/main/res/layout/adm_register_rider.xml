@@ -83,6 +83,50 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="4dp"
+                android:text="Vehicle Type"
+                android:textSize="14sp"
+                android:textColor="@color/text_light" />
+            <EditText
+                android:id="@+id/etVehicleType"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:inputType="textCapWords"
+                android:hint="e.g. Motorbike"
+                android:imeOptions="actionNext"
+                android:textSize="15sp"
+                android:textColor="@color/text_dark"
+                android:textColorHint="@color/text_light"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/search_bg" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"
+                android:text="Vehicle Number"
+                android:textSize="14sp"
+                android:textColor="@color/text_light" />
+            <EditText
+                android:id="@+id/etVehicleNumber"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:inputType="textCapCharacters"
+                android:hint="e.g. XYZ 4521"
+                android:imeOptions="actionNext"
+                android:textSize="15sp"
+                android:textColor="@color/text_dark"
+                android:textColorHint="@color/text_light"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/search_bg" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"
                 android:text="Login Email"
                 android:textSize="14sp"
                 android:textColor="@color/text_light" />

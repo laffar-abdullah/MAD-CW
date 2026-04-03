@@ -11,9 +11,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import com.example.buyngo.R;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,79 +20,86 @@ public class CusFeedbackActivity extends AppCompatActivity {
     private static final String DB_URL = "https://buyngo-5b43e-default-rtdb.firebaseio.com/";
 
     private RatingBar ratingBar;
-    private EditText reviewComment;
     private TextView ratingLabel;
-    private DatabaseReference db;
-    private FirebaseAuth mAuth;
-    private String orderId;
+    private EditText reviewComment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.cus_feedback);
 
-        db    = FirebaseDatabase.getInstance(DB_URL).getReference();
-        mAuth = FirebaseAuth.getInstance();
-
-        orderId = getIntent().getStringExtra("orderId");
-        if (orderId == null) orderId = "unknown-order";
-
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setNavigationOnClickListener(v -> finish());
 
-        ratingBar     = findViewById(R.id.ratingBar);
+        ratingBar = findViewById(R.id.ratingBar);
+        ratingLabel = findViewById(R.id.ratingLabel);
         reviewComment = findViewById(R.id.reviewComment);
-        ratingLabel   = findViewById(R.id.ratingLabel);
 
         ratingBar.setOnRatingBarChangeListener((bar, rating, fromUser) -> {
-            if      (rating == 1) ratingLabel.setText("Poor");
-            else if (rating == 2) ratingLabel.setText("Fair");
-            else if (rating == 3) ratingLabel.setText("Good");
-            else if (rating == 4) ratingLabel.setText("Very Good");
-            else if (rating == 5) ratingLabel.setText("Excellent!");
+            if (rating <= 0f) {
+                ratingLabel.setText("Tap a star to rate");
+                return;
+            }
+            ratingLabel.setText((int) rating + " / 5");
         });
 
-        findViewById(R.id.submitFeedbackButton).setOnClickListener(v -> submitFeedback());
-        findViewById(R.id.skipReview).setOnClickListener(v -> goHome());
+        findViewById(R.id.submitFeedbackButton).setOnClickListener(v -> {
+            int rating = Math.round(ratingBar.getRating());
+            String comment = reviewComment.getText().toString().trim();
+            if (rating < 1) {
+                Toast.makeText(this, "Please select a star rating", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            FirebaseRiderRepository.getLatestDeliveredOrderForAnyRider(
+                    new FirebaseRiderRepository.ResultCallback<FirebaseRiderRepository.RiderOrder>() {
+                        @Override
+                        public void onSuccess(FirebaseRiderRepository.RiderOrder order) {
+                            if (order == null || order.assignedRiderEmail == null
+                                    || order.assignedRiderEmail.trim().isEmpty()) {
+                                Toast.makeText(CusFeedbackActivity.this,
+                                        "No delivered order found to review",
+                                        Toast.LENGTH_SHORT).show();
+                                navigateHome();
+                                return;
+                            }
+
+                            FirebaseRiderRepository.addReview(
+                                    order.orderId,
+                                    order.assignedRiderEmail,
+                                    order.customerName == null ? "Customer" : order.customerName,
+                                    rating,
+                                    comment,
+                                    new FirebaseRiderRepository.VoidCallback() {
+                                        @Override
+                                        public void onSuccess() {
+                                            Toast.makeText(CusFeedbackActivity.this,
+                                                    "Thanks for your feedback",
+                                                    Toast.LENGTH_SHORT).show();
+                                            navigateHome();
+                                        }
+
+                                        @Override
+                                        public void onError(String message) {
+                                            Toast.makeText(CusFeedbackActivity.this,
+                                                    message,
+                                                    Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                        }
+
+                        @Override
+                        public void onError(String message) {
+                            Toast.makeText(CusFeedbackActivity.this, message, Toast.LENGTH_SHORT).show();
+                        }
+                    });
+        });
+
+        findViewById(R.id.skipReview).setOnClickListener(v -> navigateHome());
     }
 
-    private void submitFeedback() {
-        float rating = ratingBar.getRating();
-        if (rating == 0) {
-            Toast.makeText(this, "Please select a star rating", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        String comment = reviewComment.getText().toString().trim();
-
-        String userId = mAuth.getCurrentUser() != null
-                ? mAuth.getCurrentUser().getUid() : "anonymous";
-        String userEmail = mAuth.getCurrentUser() != null
-                ? mAuth.getCurrentUser().getEmail() : "unknown@email.com";
-
-        // ── Write to "feedbacks" node so AdmViewFeedbackActivity can read it ──
-        Map<String, Object> feedback = new HashMap<>();
-        feedback.put("orderId",   orderId);
-        feedback.put("userId",    userId);
-        feedback.put("userEmail", userEmail);
-        feedback.put("rating",    rating);
-        feedback.put("comment",   comment);
-        feedback.put("timestamp", System.currentTimeMillis());
-        feedback.put("flagged",   false);
-        feedback.put("adminReply", "");
-
-        db.child("feedbacks").push().setValue(feedback)
-                .addOnSuccessListener(unused -> {
-                    Toast.makeText(this, "Thank you for your feedback!", Toast.LENGTH_SHORT).show();
-                    goHome();
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Failed to submit: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                });
-    }
-
-    private void goHome() {
+    private void navigateHome() {
         Intent intent = new Intent(this, CusHomeActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);

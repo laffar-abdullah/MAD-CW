@@ -43,6 +43,8 @@ public class RidDashboardActivity extends AppCompatActivity {
     private View     sampleTaskCard;
     private View     btnTaskUpdateStatus;
     private View     txtNoActiveTask;
+    private String activeOrderId;
+    private boolean useLocalFallback;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,14 +73,9 @@ public class RidDashboardActivity extends AppCompatActivity {
         btnTaskUpdateStatus = findViewById(R.id.btnTaskUpdateStatus);
         txtNoActiveTask     = findViewById(R.id.txtNoActiveTask);
 
-        // Ensure a delivery task exists so the card is never permanently empty.
-        OrderStatusStore.initializeDefaultsIfMissing(this);
-
         // Both the task card and its "Update Status" button open the same screen.
-        sampleTaskCard.setOnClickListener(v ->
-                startActivity(new Intent(this, RidStatusUpdateActivity.class)));
-        btnTaskUpdateStatus.setOnClickListener(v ->
-                startActivity(new Intent(this, RidStatusUpdateActivity.class)));
+        sampleTaskCard.setOnClickListener(v -> openStatusUpdate());
+        btnTaskUpdateStatus.setOnClickListener(v -> openStatusUpdate());
 
         // ── Bottom navigation ──────────────────────────────────────────────
         // BUG FIX 1: navDashboard now has a listener — re-run refreshTask()
@@ -111,23 +108,80 @@ public class RidDashboardActivity extends AppCompatActivity {
      * already marked as Delivered.
      */
     private void refreshTask() {
-        OrderStatusStore.OrderInfo order = OrderStatusStore.getCurrentOrder(this);
-
-        // An order that has been delivered is no longer an active task.
-        boolean hasActiveTask = !OrderStatusStore.STATUS_DELIVERED.equals(order.status);
-
-        sampleTaskCard.setVisibility(hasActiveTask  ? View.VISIBLE : View.GONE);
-        txtNoActiveTask.setVisibility(hasActiveTask ? View.GONE    : View.VISIBLE);
-
-        if (!hasActiveTask) {
+        RiderSessionStore.RiderProfile profile = RiderSessionStore.getCurrentRider(this);
+        if (profile == null) {
+            startActivity(new Intent(this, RidLoginActivity.class));
+            finish();
             return;
         }
 
-        txtTaskOrderId.setText("Order #" + order.orderId);
-        txtTaskCustomer.setText("Customer: " + order.customerName);
-        txtTaskAddress.setText("Address: "  + order.customerAddress);
-        txtTaskStatus.setText(order.status);
-        applyStatusChipStyle(order.status);
+        FirebaseRiderRepository.getLatestActiveOrderForRider(
+                profile.email,
+                new FirebaseRiderRepository.ResultCallback<FirebaseRiderRepository.RiderOrder>() {
+                    @Override
+                    public void onSuccess(FirebaseRiderRepository.RiderOrder order) {
+                        if (order == null) {
+                            OrderStatusStore.OrderInfo localOrder = OrderStatusStore.getCurrentOrder(RidDashboardActivity.this);
+                            boolean hasLocalActiveTask = !OrderStatusStore.STATUS_DELIVERED.equals(localOrder.status);
+                            sampleTaskCard.setVisibility(hasLocalActiveTask ? View.VISIBLE : View.GONE);
+                            txtNoActiveTask.setVisibility(hasLocalActiveTask ? View.GONE : View.VISIBLE);
+
+                            if (!hasLocalActiveTask) {
+                                activeOrderId = null;
+                                useLocalFallback = false;
+                                return;
+                            }
+
+                            useLocalFallback = true;
+                            activeOrderId = localOrder.orderId;
+                            txtTaskOrderId.setText("Order #" + localOrder.orderId);
+                            txtTaskCustomer.setText("Customer: " + localOrder.customerName);
+                            txtTaskAddress.setText("Address: " + localOrder.customerAddress);
+                            txtTaskStatus.setText(localOrder.status);
+                            applyStatusChipStyle(localOrder.status);
+                            return;
+                        }
+
+                        useLocalFallback = false;
+                        activeOrderId = order.orderId;
+                        sampleTaskCard.setVisibility(View.VISIBLE);
+                        txtNoActiveTask.setVisibility(View.GONE);
+                        txtTaskOrderId.setText("Order #" + order.orderId);
+                        txtTaskCustomer.setText("Customer: " + order.customerName);
+                        txtTaskAddress.setText("Address: " + order.customerAddress);
+                        txtTaskStatus.setText(order.status);
+                        applyStatusChipStyle(order.status);
+                    }
+
+                    @Override
+                    public void onError(String message) {
+                        OrderStatusStore.OrderInfo localOrder = OrderStatusStore.getCurrentOrder(RidDashboardActivity.this);
+                        boolean hasLocalActiveTask = !OrderStatusStore.STATUS_DELIVERED.equals(localOrder.status);
+                        sampleTaskCard.setVisibility(hasLocalActiveTask ? View.VISIBLE : View.GONE);
+                        txtNoActiveTask.setVisibility(hasLocalActiveTask ? View.GONE : View.VISIBLE);
+                        if (!hasLocalActiveTask) {
+                            activeOrderId = null;
+                            useLocalFallback = false;
+                            return;
+                        }
+                        useLocalFallback = true;
+                        activeOrderId = localOrder.orderId;
+                        txtTaskOrderId.setText("Order #" + localOrder.orderId);
+                        txtTaskCustomer.setText("Customer: " + localOrder.customerName);
+                        txtTaskAddress.setText("Address: " + localOrder.customerAddress);
+                        txtTaskStatus.setText(localOrder.status);
+                        applyStatusChipStyle(localOrder.status);
+                    }
+                });
+    }
+
+    private void openStatusUpdate() {
+        Intent intent = new Intent(this, RidStatusUpdateActivity.class);
+        if (activeOrderId != null && !activeOrderId.trim().isEmpty()) {
+            intent.putExtra("order_id", activeOrderId);
+        }
+        intent.putExtra("use_local_fallback", useLocalFallback);
+        startActivity(intent);
     }
 
     /**
