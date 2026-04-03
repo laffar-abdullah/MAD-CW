@@ -63,15 +63,42 @@
 
         </LinearLayout>
 
-        <!-- Add to cart button -->
-        <Button
-            android:id="@+id/addToCartBtn"
+        <!-- Quantity and Button Section -->
+        <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_height="40dp"
-            android:text="+ Add"
-            android:textSize="12sp"
-            android:textColor="@color/white"
-            android:background="@color/primary_green" />
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:paddingStart="8dp">
+
+            <!-- Quantity input -->
+            <EditText
+                android:id="@+id/quantityInput"
+                android:layout_width="50dp"
+                android:layout_height="35dp"
+                android:text="1"
+                android:inputType="number"
+                android:gravity="center"
+                android:textSize="14sp"
+                android:textColor="@color/text_dark"
+                android:background="@drawable/edit_text_background"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp" />
+
+            <!-- Add to cart button -->
+            <Button
+                android:id="@+id/addToCartBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:layout_marginTop="4dp"
+                android:text="Add"
+                android:textSize="12sp"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:textColor="@color/white"
+                android:background="@color/primary_green" />
+
+        </LinearLayout>
 
     </LinearLayout>
 

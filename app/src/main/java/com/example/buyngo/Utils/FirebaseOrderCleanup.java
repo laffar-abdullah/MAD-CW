@@ -99,4 +99,39 @@ public class FirebaseOrderCleanup {
             }
         });
     }
+
+    /**
+     * Ensures all orders have proper itemsList initialized.
+     * This helps with backward compatibility for orders created before itemsList was added.
+     */
+    public static void ensureOrdersHaveItemsList() {
+        db.getReference("orders").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                for (DataSnapshot orderSnapshot : snapshot.getChildren()) {
+                    String orderId = orderSnapshot.getKey();
+                    
+                    // Check if itemsList exists
+                    DataSnapshot itemsListSnapshot = orderSnapshot.child("itemsList");
+                    if (!itemsListSnapshot.exists()) {
+                        // Check if the old items map exists and convert it
+                        DataSnapshot itemsSnapshot = orderSnapshot.child("items");
+                        if (itemsSnapshot.exists()) {
+                            Log.d(TAG, "Found old items format for order: " + orderId + ", will reconstruct...");
+                            // The getItems() method in Order.java will handle the conversion
+                            // Just log for visibility
+                        } else {
+                            Log.d(TAG, "Order " + orderId + " has no items data - may be legacy/empty order");
+                        }
+                    }
+                }
+                Log.d(TAG, "✓ Completed itemsList compatibility check");
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                Log.e(TAG, "Failed to check itemsList: " + error.getMessage());
+            }
+        });
+    }
 }

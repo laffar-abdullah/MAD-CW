@@ -30,6 +30,7 @@ public class AdmOrderManagementActivity extends AppCompatActivity {
     private LinearLayout ordersContainer;
     private FirebaseDatabase firebaseDatabase;
     private LayoutInflater layoutInflater;
+    private ValueEventListener ordersListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,23 +45,90 @@ public class AdmOrderManagementActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         toolbar.setNavigationOnClickListener(v -> finish());
 
+        // Add a "Clear All Orders" button
+        addClearAllOrdersButton();
+
         // Clean up old demo orders on app load
         FirebaseOrderCleanup.cleanupOldOrders();
 
         loadOrdersFromFirebase();
     }
 
+    /**
+     * Adds a "Clear All Orders" button to the toolbar menu
+     */
+    private void addClearAllOrdersButton() {
+        TextView btnClearAll = new TextView(this);
+        btnClearAll.setText("Clear All");
+        btnClearAll.setTextSize(16);
+        btnClearAll.setTextColor(getResources().getColor(R.color.white, null));
+        btnClearAll.setPadding(20, 10, 20, 10);
+        btnClearAll.setOnClickListener(v -> showClearAllConfirmation());
+        
+        // Add button to toolbar
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.addView(btnClearAll);
+    }
+
+    /**
+     * Shows a confirmation dialog before clearing all orders
+     */
+    private void showClearAllConfirmation() {
+        new android.app.AlertDialog.Builder(this)
+                .setTitle("Clear All Orders")
+                .setMessage("Are you sure you want to delete all orders? This action cannot be undone.")
+                .setPositiveButton("Yes, Delete All", (dialog, which) -> clearAllOrders())
+                .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
+                .show();
+    }
+
+    /**
+     * Clears all orders from Firebase
+     */
+    private void clearAllOrders() {
+        firebaseDatabase.getReference("orders").removeValue()
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(this, "All orders cleared successfully!", Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, "All orders have been deleted from Firebase");
+                    ordersContainer.removeAllViews();
+                    
+                    TextView tvNoOrders = new TextView(this);
+                    tvNoOrders.setText("No orders available");
+                    tvNoOrders.setTextSize(16);
+                    tvNoOrders.setPadding(16, 16, 16, 16);
+                    ordersContainer.addView(tvNoOrders);
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Failed to clear orders: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, "Failed to clear all orders: " + e.getMessage());
+                });
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
+        // Reload orders when activity is resumed
         loadOrdersFromFirebase();
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // Remove the listener when activity pauses to prevent stacking listeners
+        if (ordersListener != null) {
+            firebaseDatabase.getReference("orders").removeEventListener(ordersListener);
+        }
+    }
+
     private void loadOrdersFromFirebase() {
+        // Remove any existing listener first to prevent duplicates
+        if (ordersListener != null) {
+            firebaseDatabase.getReference("orders").removeEventListener(ordersListener);
+        }
+
         ordersContainer.removeAllViews();
 
-        firebaseDatabase.getReference("orders")
-                .addValueEventListener(new ValueEventListener() {
+        ordersListener = new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot snapshot) {
                         ordersContainer.removeAllViews();
@@ -111,7 +179,10 @@ public class AdmOrderManagementActivity extends AppCompatActivity {
                         Toast.makeText(AdmOrderManagementActivity.this,
                                 "Failed to load orders: " + error.getMessage(), Toast.LENGTH_SHORT).show();
                     }
-                });
+                };
+        
+        // Attach the listener
+        firebaseDatabase.getReference("orders").addValueEventListener(ordersListener);
     }
 
     private void inflateOrderCard(Order order, String customerName, String customerAddress) {
@@ -122,6 +193,7 @@ public class AdmOrderManagementActivity extends AppCompatActivity {
         TextView tvCustomerName = cardView.findViewById(R.id.tvCustomerName);
         TextView tvItemsAndTotal = cardView.findViewById(R.id.tvItemsAndTotal);
         TextView tvStatus = cardView.findViewById(R.id.tvStatus);
+        TextView tvAssignedRider = cardView.findViewById(R.id.tvAssignedRider);
         Button btnConfirmOrder = cardView.findViewById(R.id.btnConfirmOrder);
         Button btnAssignRider = cardView.findViewById(R.id.btnAssignRider);
 
@@ -141,23 +213,43 @@ public class AdmOrderManagementActivity extends AppCompatActivity {
         tvItemsAndTotal.setText("Items: " + itemsDisplay + "  |  Total: " + totalDisplay);
         tvStatus.setText("Status: " + (order.getStatus() == null ? "Pending" : order.getStatus()));
 
-        // Hide confirm button if order is already confirmed
-        if (order.getStatus() != null && order.getStatus().equals("Confirmed")) {
-            btnConfirmOrder.setVisibility(View.GONE);
+        // Show assigned rider if available
+        if (order.getAssignedRiderEmail() != null && !order.getAssignedRiderEmail().isEmpty()) {
+            tvAssignedRider.setText("Assigned Rider: " + order.getAssignedRiderEmail());
+            tvAssignedRider.setVisibility(View.VISIBLE);
         } else {
-            btnConfirmOrder.setOnClickListener(v -> confirmOrder(order.getOrderId(), tvStatus, btnConfirmOrder));
+            tvAssignedRider.setVisibility(View.GONE);
         }
 
-        // Hide assign rider button if order is already assigned (has rider or status beyond Confirmed)
-        if (order.getStatus() != null && 
-            (order.getStatus().equals("Confirmed") && order.getAssignedRiderEmail() != null && !order.getAssignedRiderEmail().isEmpty())) {
-            btnAssignRider.setVisibility(View.GONE);
-        } else if (order.getStatus() == null || order.getStatus().equals("Pending")) {
-            // Assign rider button only available after order is confirmed
-            btnAssignRider.setEnabled(false);
+        // LOGIC: New workflow - Assign Rider FIRST, then Confirm
+        if (order.getStatus() == null || order.getStatus().equals("Pending")) {
+            // For Pending orders, check if rider is already assigned
+            
+            if (order.getAssignedRiderEmail() == null || order.getAssignedRiderEmail().isEmpty()) {
+                // NO RIDER ASSIGNED YET - Show ONLY "Assign Rider" button
+                Log.d(TAG, "Order " + order.getOrderId() + " is Pending with NO rider - showing assign rider button");
+                btnAssignRider.setVisibility(View.VISIBLE);
+                btnAssignRider.setEnabled(true);
+                btnAssignRider.setOnClickListener(v ->
+                        openAssignRider(order.getOrderId(), customerName, customerAddress));
+                
+                // Hide confirm button until rider is assigned
+                btnConfirmOrder.setVisibility(View.GONE);
+            } else {
+                // RIDER ALREADY ASSIGNED - Show ONLY "Confirm" button
+                Log.d(TAG, "Order " + order.getOrderId() + " has rider assigned (" + order.getAssignedRiderEmail() + ") - showing confirm button");
+                btnConfirmOrder.setVisibility(View.VISIBLE);
+                btnConfirmOrder.setEnabled(true);
+                btnConfirmOrder.setOnClickListener(v -> confirmOrder(order.getOrderId(), tvStatus, btnConfirmOrder));
+                
+                // Hide assign rider button - already assigned
+                btnAssignRider.setVisibility(View.GONE);
+            }
         } else {
-            btnAssignRider.setOnClickListener(v ->
-                    openAssignRider(order.getOrderId(), customerName, customerAddress));
+            // Order is Confirmed or beyond - Hide both buttons
+            Log.d(TAG, "Order " + order.getOrderId() + " status is " + order.getStatus() + " - hiding all buttons");
+            btnConfirmOrder.setVisibility(View.GONE);
+            btnAssignRider.setVisibility(View.GONE);
         }
 
         ordersContainer.addView(cardView);

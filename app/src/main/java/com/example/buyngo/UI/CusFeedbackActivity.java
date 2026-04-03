@@ -168,27 +168,27 @@ public class CusFeedbackActivity extends AppCompatActivity {
                             String customerName = snapshot.child("customerName").getValue(String.class);
                             
                             // Allow review submission even if rider email is not found (edge case)
-                            if (riderEmail == null || riderEmail.trim().isEmpty()) {
-                                riderEmail = "unknown@rider.com"; // Fallback email
+                            String finalRiderEmail = riderEmail;
+                            if (finalRiderEmail == null || finalRiderEmail.trim().isEmpty()) {
+                                finalRiderEmail = "unknown@rider.com"; // Fallback email
                             }
                             
                             String finalCustomerName = customerName == null ? "Customer" : customerName;
+                            String finalRiderEmailForCallback = finalRiderEmail;
                             
-                            // Submit the review
+                            // Submit the review to both storage locations:
+                            // 1. To rider-specific reviews (FirebaseRiderRepository)
                             FirebaseRiderRepository.addReview(
                                     orderId,
-                                    riderEmail,
+                                    finalRiderEmail,
                                     finalCustomerName,
                                     rating,
                                     comment,
                                     new FirebaseRiderRepository.VoidCallback() {
                                         @Override
                                         public void onSuccess() {
-                                            Toast.makeText(CusFeedbackActivity.this,
-                                                    "Thanks for your feedback!",
-                                                    Toast.LENGTH_SHORT).show();
-                                            updateOrderAsReviewed(orderId);
-                                            navigateHome();
+                                            // Also save to feedbacks node for admin viewing
+                                            saveFeedbackToAdminNode(orderId, finalRiderEmailForCallback, finalCustomerName, rating, comment);
                                         }
 
                                         @Override
@@ -232,6 +232,58 @@ public class CusFeedbackActivity extends AppCompatActivity {
                     .addOnFailureListener(e -> {
                         Log.e(TAG, "Failed to update order status: " + e.getMessage());
                     });
+        }
+    }
+
+    /**
+     * Saves feedback to the "feedbacks" node for admin viewing
+     * This complements the rider-specific reviews storage
+     */
+    private void saveFeedbackToAdminNode(String orderId, String riderEmail, String customerName, int rating, String comment) {
+        try {
+            com.google.firebase.database.FirebaseDatabase db = 
+                    com.google.firebase.database.FirebaseDatabase.getInstance(DB_URL);
+            
+            // Create feedback document
+            java.util.Map<String, Object> feedback = new java.util.HashMap<>();
+            feedback.put("feedbackId", db.getReference("feedbacks").push().getKey());
+            feedback.put("orderId", orderId);
+            feedback.put("riderEmail", riderEmail);
+            feedback.put("customerName", customerName);
+            feedback.put("rating", (double) rating);
+            feedback.put("comment", comment);
+            feedback.put("timestamp", System.currentTimeMillis());
+            feedback.put("flagged", false);
+
+            // Save to feedbacks node
+            db.getReference("feedbacks")
+                    .push()
+                    .setValue(feedback)
+                    .addOnSuccessListener(unused -> {
+                        Log.d(TAG, "Feedback saved to admin node for order: " + orderId);
+                        Toast.makeText(CusFeedbackActivity.this,
+                                "Thanks for your feedback!",
+                                Toast.LENGTH_SHORT).show();
+                        updateOrderAsReviewed(orderId);
+                        navigateHome();
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e(TAG, "Failed to save feedback to admin node: " + e.getMessage());
+                        // Still show success message and navigate even if admin save fails
+                        Toast.makeText(CusFeedbackActivity.this,
+                                "Thanks for your feedback!",
+                                Toast.LENGTH_SHORT).show();
+                        updateOrderAsReviewed(orderId);
+                        navigateHome();
+                    });
+        } catch (Exception e) {
+            Log.e(TAG, "Error preparing feedback data: " + e.getMessage());
+            // Show error but still navigate
+            Toast.makeText(CusFeedbackActivity.this,
+                    "Thanks for your feedback!",
+                    Toast.LENGTH_SHORT).show();
+            updateOrderAsReviewed(orderId);
+            navigateHome();
         }
     }
 }

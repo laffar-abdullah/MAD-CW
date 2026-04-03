@@ -60,7 +60,8 @@ public class CusTrackingActivity extends AppCompatActivity {
         }
 
         String customerId = firebaseAuth.getCurrentUser().getUid();
-        Log.d(TAG, "Loading orders for customer: " + customerId);
+        String customerEmail = firebaseAuth.getCurrentUser().getEmail();
+        Log.d(TAG, "Loading orders for customer: " + customerId + " | Email: " + customerEmail);
         ordersContainer.removeAllViews();
 
         firebaseDatabase.getReference("orders")
@@ -79,7 +80,7 @@ public class CusTrackingActivity extends AppCompatActivity {
                         }
 
                         Log.d(TAG, "Total orders in Firebase: " + snapshot.getChildrenCount());
-                        Log.d(TAG, "Current customer ID: " + customerId);
+                        Log.d(TAG, "Current customer ID: " + customerId + " | Email: " + customerEmail);
                         int ordersFound = 0;
 
                         for (DataSnapshot orderSnapshot : snapshot.getChildren()) {
@@ -88,15 +89,21 @@ public class CusTrackingActivity extends AppCompatActivity {
 
                                 if (order != null) {
                                     String orderCustomerId = order.getCustomerId();
-                                    Log.d(TAG, "Found order: " + order.getOrderId() + ", customerId: " + orderCustomerId + ", status: " + order.getStatus());
+                                    String orderCustomerName = order.getCustomerName();
+                                    
+                                    Log.d(TAG, "Found order: " + order.getOrderId() + 
+                                            " | customerId: " + orderCustomerId + 
+                                            " | customerName: " + orderCustomerName + 
+                                            " | status: " + order.getStatus() +
+                                            " | riderEmail: " + order.getAssignedRiderEmail());
                                     
                                     // Display order if customerId matches current user
                                     if (orderCustomerId != null && customerId.equals(orderCustomerId)) {
                                         ordersFound++;
-                                        Log.d(TAG, "✓ Displaying order: " + order.getOrderId());
+                                        Log.d(TAG, "✓ Displaying order: " + order.getOrderId() + " (ID match)");
                                         displayOrderStatus(order);
                                     } else {
-                                        Log.d(TAG, "⊘ Skipping order (different customer): " + order.getOrderId() + " | Expected: " + customerId + " | Got: " + orderCustomerId);
+                                        Log.d(TAG, "⊘ Skipping order (different customer): " + order.getOrderId() + " | Expected ID: " + customerId + " | Got: " + orderCustomerId);
                                     }
                                 } else {
                                     Log.w(TAG, "Order is null from snapshot");
@@ -163,9 +170,18 @@ public class CusTrackingActivity extends AppCompatActivity {
         tvItems.setPadding(0, 4, 0, 0);
         orderLayout.addView(tvItems);
 
+        // Show total amount
+        TextView tvTotal = new TextView(this);
+        tvTotal.setText("Total: " + order.getTotalFormatted());
+        tvTotal.setTextSize(14);
+        tvTotal.setTypeface(tvTotal.getTypeface(), Typeface.BOLD);
+        tvTotal.setTextColor(getResources().getColor(R.color.primary_green, null));
+        tvTotal.setPadding(0, 4, 0, 0);
+        orderLayout.addView(tvTotal);
+
         // Show rider details if order is confirmed and has a rider assigned
-        if (order.getStatus() != null && (order.getStatus().equals("Confirmed") || order.getStatus().equals("Awaiting Pickup") || order.getStatus().equals("Delivered"))) {
-            if (order.getRiderName() != null && !order.getRiderName().isEmpty()) {
+        if (order.getStatus() != null && (order.getStatus().equals("Confirmed") || order.getStatus().equals("Awaiting Pickup") || order.getStatus().equals("Picked Up") || order.getStatus().equals("On the Way") || order.getStatus().equals("Delivered"))) {
+            if (order.getAssignedRiderEmail() != null && !order.getAssignedRiderEmail().isEmpty()) {
                 TextView tvRiderLabel = new TextView(this);
                 tvRiderLabel.setText("Assigned Rider:");
                 tvRiderLabel.setTextSize(14);
@@ -174,24 +190,34 @@ public class CusTrackingActivity extends AppCompatActivity {
                 tvRiderLabel.setPadding(0, 8, 0, 0);
                 orderLayout.addView(tvRiderLabel);
 
-                TextView tvRider = new TextView(this);
-                tvRider.setText("Name: " + order.getRiderName());
-                tvRider.setTextSize(13);
-                tvRider.setTextColor(getResources().getColor(R.color.text_light, null));
-                tvRider.setPadding(0, 4, 0, 0);
-                orderLayout.addView(tvRider);
+                TextView tvRiderEmail = new TextView(this);
+                tvRiderEmail.setText("Email: " + order.getAssignedRiderEmail());
+                tvRiderEmail.setTextSize(13);
+                tvRiderEmail.setTextColor(getResources().getColor(R.color.text_light, null));
+                tvRiderEmail.setPadding(0, 4, 0, 0);
+                orderLayout.addView(tvRiderEmail);
 
-                // Show delivery status
+                if (order.getRiderName() != null && !order.getRiderName().isEmpty()) {
+                    TextView tvRider = new TextView(this);
+                    tvRider.setText("Name: " + order.getRiderName());
+                    tvRider.setTextSize(13);
+                    tvRider.setTextColor(getResources().getColor(R.color.text_light, null));
+                    tvRider.setPadding(0, 2, 0, 0);
+                    orderLayout.addView(tvRider);
+                }
+
+                // Show delivery status with color
                 TextView tvDeliveryStatus = new TextView(this);
-                tvDeliveryStatus.setText("Status: " + order.getStatus());
+                tvDeliveryStatus.setText("Delivery Status: " + order.getStatus());
                 tvDeliveryStatus.setTextSize(13);
-                tvDeliveryStatus.setTextColor(getResources().getColor(R.color.primary_green, null));
-                tvDeliveryStatus.setPadding(0, 4, 0, 0);
+                tvDeliveryStatus.setTypeface(tvDeliveryStatus.getTypeface(), Typeface.BOLD);
+                tvDeliveryStatus.setTextColor(getStatusColor(order.getStatus()));
+                tvDeliveryStatus.setPadding(0, 6, 0, 0);
                 orderLayout.addView(tvDeliveryStatus);
             }
         } else if (order.getStatus() != null && order.getStatus().equals("Pending")) {
             TextView tvPendingInfo = new TextView(this);
-            tvPendingInfo.setText("Waiting for admin confirmation...");
+            tvPendingInfo.setText("Status: Waiting for admin confirmation...");
             tvPendingInfo.setTextSize(13);
             tvPendingInfo.setTextColor(getResources().getColor(R.color.status_ordered, null));
             tvPendingInfo.setPadding(0, 4, 0, 0);
@@ -200,41 +226,83 @@ public class CusTrackingActivity extends AppCompatActivity {
 
         // Show "I have received" button ONLY when driver has marked order as Delivered
         if (order.getStatus() != null && order.getStatus().equals("Delivered")) {
-            if (!order.getStatus().equals("Received")) {
-                Button btnReceived = new Button(this);
-                btnReceived.setText("I have received the order");
-                btnReceived.setTextSize(14);
-                btnReceived.setTextColor(getResources().getColor(R.color.white, null));
-                btnReceived.setBackgroundColor(getResources().getColor(R.color.primary_green, null));
-                LinearLayout.LayoutParams btnParams = new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT);
-                btnParams.setMargins(0, 12, 0, 0);
-                btnReceived.setLayoutParams(btnParams);
-                btnReceived.setOnClickListener(v -> updateOrderAndNavigateToFeedback(order.getOrderId()));
-                orderLayout.addView(btnReceived);
-            }
+            Button btnReceived = new Button(this);
+            btnReceived.setText("I have received the order");
+            btnReceived.setTextSize(14);
+            btnReceived.setTextColor(getResources().getColor(R.color.white, null));
+            btnReceived.setBackgroundColor(getResources().getColor(R.color.primary_green, null));
+            LinearLayout.LayoutParams btnParams = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT);
+            btnParams.setMargins(0, 12, 0, 0);
+            btnReceived.setLayoutParams(btnParams);
+            btnReceived.setOnClickListener(v -> updateOrderAndNavigateToFeedback(order.getOrderId()));
+            orderLayout.addView(btnReceived);
         }
 
         // Show "Add Review" button if order has been Received
         if (order.getStatus() != null && order.getStatus().equals("Received")) {
+            // Button container for review and skip buttons side by side
+            LinearLayout reviewButtonsLayout = new LinearLayout(this);
+            reviewButtonsLayout.setOrientation(LinearLayout.HORIZONTAL);
+            reviewButtonsLayout.setLayoutParams(new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT));
+            reviewButtonsLayout.setPadding(0, 12, 0, 0);
+
+            // Add Review button
             Button btnFeedback = new Button(this);
             btnFeedback.setText("Add Review");
-            btnFeedback.setTextSize(14);
+            btnFeedback.setTextSize(13);
             btnFeedback.setTextColor(getResources().getColor(R.color.white, null));
             btnFeedback.setBackgroundColor(getResources().getColor(R.color.primary_green, null));
             LinearLayout.LayoutParams feedbackParams = new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT);
-            feedbackParams.setMargins(0, 12, 0, 0);
+                    0,
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    1);
+            feedbackParams.setMargins(0, 0, 6, 0);
             btnFeedback.setLayoutParams(feedbackParams);
             btnFeedback.setOnClickListener(v -> {
                 Intent intent = new Intent(CusTrackingActivity.this, CusFeedbackActivity.class);
                 intent.putExtra("orderId", order.getOrderId());
-                intent.putExtra("mandatory", true);
+                intent.putExtra("mandatory", false);  // Feedback is now optional
                 startActivity(intent);
             });
-            orderLayout.addView(btnFeedback);
+            reviewButtonsLayout.addView(btnFeedback);
+
+            // Skip Review button
+            Button btnSkipReview = new Button(this);
+            btnSkipReview.setText("Skip");
+            btnSkipReview.setTextSize(13);
+            btnSkipReview.setTextColor(getResources().getColor(R.color.text_dark, null));
+            btnSkipReview.setBackgroundColor(getResources().getColor(R.color.divider, null));
+            LinearLayout.LayoutParams skipParams = new LinearLayout.LayoutParams(
+                    0,
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    1);
+            skipParams.setMargins(6, 0, 0, 0);
+            btnSkipReview.setLayoutParams(skipParams);
+            btnSkipReview.setOnClickListener(v -> {
+                // Mark order as "Delivered Successfully" without review
+                firebaseDatabase.getReference("orders")
+                        .child(order.getOrderId())
+                        .child("status")
+                        .setValue("Delivered Successfully")
+                        .addOnSuccessListener(unused -> {
+                            Toast.makeText(CusTrackingActivity.this,
+                                    "Order marked as complete!",
+                                    Toast.LENGTH_SHORT).show();
+                            loadCustomerOrders();
+                        })
+                        .addOnFailureListener(e -> {
+                            Toast.makeText(CusTrackingActivity.this,
+                                    "Failed to update order: " + e.getMessage(),
+                                    Toast.LENGTH_SHORT).show();
+                        });
+            });
+            reviewButtonsLayout.addView(btnSkipReview);
+
+            orderLayout.addView(reviewButtonsLayout);
         }
 
         // Show "Order Delivered Successfully" status when review is completed
@@ -261,7 +329,7 @@ public class CusTrackingActivity extends AppCompatActivity {
         ordersContainer.addView(separator);
     }
 
-    // Update order status to "Received" and navigate to feedback
+    // Update order status to "Received" and refresh the list
     private void updateOrderAndNavigateToFeedback(String orderId) {
         firebaseDatabase.getReference("orders")
                 .child(orderId)
@@ -269,18 +337,42 @@ public class CusTrackingActivity extends AppCompatActivity {
                 .setValue("Received")
                 .addOnSuccessListener(unused -> {
                     Toast.makeText(CusTrackingActivity.this,
-                            "Order received! Please add a review.",
+                            "Order received! You can now add a review (optional).",
                             Toast.LENGTH_SHORT).show();
-
-                    Intent intent = new Intent(CusTrackingActivity.this, CusFeedbackActivity.class);
-                    intent.putExtra("orderId", orderId);
-                    intent.putExtra("mandatory", true);  // Feedback is mandatory after order received
-                    startActivity(intent);
+                    loadCustomerOrders();
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(CusTrackingActivity.this,
                             "Failed to update order: " + e.getMessage(),
                             Toast.LENGTH_SHORT).show();
                 });
+    }
+
+    /**
+     * Returns the appropriate color for a given delivery status
+     */
+    private int getStatusColor(String status) {
+        if (status == null) {
+            return getResources().getColor(R.color.text_dark, null);
+        }
+
+        switch (status) {
+            case "Pending":
+                return getResources().getColor(R.color.status_ordered, null);
+            case "Confirmed":
+            case "Awaiting Pickup":
+                return getResources().getColor(R.color.status_ordered, null);
+            case "Picked Up":
+                return getResources().getColor(R.color.status_picked, null);
+            case "On the Way":
+                return getResources().getColor(R.color.status_out_for_delivery, null);
+            case "Delivered":
+                return getResources().getColor(R.color.status_delivered, null);
+            case "Received":
+            case "Delivered Successfully":
+                return getResources().getColor(R.color.primary_green, null);
+            default:
+                return getResources().getColor(R.color.text_dark, null);
+        }
     }
 }

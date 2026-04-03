@@ -165,6 +165,12 @@ public class CusCheckoutActivity extends AppCompatActivity {
         // Calculate total
         double totalAmount = CartStore.getCartTotal(this);
 
+        // Debug logging
+        android.util.Log.d("CusCheckout", "Creating order: " + orderId);
+        android.util.Log.d("CusCheckout", "Items count: " + items.size());
+        android.util.Log.d("CusCheckout", "Items: " + items.toString());
+        android.util.Log.d("CusCheckout", "Total: " + totalAmount);
+
         // Create order object
         Order order = new Order(orderId, customerId, customerName, items, totalAmount);
         order.setStatus("Pending");
@@ -175,12 +181,14 @@ public class CusCheckoutActivity extends AppCompatActivity {
         firebaseDatabase.getReference("orders").child(orderId)
                 .setValue(order)
                 .addOnSuccessListener(unused -> {
+                    android.util.Log.d("CusCheckout", "Order saved successfully!");
                     Toast.makeText(CusCheckoutActivity.this, "Order placed successfully!", Toast.LENGTH_SHORT).show();
                     CartStore.clearCart(this);
                     startActivity(new Intent(this, CusHomeActivity.class));
                     finish();
                 })
                 .addOnFailureListener(e -> {
+                    android.util.Log.e("CusCheckout", "Failed to save order: " + e.getMessage());
                     confirmButton.setEnabled(true);
                     confirmButton.setText("Confirm Order");
                     Toast.makeText(CusCheckoutActivity.this,

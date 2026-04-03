@@ -8,10 +8,12 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.EditText;
 
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.buyngo.Model.Product;
 import com.example.buyngo.R;
+import com.example.buyngo.Store.CartStore;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -25,6 +27,7 @@ import java.util.List;
 public class CusHomeActivity extends AppCompatActivity {
     private LinearLayout productContainer;
     private DatabaseReference db;
+    private TextView cartCountBadge;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,18 +112,40 @@ public class CusHomeActivity extends AppCompatActivity {
                     TextView productName = cardView.findViewById(R.id.productName);
                     TextView productCategory = cardView.findViewById(R.id.productCategory);
                     TextView productPrice = cardView.findViewById(R.id.productPrice);
+                    EditText quantityInput = cardView.findViewById(R.id.quantityInput);
                     Button addBtn = cardView.findViewById(R.id.addToCartBtn);
 
                     productName.setText(product.getName());
                     productCategory.setText(product.getCategory() != null ? product.getCategory() : "N/A");
                     productPrice.setText(String.format("$%.2f", product.getPrice()));
+                    
+                    // Set default quantity to 1
+                    quantityInput.setText("1");
 
                     // Create final copy to avoid closure issue with loop variable
                     final Product currentProduct = product;
+                    
                     addBtn.setOnClickListener(v -> {
-                        Intent intent = new Intent(CusHomeActivity.this, CusProductDetailActivity.class);
-                        intent.putExtra("productId", currentProduct.getId());
-                        startActivity(intent);
+                        String qtyStr = quantityInput.getText().toString().trim();
+                        int quantity = qtyStr.isEmpty() ? 1 : Integer.parseInt(qtyStr);
+
+                        if (quantity <= 0) {
+                            Toast.makeText(CusHomeActivity.this, "Please enter a valid quantity", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+
+                        // Add directly to cart without going to product detail page
+                        CartStore.addToCart(
+                                CusHomeActivity.this,
+                                currentProduct.getId(),
+                                currentProduct.getName(),
+                                currentProduct.getCategory(),
+                                currentProduct.getPrice(),
+                                quantity
+                        );
+
+                        Toast.makeText(CusHomeActivity.this, quantity + " x " + currentProduct.getName() + " added to cart!", Toast.LENGTH_SHORT).show();
+                        quantityInput.setText("1"); // Reset quantity for next purchase
                     });
 
                     productContainer.addView(cardView);
@@ -138,5 +163,21 @@ public class CusHomeActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         loadProductsFromFirebase();
+        updateCartCounter();
+    }
+
+    /**
+     * Updates the cart item counter on the home screen
+     */
+    private void updateCartCounter() {
+        int cartCount = CartStore.getCartItemCount(this);
+        if (cartCountBadge != null) {
+            if (cartCount > 0) {
+                cartCountBadge.setText(String.valueOf(cartCount));
+                cartCountBadge.setVisibility(android.view.View.VISIBLE);
+            } else {
+                cartCountBadge.setVisibility(android.view.View.GONE);
+            }
+        }
     }
 }
