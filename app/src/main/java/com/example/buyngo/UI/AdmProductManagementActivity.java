@@ -92,7 +92,7 @@ public class AdmProductManagementActivity extends AppCompatActivity {
             ScanOptions options = new ScanOptions();
             options.setPrompt("Scan barcode to find product");
             options.setBeepEnabled(true);
-            options.setOrientationLocked(true); // ✅ Fixed: locks to portrait, prevents scrambled preview
+            options.setOrientationLocked(true); 
             barcodeLauncher.launch(options);
         });
 
