@@ -2,6 +2,9 @@ package com.example.buyngo.UI;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RatingBar;
 import android.widget.TextView;
@@ -18,10 +21,13 @@ import java.util.Map;
 public class CusFeedbackActivity extends AppCompatActivity {
 
     private static final String DB_URL = "https://buyngo-5b43e-default-rtdb.firebaseio.com/";
+    private static final String TAG = "CusFeedback";
 
     private RatingBar ratingBar;
     private TextView ratingLabel;
     private EditText reviewComment;
+    private String orderId;
+    private boolean isMandatory;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,11 +36,42 @@ public class CusFeedbackActivity extends AppCompatActivity {
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        toolbar.setNavigationOnClickListener(v -> finish());
+        toolbar.setNavigationOnClickListener(v -> {
+            if (!isMandatory) {
+                finish();
+            } else {
+                Toast.makeText(this, "Please provide feedback before proceeding", Toast.LENGTH_SHORT).show();
+            }
+        });
 
         ratingBar = findViewById(R.id.ratingBar);
         ratingLabel = findViewById(R.id.ratingLabel);
         reviewComment = findViewById(R.id.reviewComment);
+        
+        // Get orderId from intent
+        orderId = getIntent().getStringExtra("orderId");
+        Log.d(TAG, "Order ID: " + orderId);
+        
+        // Check if this is mandatory feedback (coming from order received)
+        isMandatory = getIntent().getBooleanExtra("mandatory", false);
+        Log.d(TAG, "Mandatory feedback: " + isMandatory);
+        
+        // Show/hide skip button based on mandatory flag
+        Button skipButton = findViewById(R.id.skipReview);
+        if (isMandatory) {
+            skipButton.setVisibility(View.GONE);
+        } else {
+            skipButton.setVisibility(View.VISIBLE);
+        }
+        
+        // Set skip button click listener
+        skipButton.setOnClickListener(v -> {
+            if (!isMandatory) {
+                navigateHome();
+            } else {
+                Toast.makeText(this, "Please provide feedback before proceeding", Toast.LENGTH_SHORT).show();
+            }
+        });
 
         ratingBar.setOnRatingBarChangeListener((bar, rating, fromUser) -> {
             if (rating <= 0f) {
@@ -75,7 +112,7 @@ public class CusFeedbackActivity extends AppCompatActivity {
                                         @Override
                                         public void onSuccess() {
                                             Toast.makeText(CusFeedbackActivity.this,
-                                                    "Thanks for your feedback",
+                                                    "Thanks for your feedback!",
                                                     Toast.LENGTH_SHORT).show();
                                             navigateHome();
                                         }
@@ -95,8 +132,6 @@ public class CusFeedbackActivity extends AppCompatActivity {
                         }
                     });
         });
-
-        findViewById(R.id.skipReview).setOnClickListener(v -> navigateHome());
     }
 
     private void navigateHome() {

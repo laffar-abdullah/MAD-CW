@@ -248,6 +248,7 @@ public class CusTrackingActivity extends AppCompatActivity {
 
                     Intent intent = new Intent(CusTrackingActivity.this, CusFeedbackActivity.class);
                     intent.putExtra("orderId", orderId);
+                    intent.putExtra("mandatory", true);  // Feedback is mandatory after order received
                     startActivity(intent);
                 })
                 .addOnFailureListener(e -> {
