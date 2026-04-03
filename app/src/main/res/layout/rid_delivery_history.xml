@@ -1,4 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    rid_delivery_history.xml
+
+    ── CHANGE FROM ORIGINAL ──────────────────────────────────────────────────
+    BUG FIX: txtEmptyHistory was originally INSIDE the historyContainer
+    LinearLayout.  RidDeliveryHistoryActivity.renderHistory() calls
+    historyContainer.removeAllViews() to clear stale cards before rebuilding
+    the list.  Because txtEmptyHistory was a child of historyContainer,
+    removeAllViews() silently detached it from the view hierarchy on every
+    refresh.  The subsequent setVisibility(View.VISIBLE) call operated on
+    a view with no parent, so it had zero visible effect — the empty state
+    was never shown, even when the rider had zero completed deliveries.
+
+    FIX: txtEmptyHistory is now placed OUTSIDE and ABOVE the ScrollView that
+    wraps historyContainer.  removeAllViews() on historyContainer can no
+    longer touch it, so setVisibility works correctly from Java.
+    ─────────────────────────────────────────────────────────────────────────
+-->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -6,6 +24,7 @@
     android:orientation="vertical"
     android:background="@color/screen_bg">
 
+    <!-- Toolbar with up/back navigation -->
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
@@ -15,112 +34,127 @@
         app:titleTextColor="@color/toolbar_text"
         app:navigationIcon="?attr/homeAsUpIndicator" />
 
+    <!--
+        BUG FIX: txtEmptyHistory is now here — a direct child of the root
+        LinearLayout, NOT inside historyContainer.  This means
+        historyContainer.removeAllViews() can never detach it.
+    -->
+    <TextView
+        android:id="@+id/txtEmptyHistory"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="No delivery history yet.\nCompleted deliveries will appear here."
+        android:gravity="center"
+        android:padding="48dp"
+        android:textSize="15sp"
+        android:textColor="@color/text_light"
+        android:visibility="gone" />
+
+    <!-- Scrollable area for the dynamically inflated delivery history cards -->
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <!--
+            historyContainer: cards are added/removed here programmatically.
+            It no longer contains txtEmptyHistory so removeAllViews() is safe.
+        -->
         <LinearLayout
+            android:id="@+id/historyContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="12dp">
+            android:padding="12dp" />
 
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="3dp"
-                app:cardBackgroundColor="@color/white">
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:orientation="vertical" android:padding="16dp">
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                        android:orientation="horizontal">
-                        <TextView android:layout_width="0dp" android:layout_height="wrap_content"
-                            android:layout_weight="1" android:text="Order #BNG-001"
-                            android:textSize="15sp" android:textStyle="bold" android:textColor="@color/text_dark" />
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="Delivered" android:textSize="12sp"
-                            android:textColor="@color/white" android:background="@color/primary_green"
-                            android:paddingStart="8dp" android:paddingEnd="8dp"
-                            android:paddingTop="3dp" android:paddingBottom="3dp" />
-                    </LinearLayout>
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="Customer: Alice Johnson" android:textSize="13sp"
-                        android:textColor="@color/text_light" android:paddingTop="4dp" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="Address: 12 Main Street, Springfield" android:textSize="13sp"
-                        android:textColor="@color/text_light" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="Date: 12 Feb 2026" android:textSize="12sp"
-                        android:textColor="@color/text_light" android:paddingTop="4dp" />
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="3dp"
-                app:cardBackgroundColor="@color/white">
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:orientation="vertical" android:padding="16dp">
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                        android:orientation="horizontal">
-                        <TextView android:layout_width="0dp" android:layout_height="wrap_content"
-                            android:layout_weight="1" android:text="Order #BNG-003"
-                            android:textSize="15sp" android:textStyle="bold" android:textColor="@color/text_dark" />
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="Delivered" android:textSize="12sp"
-                            android:textColor="@color/white" android:background="@color/primary_green"
-                            android:paddingStart="8dp" android:paddingEnd="8dp"
-                            android:paddingTop="3dp" android:paddingBottom="3dp" />
-                    </LinearLayout>
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="Customer: Bob Smith" android:textSize="13sp"
-                        android:textColor="@color/text_light" android:paddingTop="4dp" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="Address: 45 Oak Avenue, Shelbyville" android:textSize="13sp"
-                        android:textColor="@color/text_light" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="Date: 5 Feb 2026" android:textSize="12sp"
-                        android:textColor="@color/text_light" android:paddingTop="4dp" />
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="3dp"
-                app:cardBackgroundColor="@color/white">
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:orientation="vertical" android:padding="16dp">
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                        android:orientation="horizontal">
-                        <TextView android:layout_width="0dp" android:layout_height="wrap_content"
-                            android:layout_weight="1" android:text="Order #BNG-005"
-                            android:textSize="15sp" android:textStyle="bold" android:textColor="@color/text_dark" />
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="Delivered" android:textSize="12sp"
-                            android:textColor="@color/white" android:background="@color/primary_green"
-                            android:paddingStart="8dp" android:paddingEnd="8dp"
-                            android:paddingTop="3dp" android:paddingBottom="3dp" />
-                    </LinearLayout>
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="Customer: Carol White" android:textSize="13sp"
-                        android:textColor="@color/text_light" android:paddingTop="4dp" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="Address: 7 Elm Road, Capitol City" android:textSize="13sp"
-                        android:textColor="@color/text_light" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="Date: 1 Feb 2026" android:textSize="12sp"
-                        android:textColor="@color/text_light" android:paddingTop="4dp" />
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-        </LinearLayout>
     </ScrollView>
+
+    <!-- Bottom navigation bar shared across all rider screens -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:orientation="horizontal"
+        android:background="@color/white"
+        android:elevation="8dp">
+
+        <!-- Tasks -->
+        <LinearLayout
+            android:id="@+id/navDashboard"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@android:drawable/ic_menu_today" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tasks"
+                android:textSize="10sp" />
+        </LinearLayout>
+
+        <!-- History (active tab — highlighted) -->
+        <LinearLayout
+            android:id="@+id/navHistory"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@android:drawable/ic_menu_recent_history"
+                app:tint="@color/primary_green" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="History"
+                android:textSize="10sp"
+                android:textColor="@color/primary_green" />
+        </LinearLayout>
+
+        <!-- Reviews -->
+        <LinearLayout
+            android:id="@+id/navReviews"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@android:drawable/btn_star_big_on" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Reviews"
+                android:textSize="10sp" />
+        </LinearLayout>
+
+        <!-- Profile -->
+        <LinearLayout
+            android:id="@+id/navProfile"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@android:drawable/ic_menu_myplaces" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Profile"
+                android:textSize="10sp" />
+        </LinearLayout>
+
+    </LinearLayout>
 
 </LinearLayout>

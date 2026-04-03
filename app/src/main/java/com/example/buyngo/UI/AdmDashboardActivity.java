@@ -12,21 +12,30 @@ public class AdmDashboardActivity extends AppCompatActivity {
         setContentView(R.layout.adm_dashboard);
 
         // Manage Products
-        findViewById(R.id.cardManageProducts).setOnClickListener(v -> {
-            // Uncomment or create this activity when needed
+        findViewById(R.id.btnManageProducts).setOnClickListener(v -> {
             // startActivity(new Intent(this, AdmProductManagementActivity.class));
         });
 
         // Manage Orders
-        findViewById(R.id.cardManageOrders).setOnClickListener(v ->
+        findViewById(R.id.btnManageOrders).setOnClickListener(v ->
                 startActivity(new Intent(this, AdmOrderManagementActivity.class)));
 
         // Register Rider
-        findViewById(R.id.cardRegisterRider).setOnClickListener(v ->
+        findViewById(R.id.btnRegisterRider).setOnClickListener(v ->
                 startActivity(new Intent(this, AdmRegisterRiderActivity.class)));
 
+        // Assign Rider
+        findViewById(R.id.btnAssignRider).setOnClickListener(v -> {
+            // startActivity(new Intent(this, AdmAssignRiderActivity.class));
+        });
+
+        // View Feedbacks
+        findViewById(R.id.btnViewFeedbacks).setOnClickListener(v -> {
+            // startActivity(new Intent(this, AdmViewFeedbacksActivity.class));
+        });
+
         // Logout
-        findViewById(R.id.cardLogout).setOnClickListener(v -> {
+        findViewById(R.id.btnLogout).setOnClickListener(v -> {
             Intent intent = new Intent(this, AuthWelcomeActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
