@@ -72,11 +72,11 @@ public class Order {
             return "No items";
         }
         StringBuilder sb = new StringBuilder();
-        for (String itemName : items.keySet()) {
+        for (Map.Entry<String, Integer> entry : items.entrySet()) {
             if (sb.length() > 0) {
                 sb.append(", ");
             }
-            sb.append(itemName);
+            sb.append(entry.getValue()).append("x ").append(entry.getKey());
         }
         return sb.toString();
     }
