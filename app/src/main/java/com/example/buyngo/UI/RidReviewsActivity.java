@@ -2,10 +2,17 @@ package com.example.buyngo.UI;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import com.example.buyngo.R;
+
+import java.text.DateFormat;
+import java.util.List;
 
 /**
  * RidReviewsActivity — shows customer feedback cards for this rider.
@@ -29,6 +36,9 @@ import com.example.buyngo.R;
  */
 public class RidReviewsActivity extends AppCompatActivity {
 
+    private LinearLayout reviewsContainer;
+    private TextView txtNoReviews;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,6 +51,9 @@ public class RidReviewsActivity extends AppCompatActivity {
         }
 
         setContentView(R.layout.rid_reviews);
+
+        reviewsContainer = findViewById(R.id.reviewsContainer);
+        txtNoReviews = findViewById(R.id.txtNoReviews);
 
         // ── IMPROVEMENT: register toolbar as the ActionBar ─────────────────
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -61,5 +74,71 @@ public class RidReviewsActivity extends AppCompatActivity {
 
         findViewById(R.id.navProfile).setOnClickListener(v ->
                 startActivity(new Intent(this, RidProfileActivity.class)));
+
+        renderReviews();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        renderReviews();
+    }
+
+    private void renderReviews() {
+        RiderSessionStore.RiderProfile profile = RiderSessionStore.getCurrentRider(this);
+        if (profile == null) {
+            startActivity(new Intent(this, RidLoginActivity.class));
+            finish();
+            return;
+        }
+
+        FirebaseRiderRepository.getReviewsForRider(
+                profile.email,
+                new FirebaseRiderRepository.ResultCallback<List<FirebaseRiderRepository.RiderReview>>() {
+                    @Override
+                    public void onSuccess(List<FirebaseRiderRepository.RiderReview> reviews) {
+                        reviewsContainer.removeAllViews();
+
+                        if (reviews.isEmpty()) {
+                            txtNoReviews.setVisibility(View.VISIBLE);
+                            return;
+                        }
+
+                        txtNoReviews.setVisibility(View.GONE);
+                        LayoutInflater inflater = LayoutInflater.from(RidReviewsActivity.this);
+                        DateFormat dateFormat = android.text.format.DateFormat
+                                .getMediumDateFormat(RidReviewsActivity.this);
+
+                        for (FirebaseRiderRepository.RiderReview review : reviews) {
+                            View card = inflater.inflate(
+                                    R.layout.item_rider_review,
+                                    reviewsContainer,
+                                    false);
+
+                            TextView txtOrderId = card.findViewById(R.id.txtReviewOrderId);
+                            TextView txtRating = card.findViewById(R.id.txtReviewRating);
+                            TextView txtCustomer = card.findViewById(R.id.txtReviewCustomer);
+                            TextView txtComment = card.findViewById(R.id.txtReviewComment);
+                            TextView txtDate = card.findViewById(R.id.txtReviewDate);
+
+                            txtOrderId.setText("Order #" + review.orderId);
+                            txtRating.setText(review.rating + " stars");
+                            txtCustomer.setText("Customer: " + review.customerName);
+                            txtComment.setText(
+                                    review.comment == null || review.comment.trim().isEmpty()
+                                            ? "No written comment"
+                                            : review.comment);
+                            txtDate.setText(dateFormat.format(review.createdAt));
+
+                            reviewsContainer.addView(card);
+                        }
+                    }
+
+                    @Override
+                    public void onError(String message) {
+                        reviewsContainer.removeAllViews();
+                        txtNoReviews.setVisibility(View.VISIBLE);
+                    }
+                });
     }
 }
