@@ -3,6 +3,7 @@ package com.example.buyngo.UI;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -25,6 +26,7 @@ public class CusTrackingActivity extends AppCompatActivity {
     private LinearLayout ordersContainer;
     private FirebaseAuth firebaseAuth;
     private FirebaseDatabase firebaseDatabase;
+    private static final String TAG = "CusTracking";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,7 +34,7 @@ public class CusTrackingActivity extends AppCompatActivity {
         setContentView(R.layout.cus_tracking);
 
         firebaseAuth = FirebaseAuth.getInstance();
-        firebaseDatabase = FirebaseDatabase.getInstance();
+        firebaseDatabase = FirebaseDatabase.getInstance("https://buyngo-5b43e-default-rtdb.firebaseio.com/");
 
         ordersContainer = findViewById(R.id.ordersContainer);
 
@@ -58,6 +60,7 @@ public class CusTrackingActivity extends AppCompatActivity {
         }
 
         String customerId = firebaseAuth.getCurrentUser().getUid();
+        Log.d(TAG, "Loading orders for customer: " + customerId);
         ordersContainer.removeAllViews();
 
         firebaseDatabase.getReference("orders")
@@ -75,17 +78,23 @@ public class CusTrackingActivity extends AppCompatActivity {
                             return;
                         }
 
+                        Log.d(TAG, "Total orders in Firebase: " + snapshot.getChildrenCount());
                         boolean foundOrder = false;
 
                         for (DataSnapshot orderSnapshot : snapshot.getChildren()) {
                             try {
                                 Order order = orderSnapshot.getValue(Order.class);
 
-                                if (order != null && customerId.equals(order.getCustomerId())) {
-                                    foundOrder = true;
-                                    displayOrderStatus(order);
+                                if (order != null) {
+                                    Log.d(TAG, "Found order: " + order.getOrderId() + ", customerId: " + order.getCustomerId() + ", status: " + order.getStatus());
+                                    if (customerId.equals(order.getCustomerId())) {
+                                        foundOrder = true;
+                                        Log.d(TAG, "Displaying order: " + order.getOrderId());
+                                        displayOrderStatus(order);
+                                    }
                                 }
                             } catch (Exception e) {
+                                Log.e(TAG, "Error loading order", e);
                                 Toast.makeText(CusTrackingActivity.this,
                                         "Error loading order: " + e.getMessage(),
                                         Toast.LENGTH_SHORT).show();
@@ -103,6 +112,7 @@ public class CusTrackingActivity extends AppCompatActivity {
 
                     @Override
                     public void onCancelled(DatabaseError error) {
+                        Log.e(TAG, "Failed to load orders: " + error.getMessage());
                         Toast.makeText(CusTrackingActivity.this,
                                 "Failed to load orders: " + error.getMessage(),
                                 Toast.LENGTH_SHORT).show();
@@ -142,13 +152,31 @@ public class CusTrackingActivity extends AppCompatActivity {
         tvItems.setPadding(0, 4, 0, 0);
         orderLayout.addView(tvItems);
 
-        if (order.getRiderId() != null && !order.getRiderId().isEmpty()) {
-            TextView tvRider = new TextView(this);
-            tvRider.setText("Rider: " + order.getRiderName());
-            tvRider.setTextSize(14);
-            tvRider.setTextColor(getResources().getColor(R.color.text_light, null));
-            tvRider.setPadding(0, 4, 0, 8);
-            orderLayout.addView(tvRider);
+        // Show rider details if order is confirmed and has a rider assigned
+        if (order.getStatus() != null && (order.getStatus().equals("Confirmed") || order.getStatus().equals("Awaiting Pickup") || order.getStatus().equals("Delivered"))) {
+            if (order.getRiderId() != null && !order.getRiderId().isEmpty()) {
+                TextView tvRiderLabel = new TextView(this);
+                tvRiderLabel.setText("Assigned Rider:");
+                tvRiderLabel.setTextSize(14);
+                tvRiderLabel.setTypeface(tvRiderLabel.getTypeface(), Typeface.BOLD);
+                tvRiderLabel.setTextColor(getResources().getColor(R.color.text_dark, null));
+                tvRiderLabel.setPadding(0, 8, 0, 0);
+                orderLayout.addView(tvRiderLabel);
+
+                TextView tvRider = new TextView(this);
+                tvRider.setText("Name: " + (order.getRiderName() != null ? order.getRiderName() : "Assigned"));
+                tvRider.setTextSize(13);
+                tvRider.setTextColor(getResources().getColor(R.color.text_light, null));
+                tvRider.setPadding(0, 4, 0, 0);
+                orderLayout.addView(tvRider);
+            }
+        } else if (order.getStatus() != null && order.getStatus().equals("Pending")) {
+            TextView tvPendingInfo = new TextView(this);
+            tvPendingInfo.setText("Waiting for admin confirmation...");
+            tvPendingInfo.setTextSize(13);
+            tvPendingInfo.setTextColor(getResources().getColor(R.color.status_ordered, null));
+            tvPendingInfo.setPadding(0, 4, 0, 0);
+            orderLayout.addView(tvPendingInfo);
         }
 
         Button btnReceived = new Button(this);
@@ -162,14 +190,37 @@ public class CusTrackingActivity extends AppCompatActivity {
         btnParams.setMargins(0, 12, 0, 0);
         btnReceived.setLayoutParams(btnParams);
 
-        boolean isDelivered = order.getStatus() != null && order.getStatus().equals("Delivered");
-        btnReceived.setEnabled(isDelivered);
-        btnReceived.setAlpha(isDelivered ? 1f : 0.5f);
-
         final String orderId = order.getOrderId();
-        btnReceived.setOnClickListener(v -> updateOrderAndNavigateToFeedback(orderId));
+        final String currentStatus = order.getStatus();
+        
+        // Show "I have received the order" button only if order is Delivered
+        boolean isDelivered = currentStatus != null && currentStatus.equals("Delivered");
+        if (!isDelivered) {
+            btnReceived.setVisibility(View.GONE);
+        }
 
+        btnReceived.setOnClickListener(v -> updateOrderAndNavigateToFeedback(orderId));
         orderLayout.addView(btnReceived);
+
+        // Show "Add Feedback" button if order has been Received (to go back to feedback)
+        if (currentStatus != null && currentStatus.equals("Received")) {
+            Button btnFeedback = new Button(this);
+            btnFeedback.setText("Add Feedback");
+            btnFeedback.setTextSize(14);
+            btnFeedback.setTextColor(getResources().getColor(R.color.white, null));
+            btnFeedback.setBackgroundColor(getResources().getColor(R.color.primary_green, null));
+            LinearLayout.LayoutParams feedbackParams = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT);
+            feedbackParams.setMargins(0, 12, 0, 0);
+            btnFeedback.setLayoutParams(feedbackParams);
+            btnFeedback.setOnClickListener(v -> {
+                Intent intent = new Intent(CusTrackingActivity.this, CusFeedbackActivity.class);
+                intent.putExtra("orderId", orderId);
+                startActivity(intent);
+            });
+            orderLayout.addView(btnFeedback);
+        }
 
         View separator = new View(this);
         separator.setLayoutParams(new LinearLayout.LayoutParams(

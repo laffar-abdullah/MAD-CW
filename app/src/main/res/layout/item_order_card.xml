@@ -50,14 +50,31 @@
             android:textSize="13sp"
             android:textColor="@color/status_ordered" />
 
-        <Button
-            android:id="@+id/btnAssignRider"
-            android:layout_width="wrap_content"
-            android:layout_height="40dp"
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
             android:layout_marginTop="12dp"
-            android:text="Assign Rider"
-            android:textColor="@color/white"
-            android:background="@color/primary_green" />
+            android:gravity="end">
+
+            <Button
+                android:id="@+id/btnConfirmOrder"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:layout_marginEnd="8dp"
+                android:text="Confirm"
+                android:textColor="@color/white"
+                android:background="@color/primary_green" />
+
+            <Button
+                android:id="@+id/btnAssignRider"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:text="Assign Rider"
+                android:textColor="@color/white"
+                android:background="@color/primary_green" />
+
+        </LinearLayout>
 
     </LinearLayout>
 
