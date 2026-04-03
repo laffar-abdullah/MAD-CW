@@ -16,6 +16,7 @@ import androidx.cardview.widget.CardView;
 
 import com.example.buyngo.Model.Order;
 import com.example.buyngo.R;
+import com.example.buyngo.Utils.FirebaseOrderCleanup;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
@@ -42,6 +43,9 @@ public class AdmOrderManagementActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setNavigationOnClickListener(v -> finish());
+
+        // Clean up old demo orders on app load
+        FirebaseOrderCleanup.cleanupOldOrders();
 
         loadOrdersFromFirebase();
     }
@@ -161,7 +165,10 @@ public class AdmOrderManagementActivity extends AppCompatActivity {
 
 
     private void openAssignRider(String orderId, String customerName, String customerAddress) {
-        Intent intent = new Intent(this, AdmViewFeedbackActivity.class);
+        Intent intent = new Intent(this, AdmAssignRiderActivity.class);
+        intent.putExtra("extra_order_id", orderId);
+        intent.putExtra("extra_customer_name", customerName);
+        intent.putExtra("extra_customer_address", customerAddress);
         startActivity(intent);
     }
 }
