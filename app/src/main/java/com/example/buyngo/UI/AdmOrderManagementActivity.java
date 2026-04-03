@@ -64,11 +64,10 @@ public class AdmOrderManagementActivity extends AppCompatActivity {
                             return;
                         }
 
-                        Log.d(TAG, "Found " + snapshot.getChildrenCount() + " orders");
+                        Log.d(TAG, "Found " + snapshot.getChildrenCount() + " total orders");
 
                         for (DataSnapshot orderSnapshot : snapshot.getChildren()) {
                             try {
-                                Log.d(TAG, "Order data: " + orderSnapshot.getValue());
                                 Order order = orderSnapshot.getValue(Order.class);
                                 if (order != null) {
                                     String customerName = order.getCustomerName() == null
@@ -79,6 +78,11 @@ public class AdmOrderManagementActivity extends AppCompatActivity {
                                     if (customerAddress == null || customerAddress.trim().isEmpty()) {
                                         customerAddress = "Address unavailable";
                                     }
+                                    
+                                    Log.d(TAG, "Loading order: " + order.getOrderId() + 
+                                          ", items: " + (order.getItems() != null ? order.getItems().size() : 0) +
+                                          ", total: " + order.getTotalAmount());
+                                    
                                     inflateOrderCard(order, customerName, customerAddress);
                                 } else {
                                     Log.w(TAG, "Order is null from snapshot");
@@ -113,7 +117,18 @@ public class AdmOrderManagementActivity extends AppCompatActivity {
 
         tvOrderId.setText("Order #" + order.getOrderId());
         tvCustomerName.setText("Customer: " + customerName);
-        tvItemsAndTotal.setText("Items: " + order.getItemsAsString() + "  |  Total: " + order.getTotalFormatted());
+        
+        // Build items string with quantities
+        String itemsDisplay = order.getItemsAsString();
+        String totalDisplay = order.getTotalFormatted();
+        
+        Log.d(TAG, "Order: " + order.getOrderId() + 
+              " | Items: " + itemsDisplay + 
+              " | Total: " + totalDisplay + 
+              " | Items Map: " + (order.getItems() != null ? order.getItems().toString() : "null") +
+              " | Total Amount: " + order.getTotalAmount());
+        
+        tvItemsAndTotal.setText("Items: " + itemsDisplay + "  |  Total: " + totalDisplay);
         tvStatus.setText("Status: " + (order.getStatus() == null ? "Pending" : order.getStatus()));
 
         // Hide confirm button if order is already confirmed
