@@ -1,6 +1,7 @@
 package com.example.buyngo.UI;
 
 import androidx.annotation.NonNull;
+import android.net.Uri;
 import android.util.Log;
 
 import com.google.firebase.database.DataSnapshot;
@@ -9,6 +10,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,6 +42,7 @@ final class FirebaseRiderRepository {
         public String password;
         public String vehicle;
         public String vehicleNumber;
+        public String profileImageUrl;
         public long createdAt;
 
         public RiderAccount() {
@@ -154,6 +158,75 @@ final class FirebaseRiderRepository {
                 })
                 .addOnFailureListener(e -> callback.onError(
                         e.getMessage() == null ? "Login failed" : e.getMessage()));
+    }
+
+    static void updateRiderProfileImage(String email, Uri imageUri, ResultCallback<RiderAccount> callback) {
+        if (imageUri == null) {
+            callback.onError("Please choose a profile picture");
+            return;
+        }
+
+        String riderId = riderIdFromEmail(email);
+        DatabaseReference riderRef = db().child(NODE_RIDERS).child(riderId);
+        StorageReference imageRef = FirebaseStorage.getInstance()
+                .getReference()
+                .child("rider_profiles")
+                .child(riderId)
+                .child("profile.jpg");
+
+        imageRef.putFile(imageUri)
+                .addOnSuccessListener(taskSnapshot -> imageRef.getDownloadUrl()
+                        .addOnSuccessListener(downloadUri -> riderRef.get()
+                                .addOnSuccessListener(snapshot -> {
+                                    RiderAccount account = snapshot.getValue(RiderAccount.class);
+                                    if (account == null) {
+                                        callback.onError("Rider account not found");
+                                        return;
+                                    }
+
+                                    account.profileImageUrl = downloadUri.toString();
+                                    riderRef.setValue(account)
+                                            .addOnSuccessListener(unused -> callback.onSuccess(account))
+                                            .addOnFailureListener(e -> callback.onError(
+                                                    e.getMessage() == null ? "Failed to save profile picture" : e.getMessage()));
+                                })
+                                .addOnFailureListener(e -> callback.onError(
+                                        e.getMessage() == null ? "Failed to load rider account" : e.getMessage())))
+                        .addOnFailureListener(e -> callback.onError(
+                                e.getMessage() == null ? "Failed to resolve profile picture URL" : e.getMessage())))
+                .addOnFailureListener(e -> callback.onError(
+                        e.getMessage() == null ? "Failed to upload profile picture" : e.getMessage()));
+    }
+
+    static void changeRiderPassword(
+            String email,
+            String currentPassword,
+            String newPassword,
+            ResultCallback<RiderAccount> callback) {
+
+        String riderId = riderIdFromEmail(email);
+        DatabaseReference riderRef = db().child(NODE_RIDERS).child(riderId);
+
+        riderRef.get()
+                .addOnSuccessListener(snapshot -> {
+                    RiderAccount account = snapshot.getValue(RiderAccount.class);
+                    if (account == null) {
+                        callback.onError("Rider account not found");
+                        return;
+                    }
+                    if (account.password == null || !account.password.equals(currentPassword)) {
+                        callback.onError("Current password is incorrect");
+                        return;
+                    }
+
+                    account.password = newPassword;
+                    riderRef.setValue(account)
+                            .addOnSuccessListener(unused -> callback.onSuccess(account))
+                            .addOnFailureListener(e -> callback.onError(
+                                    e.getMessage() == null ? "Failed to update password" : e.getMessage()));
+                })
+                .addOnFailureListener(e -> callback.onError(
+                        e.getMessage() == null ? "Failed to load rider account" : e.getMessage()));
     }
 
     static void getAllRiders(ResultCallback<List<RiderAccount>> callback) {
