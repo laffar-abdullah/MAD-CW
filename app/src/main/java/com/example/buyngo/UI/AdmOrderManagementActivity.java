@@ -148,8 +148,17 @@ public class AdmOrderManagementActivity extends AppCompatActivity {
             btnConfirmOrder.setOnClickListener(v -> confirmOrder(order.getOrderId(), tvStatus, btnConfirmOrder));
         }
 
-        btnAssignRider.setOnClickListener(v ->
-                openAssignRider(order.getOrderId(), customerName, customerAddress));
+        // Hide assign rider button if order is already assigned (has rider or status beyond Confirmed)
+        if (order.getStatus() != null && 
+            (order.getStatus().equals("Confirmed") && order.getAssignedRiderEmail() != null && !order.getAssignedRiderEmail().isEmpty())) {
+            btnAssignRider.setVisibility(View.GONE);
+        } else if (order.getStatus() == null || order.getStatus().equals("Pending")) {
+            // Assign rider button only available after order is confirmed
+            btnAssignRider.setEnabled(false);
+        } else {
+            btnAssignRider.setOnClickListener(v ->
+                    openAssignRider(order.getOrderId(), customerName, customerAddress));
+        }
 
         ordersContainer.addView(cardView);
     }

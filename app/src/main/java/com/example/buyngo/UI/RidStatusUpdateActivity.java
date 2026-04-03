@@ -257,10 +257,14 @@ public class RidStatusUpdateActivity extends AppCompatActivity {
         txtOrderNumber.setText("Order: #" + orderId);
         txtCurrentStatus.setText("Current status: " + status);
 
+        // Fallback: treat "Confirmed" as "Awaiting Pickup" for backward compatibility
+        // (in case old orders haven't been migrated yet)
+        String normalizedStatus = "Confirmed".equals(status) ? OrderStatusStore.DEFAULT_STATUS : status;
+
         // Only the next valid step stays clickable; past/future steps are dimmed.
-        setButtonState(btnPickedUp, OrderStatusStore.DEFAULT_STATUS.equals(status));
-        setButtonState(btnOutForDelivery, OrderStatusStore.STATUS_PICKED_UP.equals(status));
-        setButtonState(btnDelivered, OrderStatusStore.STATUS_ON_THE_WAY.equals(status));
+        setButtonState(btnPickedUp, OrderStatusStore.DEFAULT_STATUS.equals(normalizedStatus));
+        setButtonState(btnOutForDelivery, OrderStatusStore.STATUS_PICKED_UP.equals(normalizedStatus));
+        setButtonState(btnDelivered, OrderStatusStore.STATUS_ON_THE_WAY.equals(normalizedStatus));
     }
 
     /**

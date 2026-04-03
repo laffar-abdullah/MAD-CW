@@ -13,6 +13,7 @@ public class Order {
     private String status;
     private String riderId;
     private String riderName;
+    private String assignedRiderEmail;
     private long createdAt;
     private long updatedAt;
 
@@ -21,6 +22,7 @@ public class Order {
         this.status = "Pending";
         this.riderId = "";
         this.riderName = "";
+        this.assignedRiderEmail = "";
     }
 
     public Order(String orderId, String customerId, String customerName,
@@ -33,6 +35,7 @@ public class Order {
         this.status = "Pending";
         this.riderId = "";
         this.riderName = "";
+        this.assignedRiderEmail = "";
         this.createdAt = System.currentTimeMillis();
         this.updatedAt = System.currentTimeMillis();
     }
@@ -60,6 +63,9 @@ public class Order {
 
     public String getRiderName() { return riderName; }
     public void setRiderName(String riderName) { this.riderName = riderName; }
+
+    public String getAssignedRiderEmail() { return assignedRiderEmail; }
+    public void setAssignedRiderEmail(String assignedRiderEmail) { this.assignedRiderEmail = assignedRiderEmail; }
 
     public long getCreatedAt() { return createdAt; }
     public void setCreatedAt(long createdAt) { this.createdAt = createdAt; }

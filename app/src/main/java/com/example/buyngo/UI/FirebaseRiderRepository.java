@@ -272,11 +272,12 @@ final class FirebaseRiderRepository {
             final String finalRiderName = riderName;
             
             Log.d(TAG, "Saving assignedRiderEmail: " + riderEmail + " for order: " + orderId);
-            // Update only rider-related fields - use assignedRiderEmail for filtering
+            // Update rider-related fields AND set initial status to "Awaiting Pickup" for rider workflow
             orderRef.child("assignedRiderEmail").setValue(riderEmail);
-            orderRef.child("riderName").setValue(finalRiderName)
+            orderRef.child("riderName").setValue(finalRiderName);
+            orderRef.child("status").setValue("Awaiting Pickup")  // Set rider's initial status
                     .addOnSuccessListener(unused -> {
-                        Log.d(TAG, "✓ Order assigned successfully to rider: " + riderEmail);
+                        Log.d(TAG, "✓ Order assigned successfully to rider: " + riderEmail + " with status: Awaiting Pickup");
                         callback.onSuccess();
                     })
                     .addOnFailureListener(e -> {

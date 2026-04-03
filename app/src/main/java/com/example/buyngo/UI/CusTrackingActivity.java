@@ -80,7 +80,7 @@ public class CusTrackingActivity extends AppCompatActivity {
 
                         Log.d(TAG, "Total orders in Firebase: " + snapshot.getChildrenCount());
                         Log.d(TAG, "Current customer ID: " + customerId);
-                        boolean foundOrder = false;
+                        int ordersFound = 0;
 
                         for (DataSnapshot orderSnapshot : snapshot.getChildren()) {
                             try {
@@ -90,13 +90,13 @@ public class CusTrackingActivity extends AppCompatActivity {
                                     String orderCustomerId = order.getCustomerId();
                                     Log.d(TAG, "Found order: " + order.getOrderId() + ", customerId: " + orderCustomerId + ", status: " + order.getStatus());
                                     
-                                    // Match if customerId is set and equals current user, or if no customerId is set (legacy orders)
+                                    // Display order if customerId matches current user
                                     if (orderCustomerId != null && customerId.equals(orderCustomerId)) {
-                                        foundOrder = true;
+                                        ordersFound++;
                                         Log.d(TAG, "✓ Displaying order: " + order.getOrderId());
                                         displayOrderStatus(order);
-                                    } else if (orderCustomerId == null || orderCustomerId.isEmpty()) {
-                                        Log.d(TAG, "⚠ Order has no customerId: " + order.getOrderId());
+                                    } else {
+                                        Log.d(TAG, "⊘ Skipping order (different customer): " + order.getOrderId() + " | Expected: " + customerId + " | Got: " + orderCustomerId);
                                     }
                                 } else {
                                     Log.w(TAG, "Order is null from snapshot");
@@ -109,12 +109,15 @@ public class CusTrackingActivity extends AppCompatActivity {
                             }
                         }
 
-                        if (!foundOrder) {
+                        if (ordersFound == 0) {
                             TextView tvNoOrders = new TextView(CusTrackingActivity.this);
                             tvNoOrders.setText("No orders to track");
                             tvNoOrders.setTextSize(16);
                             tvNoOrders.setPadding(16, 16, 16, 16);
                             ordersContainer.addView(tvNoOrders);
+                            Log.d(TAG, "No matching orders found for customer: " + customerId);
+                        } else {
+                            Log.d(TAG, "✓ Found " + ordersFound + " orders for customer: " + customerId);
                         }
                     }
 

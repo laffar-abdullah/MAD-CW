@@ -66,4 +66,37 @@ public class FirebaseOrderCleanup {
             }
         });
     }
+
+    /**
+     * Migrates orders with "Confirmed" status but assigned to a rider
+     * to "Awaiting Pickup" status so riders can see and update them
+     */
+    public static void migrateConfirmedOrdersToAwaitingPickup() {
+        db.getReference("orders").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                for (DataSnapshot orderSnapshot : snapshot.getChildren()) {
+                    String status = orderSnapshot.child("status").getValue(String.class);
+                    String assignedRiderEmail = orderSnapshot.child("assignedRiderEmail").getValue(String.class);
+                    String orderId = orderSnapshot.getKey();
+
+                    // If order is "Confirmed" AND has been assigned to a rider, migrate to "Awaiting Pickup"
+                    if ("Confirmed".equals(status) && assignedRiderEmail != null && !assignedRiderEmail.isEmpty()) {
+                        orderSnapshot.getRef().child("status").setValue("Awaiting Pickup")
+                                .addOnSuccessListener(aVoid -> {
+                                    Log.d(TAG, "✓ Migrated order " + orderId + " from 'Confirmed' to 'Awaiting Pickup'");
+                                })
+                                .addOnFailureListener(e -> {
+                                    Log.e(TAG, "Failed to migrate order " + orderId + ": " + e.getMessage());
+                                });
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                Log.e(TAG, "Failed to migrate orders: " + error.getMessage());
+            }
+        });
+    }
 }

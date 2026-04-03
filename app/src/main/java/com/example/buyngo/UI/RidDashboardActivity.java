@@ -9,6 +9,7 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import com.example.buyngo.R;
+import com.example.buyngo.Utils.FirebaseOrderCleanup;
 
 /**
  * RidDashboardActivity — main home screen for the delivery rider.
@@ -96,6 +97,8 @@ public class RidDashboardActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        // Migrate old "Confirmed" orders that are assigned to riders to "Awaiting Pickup"
+        FirebaseOrderCleanup.migrateConfirmedOrdersToAwaitingPickup();
         // Refresh the task card each time the rider returns to the dashboard
         // (e.g. after updating the status or navigating back from history).
         refreshTask();
