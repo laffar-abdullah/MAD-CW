@@ -72,10 +72,13 @@ public class CusFeedbackActivity extends AppCompatActivity {
             if (isMandatory) {
                 // Show confirmation dialog when skipping mandatory feedback
                 new AlertDialog.Builder(this)
-                        .setTitle("Skip Feedback?")
-                        .setMessage("Are you sure you want to skip providing feedback? Your feedback helps us improve the service.")
-                        .setPositiveButton("Skip", (dialog, which) -> navigateHome())
-                        .setNegativeButton("Add Feedback", (dialog, which) -> dialog.dismiss())
+                        .setTitle("Skip Review?")
+                        .setMessage("Are you sure you want to skip providing a review? Your feedback helps us improve the service.")
+                        .setPositiveButton("Skip", (dialog, which) -> {
+                            updateOrderAsReviewed(orderId);
+                            navigateHome();
+                        })
+                        .setNegativeButton("Add Review", (dialog, which) -> dialog.dismiss())
                         .show();
             } else {
                 navigateHome();
@@ -123,6 +126,7 @@ public class CusFeedbackActivity extends AppCompatActivity {
                                             Toast.makeText(CusFeedbackActivity.this,
                                                     "Thanks for your feedback!",
                                                     Toast.LENGTH_SHORT).show();
+                                            updateOrderAsReviewed(orderId);
                                             navigateHome();
                                         }
 
@@ -147,5 +151,11 @@ public class CusFeedbackActivity extends AppCompatActivity {
         Intent intent = new Intent(this, CusHomeActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
+    }
+
+    private void updateOrderAsReviewed(String orderId) {
+        if (orderId != null) {
+            Log.d(TAG, "Order " + orderId + " review completed");
+        }
     }
 }
