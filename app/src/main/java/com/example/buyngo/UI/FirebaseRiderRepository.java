@@ -253,20 +253,30 @@ final class FirebaseRiderRepository {
             String riderEmail,
             VoidCallback callback) {
 
-        DatabaseReference orderRef = db().child(NODE_ORDERS).child(orderId);
-        RiderOrder order = new RiderOrder();
-        order.orderId = orderId;
-        order.customerName = customerName;
-        order.customerAddress = customerAddress;
-        order.assignedRiderEmail = riderEmail;
-        order.status = OrderStatusStore.DEFAULT_STATUS;
-        order.updatedAt = System.currentTimeMillis();
-        order.deliveredAt = 0L;
+        // First get the rider's name
+        Query query = db().child(NODE_RIDERS).orderByChild("email").equalTo(riderEmail);
+        query.get().addOnSuccessListener(snapshot -> {
+            String riderName = "Assigned Rider";
+            for (DataSnapshot child : snapshot.getChildren()) {
+                RiderAccount rider = child.getValue(RiderAccount.class);
+                if (rider != null && rider.name != null) {
+                    riderName = rider.name;
+                    break;
+                }
+            }
 
-        orderRef.setValue(order)
-                .addOnSuccessListener(unused -> callback.onSuccess())
-                .addOnFailureListener(e -> callback.onError(
-                        e.getMessage() == null ? "Failed to assign order" : e.getMessage()));
+            // Now update only the rider fields, preserving order data
+            DatabaseReference orderRef = db().child(NODE_ORDERS).child(orderId);
+            final String finalRiderName = riderName;
+            
+            // Update only rider-related fields
+            orderRef.child("riderId").setValue(riderEmail);
+            orderRef.child("riderName").setValue(finalRiderName)
+                    .addOnSuccessListener(unused -> callback.onSuccess())
+                    .addOnFailureListener(e -> callback.onError(
+                            e.getMessage() == null ? "Failed to assign order" : e.getMessage()));
+        }).addOnFailureListener(e -> callback.onError(
+                e.getMessage() == null ? "Failed to find rider" : e.getMessage()));
     }
 
     static void getAssignedOrdersForRider(String riderEmail, ResultCallback<List<RiderOrder>> callback) {
