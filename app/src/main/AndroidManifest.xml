@@ -2,12 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Camera permission for barcode scanning -->
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-feature android:name="android.hardware.camera" android:required="false" />
-
-    <!-- Internet for Firebase -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
 
     <application
         android:allowBackup="true"
@@ -19,7 +16,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.BuyNgo">
 
-        <!-- ── LAUNCHER: Role Selection ──────────────── -->
+        <!-- LAUNCHER -->
         <activity
             android:name=".UI.AuthWelcomeActivity"
             android:exported="true">
@@ -29,7 +26,7 @@
             </intent-filter>
         </activity>
 
-        <!-- ── CUSTOMER SCREENS ──────────────────────── -->
+        <!-- CUSTOMER SCREENS -->
         <activity android:name=".UI.CusLoginActivity"         android:exported="false" />
         <activity android:name=".UI.CusSignupActivity"        android:exported="false" />
         <activity android:name=".UI.CusHomeActivity"          android:exported="false" />
@@ -40,7 +37,7 @@
         <activity android:name=".UI.CusFeedbackActivity"      android:exported="false" />
         <activity android:name=".UI.CusProfileActivity"       android:exported="false" />
 
-        <!-- ── ADMIN SCREENS ─────────────────────────── -->
+        <!-- ADMIN SCREENS -->
         <activity android:name=".UI.AdmLoginActivity"              android:exported="false" />
         <activity android:name=".UI.AdmDashboardActivity"          android:exported="false" />
         <activity android:name=".UI.AdmProductManagementActivity"  android:exported="false" />
@@ -51,14 +48,25 @@
         <activity android:name=".UI.AdmAssignRiderActivity"        android:exported="false" />
         <activity android:name=".UI.AdmViewFeedbackActivity"       android:exported="false" />
 
-        <!-- Barcode Scanner Activity (ZXing embedded) — fixed orientation -->
+        <!-- ZXing barcode scanner -->
         <activity
             android:name="com.journeyapps.barcodescanner.CaptureActivity"
             android:screenOrientation="fullSensor"
             android:stateNotNeeded="true"
             tools:replace="screenOrientation" />
 
-        <!-- ── RIDER SCREENS ─────────────────────────── -->
+        <!-- FileProvider for camera image capture -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
+        <!-- RIDER SCREENS -->
         <activity android:name=".UI.RidLoginActivity"           android:exported="false" />
         <activity android:name=".UI.RidDashboardActivity"       android:exported="false" />
         <activity android:name=".UI.RidStatusUpdateActivity"    android:exported="false" />
