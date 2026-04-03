@@ -23,6 +23,17 @@
         android:textColor="@color/text_dark"
         android:padding="16dp" />
 
+    <TextView
+        android:id="@+id/txtNoActiveTask"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="No active deliveries at the moment."
+        android:textSize="14sp"
+        android:textColor="@color/text_light"
+        android:padding="16dp"
+        android:textAlignment="center"
+        android:visibility="gone" />
+
     <androidx.cardview.widget.CardView
         android:id="@+id/sampleTaskCard"
         android:layout_width="match_parent"
@@ -35,20 +46,28 @@
         app:cardBackgroundColor="@color/white">
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
             android:orientation="vertical" android:padding="16dp">
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            <TextView 
+                android:id="@+id/txtTaskOrderId"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
                 android:text="Order #BNG-001" android:textSize="16sp"
                 android:textStyle="bold" android:textColor="@color/text_dark" />
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            <TextView 
+                android:id="@+id/txtTaskCustomer"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
                 android:text="Customer: Alice Johnson" android:textSize="13sp"
                 android:textColor="@color/text_light" android:paddingTop="4dp" />
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            <TextView 
+                android:id="@+id/txtTaskAddress"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
                 android:text="Address: 12 Main Street, Springfield"
                 android:textSize="13sp" android:textColor="@color/text_light" />
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            <TextView 
+                android:id="@+id/txtTaskStatus"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
                 android:text="Status: Out for Delivery" android:textSize="13sp"
                 android:textColor="@color/primary_green" android:paddingTop="4dp" />
             <Button
-                android:id="@+id/btnUpdateStatus"
+                android:id="@+id/btnTaskUpdateStatus"
                 android:layout_width="match_parent"
                 android:layout_height="44dp"
                 android:layout_marginTop="12dp"
@@ -66,7 +85,7 @@
         android:paddingEnd="12dp"
         android:paddingTop="4dp">
         <Button
-            android:id="@+id/btnMyReviews"
+            android:id="@+id/navReviews"
             android:layout_width="0dp"
             android:layout_height="48dp"
             android:layout_weight="1"
@@ -76,7 +95,7 @@
             android:textSize="13sp"
             android:background="@color/primary_green" />
         <Button
-            android:id="@+id/btnDeliveryHistory"
+            android:id="@+id/navHistory"
             android:layout_width="0dp"
             android:layout_height="48dp"
             android:layout_weight="1"
@@ -88,7 +107,7 @@
     </LinearLayout>
 
     <Button
-        android:id="@+id/btnRiderProfile"
+        android:id="@+id/navProfile"
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:layout_marginStart="12dp"

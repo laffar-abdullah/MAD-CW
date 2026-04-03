@@ -6,6 +6,7 @@
     android:orientation="vertical"
     android:background="@color/screen_bg">
 
+    <!-- Checkout toolbar keeps the user oriented during the payment step. -->
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
@@ -25,6 +26,7 @@
             android:orientation="vertical"
             android:padding="16dp">
 
+            <!-- Delivery details are collected before the final order confirmation. -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -44,6 +46,7 @@
                 android:layout_marginTop="8dp"
                 android:background="@drawable/search_bg" />
 
+            <!-- Customers pick how they want to pay here. -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -61,6 +64,7 @@
                 app:cardElevation="2dp"
                 app:cardBackgroundColor="@color/white">
 
+                <!-- These radio buttons keep the payment choice easy and clear. -->
                 <RadioGroup
                     android:id="@+id/paymentMethodGroup"
                     android:layout_width="match_parent"
@@ -86,6 +90,7 @@
                 </RadioGroup>
             </androidx.cardview.widget.CardView>
 
+            <!-- Demo card form only appears when card payment is selected. -->
             <androidx.cardview.widget.CardView
                 android:id="@+id/cardPaymentSection"
                 android:layout_width="match_parent"
@@ -102,6 +107,7 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
+                    <!-- Demo card payment instructions are shown here. -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
