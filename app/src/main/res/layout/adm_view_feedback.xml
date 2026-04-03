@@ -1,0 +1,333 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/screen_bg">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/toolbar_bg"
+            app:title="Customer Feedbacks"
+            app:titleTextColor="@color/toolbar_text" />
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <!-- ── STATS CARD ─────────────────────────── -->
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    app:cardCornerRadius="14dp"
+                    app:cardElevation="4dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <!-- Average + Total -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center"
+                            android:layout_marginBottom="12dp">
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:gravity="center">
+
+                                <TextView
+                                    android:id="@+id/tvAverageRating"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="—"
+                                    android:textSize="34sp"
+                                    android:textStyle="bold"
+                                    android:textColor="@color/primary_green" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Avg Rating"
+                                    android:textSize="11sp"
+                                    android:textColor="@color/text_light" />
+                            </LinearLayout>
+
+                            <View
+                                android:layout_width="1dp"
+                                android:layout_height="50dp"
+                                android:background="@color/divider" />
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:gravity="center">
+
+                                <TextView
+                                    android:id="@+id/tvTotalFeedbacks"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="—"
+                                    android:textSize="20sp"
+                                    android:textStyle="bold"
+                                    android:textColor="@color/text_dark" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Total Reviews"
+                                    android:textSize="11sp"
+                                    android:textColor="@color/text_light" />
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <!-- Breakdown row -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center"
+                            android:layout_marginBottom="12dp">
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:gravity="center">
+                                <TextView
+                                    android:id="@+id/tvPositiveCount"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="0"
+                                    android:textSize="20sp"
+                                    android:textStyle="bold"
+                                    android:textColor="#4CAF50" />
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Positive"
+                                    android:textSize="11sp"
+                                    android:textColor="@color/text_light" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:gravity="center">
+                                <TextView
+                                    android:id="@+id/tvNeutralCount"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="0"
+                                    android:textSize="20sp"
+                                    android:textStyle="bold"
+                                    android:textColor="#FF9800" />
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Neutral"
+                                    android:textSize="11sp"
+                                    android:textColor="@color/text_light" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:gravity="center">
+                                <TextView
+                                    android:id="@+id/tvNegativeCount"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="0"
+                                    android:textSize="20sp"
+                                    android:textStyle="bold"
+                                    android:textColor="#F44336" />
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Negative"
+                                    android:textSize="11sp"
+                                    android:textColor="@color/text_light" />
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <!-- Auto analysis summary -->
+                        <TextView
+                            android:id="@+id/tvAnalysisSummary"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Loading analysis..."
+                            android:textSize="13sp"
+                            android:textColor="@color/text_dark"
+                            android:background="#F5F5F5"
+                            android:padding="10dp"
+                            android:lineSpacingExtra="3dp" />
+
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <!-- ── FILTER BUTTONS (plain TextViews, no Chip) ── -->
+                <HorizontalScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:scrollbars="none"
+                    android:layout_marginBottom="12dp">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:padding="4dp">
+
+                        <TextView
+                            android:id="@+id/chipAll"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:text="All"
+                            android:textSize="13sp"
+                            android:textColor="@color/white"
+                            android:background="@drawable/btn_primary"
+                            android:paddingStart="16dp"
+                            android:paddingEnd="16dp"
+                            android:gravity="center"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:layout_marginEnd="8dp" />
+
+                        <TextView
+                            android:id="@+id/chipPositive"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:text="Positive"
+                            android:textSize="13sp"
+                            android:textColor="@color/primary_green"
+                            android:background="@drawable/search_bg"
+                            android:paddingStart="16dp"
+                            android:paddingEnd="16dp"
+                            android:gravity="center"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:layout_marginEnd="8dp" />
+
+                        <TextView
+                            android:id="@+id/chipNeutral"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:text="Neutral"
+                            android:textSize="13sp"
+                            android:textColor="@color/primary_green"
+                            android:background="@drawable/search_bg"
+                            android:paddingStart="16dp"
+                            android:paddingEnd="16dp"
+                            android:gravity="center"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:layout_marginEnd="8dp" />
+
+                        <TextView
+                            android:id="@+id/chipNegative"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:text="Negative"
+                            android:textSize="13sp"
+                            android:textColor="@color/primary_green"
+                            android:background="@drawable/search_bg"
+                            android:paddingStart="16dp"
+                            android:paddingEnd="16dp"
+                            android:gravity="center"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:layout_marginEnd="8dp" />
+
+                        <TextView
+                            android:id="@+id/chipFlagged"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:text="Flagged"
+                            android:textSize="13sp"
+                            android:textColor="@color/primary_green"
+                            android:background="@drawable/search_bg"
+                            android:paddingStart="16dp"
+                            android:paddingEnd="16dp"
+                            android:gravity="center"
+                            android:clickable="true"
+                            android:focusable="true" />
+
+                    </LinearLayout>
+                </HorizontalScrollView>
+
+                <!-- ── LOADING + EMPTY ────────────────────── -->
+                <ProgressBar
+                    android:id="@+id/progressBar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/tvEmpty"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="No feedbacks in this category"
+                    android:gravity="center"
+                    android:textSize="14sp"
+                    android:textColor="@color/text_light"
+                    android:padding="32dp"
+                    android:visibility="gone" />
+
+                <!-- ── FEEDBACK LIST ───────────────────────── -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recyclerFeedbacks"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false"
+                    android:paddingBottom="80dp"
+                    android:clipToPadding="false" />
+
+            </LinearLayout>
+        </ScrollView>
+    </LinearLayout>
+
+    <!-- FAB: Generate Report — regular FAB not Extended -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabAnalyze"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="20dp"
+        android:src="@android:drawable/ic_menu_info_details"
+        android:contentDescription="Analyze"
+        app:backgroundTint="@color/primary_green"
+        app:tint="@color/white"
+        app:fabSize="normal" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

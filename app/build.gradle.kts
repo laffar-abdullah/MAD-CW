@@ -37,17 +37,39 @@ tasks.withType<JavaCompile> {
 }
 
 dependencies {
+<<<<<<< HEAD
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.database)
 
+=======
+>>>>>>> cc33148f16efd7cd1a6422a65c9b53b87be2e710
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)
     implementation(libs.constraintlayout)
     implementation(libs.recyclerview)
     implementation(libs.cardview)
+
+    // Firebase BOM — manages all Firebase versions together
+    implementation(platform("com.google.firebase:firebase-bom:33.1.0"))
+    implementation("com.google.firebase:firebase-database")   // Realtime Database (AdmViewFeedbackActivity)
+    implementation("com.google.firebase:firebase-firestore")  // Firestore (Admin product/order screens)
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-storage")
+
+    // ZXing barcode scanner
+    implementation("com.journeyapps:zxing-android-embedded:4.3.0")
+    implementation("com.google.zxing:core:3.5.3")
+
+    // Glide for loading product images
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+    annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
+
+    // Gson for JSON serialization (cart storage)
+    implementation("com.google.code.gson:gson:2.10.1")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

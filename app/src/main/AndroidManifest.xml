@@ -2,6 +2,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+<<<<<<< HEAD
+=======
+    <!-- Camera permission for barcode scanning -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+
+    <!-- Internet for Firebase -->
+>>>>>>> cc33148f16efd7cd1a6422a65c9b53b87be2e710
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
@@ -39,21 +47,27 @@
         <activity android:name=".UI.AdmLoginActivity"              android:exported="false" />
         <activity android:name=".UI.AdmDashboardActivity"          android:exported="false" />
         <activity android:name=".UI.AdmProductManagementActivity"  android:exported="false" />
-        <activity android:name=".UI.AdmAddProductActivity"          android:exported="false" />
+        <activity android:name=".UI.AdmAddProductActivity"         android:exported="false" />
+        <activity android:name=".UI.AdmEditProductActivity"        android:exported="false" />
         <activity android:name=".UI.AdmOrderManagementActivity"    android:exported="false" />
         <activity android:name=".UI.AdmRegisterRiderActivity"      android:exported="false" />
         <activity android:name=".UI.AdmAssignRiderActivity"        android:exported="false" />
+        <activity android:name=".UI.AdmViewFeedbackActivity"       android:exported="false" />
+
+        <!-- Barcode Scanner Activity (ZXing embedded) — fixed orientation -->
+        <activity
+            android:name="com.journeyapps.barcodescanner.CaptureActivity"
+            android:screenOrientation="fullSensor"
+            android:stateNotNeeded="true"
+            tools:replace="screenOrientation" />
 
         <!-- ── RIDER SCREENS ─────────────────────────── -->
         <activity android:name=".UI.RidLoginActivity"           android:exported="false" />
-        <activity android:name=".UI.RidDashboardActivity"        android:exported="false" />
-        <activity android:name=".UI.RidStatusUpdateActivity"     android:exported="false" />
-        <activity android:name=".UI.RidReviewsActivity"          android:exported="false" />
-        <activity android:name=".UI.RidDeliveryHistoryActivity"  android:exported="false" />
-        <activity android:name=".UI.RidProfileActivity"          android:exported="false" />
-
-        <!-- ── ADMIN EXTRA SCREENS ───────────────────── -->
-        <activity android:name=".UI.AdmEditProductActivity"      android:exported="false" />
+        <activity android:name=".UI.RidDashboardActivity"       android:exported="false" />
+        <activity android:name=".UI.RidStatusUpdateActivity"    android:exported="false" />
+        <activity android:name=".UI.RidReviewsActivity"         android:exported="false" />
+        <activity android:name=".UI.RidDeliveryHistoryActivity" android:exported="false" />
+        <activity android:name=".UI.RidProfileActivity"         android:exported="false" />
 
     </application>
 
