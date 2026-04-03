@@ -2,6 +2,7 @@ package com.example.buyngo.UI;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -115,11 +116,14 @@ public class RidDashboardActivity extends AppCompatActivity {
             return;
         }
 
+        Log.d("RidDashboard", "Refreshing task for rider email: " + profile.email);
+
         FirebaseRiderRepository.getLatestActiveOrderForRider(
                 profile.email,
                 new FirebaseRiderRepository.ResultCallback<FirebaseRiderRepository.RiderOrder>() {
                     @Override
                     public void onSuccess(FirebaseRiderRepository.RiderOrder order) {
+                        Log.d("RidDashboard", "Order callback - order is: " + (order == null ? "NULL" : order.orderId));
                         if (order == null) {
                             OrderStatusStore.OrderInfo localOrder = OrderStatusStore.getCurrentOrder(RidDashboardActivity.this);
                             boolean hasLocalActiveTask = !OrderStatusStore.STATUS_DELIVERED.equals(localOrder.status);

@@ -253,6 +253,8 @@ final class FirebaseRiderRepository {
             String riderEmail,
             VoidCallback callback) {
 
+        Log.d(TAG, "assignOrderToRider called - orderId: " + orderId + " | riderEmail: " + riderEmail);
+        
         // Get all riders and find the one with matching email
         db().child(NODE_RIDERS).get().addOnSuccessListener(snapshot -> {
             String riderName = "Assigned Rider";
@@ -260,6 +262,7 @@ final class FirebaseRiderRepository {
                 RiderAccount rider = child.getValue(RiderAccount.class);
                 if (rider != null && rider.email != null && rider.email.equals(riderEmail)) {
                     riderName = rider.name != null ? rider.name : "Assigned Rider";
+                    Log.d(TAG, "Found rider with name: " + riderName);
                     break;
                 }
             }
@@ -268,32 +271,52 @@ final class FirebaseRiderRepository {
             DatabaseReference orderRef = db().child(NODE_ORDERS).child(orderId);
             final String finalRiderName = riderName;
             
+            Log.d(TAG, "Saving assignedRiderEmail: " + riderEmail + " for order: " + orderId);
             // Update only rider-related fields - use assignedRiderEmail for filtering
             orderRef.child("assignedRiderEmail").setValue(riderEmail);
             orderRef.child("riderName").setValue(finalRiderName)
-                    .addOnSuccessListener(unused -> callback.onSuccess())
-                    .addOnFailureListener(e -> callback.onError(
-                            e.getMessage() == null ? "Failed to assign order" : e.getMessage()));
-        }).addOnFailureListener(e -> callback.onError(
-                e.getMessage() == null ? "Failed to find rider" : e.getMessage()));
+                    .addOnSuccessListener(unused -> {
+                        Log.d(TAG, "✓ Order assigned successfully to rider: " + riderEmail);
+                        callback.onSuccess();
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e(TAG, "Failed to assign order: " + e.getMessage());
+                        callback.onError(
+                            e.getMessage() == null ? "Failed to assign order" : e.getMessage());
+                    });
+        }).addOnFailureListener(e -> {
+            Log.e(TAG, "Failed to find rider: " + e.getMessage());
+            callback.onError(
+                e.getMessage() == null ? "Failed to find rider" : e.getMessage());
+        });
     }
 
     static void getAssignedOrdersForRider(String riderEmail, ResultCallback<List<RiderOrder>> callback) {
         // Fetch all orders and filter by assignedRiderEmail on client-side to avoid index requirements
+        Log.d(TAG, "getAssignedOrdersForRider called for email: " + riderEmail);
         db().child(NODE_ORDERS).get()
                 .addOnSuccessListener(snapshot -> {
+                    Log.d(TAG, "Fetched " + snapshot.getChildrenCount() + " total orders from Firebase");
                     List<RiderOrder> orders = new ArrayList<>();
                     for (DataSnapshot child : snapshot.getChildren()) {
                         RiderOrder order = child.getValue(RiderOrder.class);
-                        if (order != null && riderEmail.equals(order.assignedRiderEmail)) {
-                            orders.add(order);
+                        if (order != null) {
+                            Log.d(TAG, "Order: " + child.getKey() + " | assignedRiderEmail: " + order.assignedRiderEmail + " | status: " + order.status);
+                            if (riderEmail.equals(order.assignedRiderEmail)) {
+                                Log.d(TAG, "✓ MATCH FOUND for rider: " + riderEmail);
+                                orders.add(order);
+                            }
                         }
                     }
+                    Log.d(TAG, "Found " + orders.size() + " orders for rider: " + riderEmail);
                     orders.sort((a, b) -> Long.compare(b.updatedAt, a.updatedAt));
                     callback.onSuccess(orders);
                 })
-                .addOnFailureListener(e -> callback.onError(
-                        e.getMessage() == null ? "Failed to load assigned orders" : e.getMessage()));
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error fetching orders: " + e.getMessage());
+                    callback.onError(
+                        e.getMessage() == null ? "Failed to load assigned orders" : e.getMessage());
+                });
     }
 
     static void getLatestActiveOrderForRider(String riderEmail, ResultCallback<RiderOrder> callback) {
