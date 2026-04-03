@@ -77,7 +77,7 @@ public class CusFeedbackActivity extends AppCompatActivity {
         
         // Show/hide skip button based on mandatory flag
         Button skipButton = findViewById(R.id.skipReview);
-        if (skipButton != null) {
+        if (skipButton != null && ratingBar != null && reviewComment != null) {
             skipButton.setVisibility(View.VISIBLE);
             
             // Set skip button click listener
@@ -99,15 +99,22 @@ public class CusFeedbackActivity extends AppCompatActivity {
             });
         }
 
-        ratingBar.setOnRatingBarChangeListener((bar, rating, fromUser) -> {
-            if (rating <= 0f) {
-                ratingLabel.setText("Tap a star to rate");
-                return;
-            }
-            ratingLabel.setText((int) rating + " / 5");
-        });
+        if (ratingBar != null && ratingLabel != null) {
+            ratingBar.setOnRatingBarChangeListener((bar, rating, fromUser) -> {
+                if (rating <= 0f) {
+                    ratingLabel.setText("Tap a star to rate");
+                    return;
+                }
+                ratingLabel.setText((int) rating + " / 5");
+            });
+        }
 
         findViewById(R.id.submitFeedbackButton).setOnClickListener(v -> {
+            if (ratingBar == null || reviewComment == null) {
+                Toast.makeText(this, "Form not loaded properly", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            
             int rating = Math.round(ratingBar.getRating());
             String comment = reviewComment.getText().toString().trim();
             if (rating < 1) {
