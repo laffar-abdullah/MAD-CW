@@ -167,14 +167,25 @@ public class CusFeedbackActivity extends AppCompatActivity {
                             String riderEmail = snapshot.child("assignedRiderEmail").getValue(String.class);
                             String customerName = snapshot.child("customerName").getValue(String.class);
                             
+                            Log.d(TAG, "===== FEEDBACK SUBMISSION =====");
+                            Log.d(TAG, "Order ID: " + orderId);
+                            Log.d(TAG, "Rider Email from order: " + riderEmail);
+                            Log.d(TAG, "Customer Name from order: " + customerName);
+                            Log.d(TAG, "Rating: " + rating);
+                            Log.d(TAG, "Comment: " + comment);
+                            
                             // Allow review submission even if rider email is not found (edge case)
-                            String finalRiderEmail = riderEmail;
-                            if (finalRiderEmail == null || finalRiderEmail.trim().isEmpty()) {
-                                finalRiderEmail = "unknown@rider.com"; // Fallback email
+                            String riderEmailForReview = riderEmail;
+                            if (riderEmailForReview == null || riderEmailForReview.trim().isEmpty()) {
+                                Log.w(TAG, "⚠ Rider email is null/empty! Using fallback: unknown@rider.com");
+                                riderEmailForReview = "unknown@rider.com"; // Fallback email
                             }
                             
+                            // Declare final version for use in inner classes
+                            final String finalRiderEmail = riderEmailForReview;
                             String finalCustomerName = customerName == null ? "Customer" : customerName;
-                            String finalRiderEmailForCallback = finalRiderEmail;
+                            
+                            Log.d(TAG, "Final Rider Email for review: " + finalRiderEmail);
                             
                             // Submit the review to both storage locations:
                             // 1. To rider-specific reviews (FirebaseRiderRepository)
@@ -187,12 +198,15 @@ public class CusFeedbackActivity extends AppCompatActivity {
                                     new FirebaseRiderRepository.VoidCallback() {
                                         @Override
                                         public void onSuccess() {
+                                            Log.d(TAG, "✓ Review saved successfully for rider: " + finalRiderEmail);
+                                            Log.d(TAG, "  Review will be queryable via: riderEmail == '" + finalRiderEmail + "'");
                                             // Also save to feedbacks node for admin viewing
-                                            saveFeedbackToAdminNode(orderId, finalRiderEmailForCallback, finalCustomerName, rating, comment);
+                                            saveFeedbackToAdminNode(orderId, finalRiderEmail, finalCustomerName, rating, comment);
                                         }
 
                                         @Override
                                         public void onError(String message) {
+                                            Log.e(TAG, "✗ Failed to save review: " + message);
                                             Toast.makeText(CusFeedbackActivity.this,
                                                     message,
                                                     Toast.LENGTH_SHORT).show();

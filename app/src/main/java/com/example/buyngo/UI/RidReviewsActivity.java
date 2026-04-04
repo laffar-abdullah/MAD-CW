@@ -2,6 +2,7 @@ package com.example.buyngo.UI;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -38,6 +39,7 @@ public class RidReviewsActivity extends AppCompatActivity {
 
     private LinearLayout reviewsContainer;
     private TextView txtNoReviews;
+    private static final String TAG = "RidReviews";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,29 +89,40 @@ public class RidReviewsActivity extends AppCompatActivity {
     private void renderReviews() {
         RiderSessionStore.RiderProfile profile = RiderSessionStore.getCurrentRider(this);
         if (profile == null) {
+            Log.w(TAG, "Profile is null - redirecting to login");
             startActivity(new Intent(this, RidLoginActivity.class));
             finish();
             return;
         }
+
+        Log.d(TAG, "===== LOADING REVIEWS =====");
+        Log.d(TAG, "Rider Name: " + profile.name);
+        Log.d(TAG, "Rider Email: " + profile.email);
+        Log.d(TAG, "Querying reviews for rider email: '" + profile.email + "'");
 
         FirebaseRiderRepository.getReviewsForRider(
                 profile.email,
                 new FirebaseRiderRepository.ResultCallback<List<FirebaseRiderRepository.RiderReview>>() {
                     @Override
                     public void onSuccess(List<FirebaseRiderRepository.RiderReview> reviews) {
+                        Log.d(TAG, "✓ Query succeeded. Found " + reviews.size() + " reviews");
                         reviewsContainer.removeAllViews();
 
                         if (reviews.isEmpty()) {
+                            Log.d(TAG, "No reviews found for rider: " + profile.email);
                             txtNoReviews.setVisibility(View.VISIBLE);
                             return;
                         }
 
+                        Log.d(TAG, "Displaying " + reviews.size() + " reviews:");
                         txtNoReviews.setVisibility(View.GONE);
                         LayoutInflater inflater = LayoutInflater.from(RidReviewsActivity.this);
                         DateFormat dateFormat = android.text.format.DateFormat
                                 .getMediumDateFormat(RidReviewsActivity.this);
 
                         for (FirebaseRiderRepository.RiderReview review : reviews) {
+                            Log.d(TAG, "  - Order #" + review.orderId + " | " + review.rating + "⭐ | " + review.customerName);
+                            
                             View card = inflater.inflate(
                                     R.layout.item_rider_review,
                                     reviewsContainer,
@@ -136,6 +149,7 @@ public class RidReviewsActivity extends AppCompatActivity {
 
                     @Override
                     public void onError(String message) {
+                        Log.e(TAG, "✗ Failed to load reviews: " + message);
                         reviewsContainer.removeAllViews();
                         txtNoReviews.setVisibility(View.VISIBLE);
                     }
