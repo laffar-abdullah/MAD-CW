@@ -149,9 +149,11 @@ public class AdmProductManagementActivity extends AppCompatActivity {
         for (DataSnapshot snap : allProducts) {
             String name     = snap.child("name").getValue(String.class);
             String category = snap.child("category").getValue(String.class);
+            String barcode  = snap.child("barcode").getValue(String.class);
             if (q.isEmpty()
                     || (name != null && name.toLowerCase().contains(q))
-                    || (category != null && category.toLowerCase().contains(q))) {
+                    || (category != null && category.toLowerCase().contains(q))
+                    || (barcode != null && !barcode.isEmpty() && barcode.toLowerCase().contains(q))) {
                 filteredProducts.add(snap);
             }
         }
@@ -161,9 +163,12 @@ public class AdmProductManagementActivity extends AppCompatActivity {
 
     private void filterByBarcode(String barcode) {
         filteredProducts.clear();
+        String trimmed = barcode.trim();
         for (DataSnapshot snap : allProducts) {
             String bc = snap.child("barcode").getValue(String.class);
-            if (barcode.equals(bc)) filteredProducts.add(snap);
+            if (bc != null && !bc.isEmpty() && bc.trim().equals(trimmed)) {
+                filteredProducts.add(snap);
+            }
         }
         if (filteredProducts.isEmpty())
             Toast.makeText(this, "No product found for barcode: " + barcode,
