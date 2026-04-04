@@ -20,6 +20,8 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CusTrackingActivity extends AppCompatActivity {
 
@@ -27,6 +29,8 @@ public class CusTrackingActivity extends AppCompatActivity {
     private FirebaseAuth firebaseAuth;
     private FirebaseDatabase firebaseDatabase;
     private static final String TAG = "CusTracking";
+    private List<Order> activeOrders = new ArrayList<>();
+    private List<Order> completedOrders = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,12 +67,16 @@ public class CusTrackingActivity extends AppCompatActivity {
         String customerEmail = firebaseAuth.getCurrentUser().getEmail();
         Log.d(TAG, "Loading orders for customer: " + customerId + " | Email: " + customerEmail);
         ordersContainer.removeAllViews();
+        activeOrders.clear();
+        completedOrders.clear();
 
         firebaseDatabase.getReference("orders")
                 .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot snapshot) {
                         ordersContainer.removeAllViews();
+                        activeOrders.clear();
+                        completedOrders.clear();
 
                         if (!snapshot.exists() || snapshot.getChildrenCount() == 0) {
                             TextView tvNoOrders = new TextView(CusTrackingActivity.this);
@@ -81,7 +89,6 @@ public class CusTrackingActivity extends AppCompatActivity {
 
                         Log.d(TAG, "Total orders in Firebase: " + snapshot.getChildrenCount());
                         Log.d(TAG, "Current customer ID: " + customerId + " | Email: " + customerEmail);
-                        int ordersFound = 0;
 
                         for (DataSnapshot orderSnapshot : snapshot.getChildren()) {
                             try {
@@ -90,18 +97,17 @@ public class CusTrackingActivity extends AppCompatActivity {
                                 if (order != null) {
                                     String orderCustomerId = order.getCustomerId();
                                     String orderCustomerName = order.getCustomerName();
-                                    
-                                    Log.d(TAG, "Found order: " + order.getOrderId() + 
-                                            " | customerId: " + orderCustomerId + 
-                                            " | customerName: " + orderCustomerName + 
+
+                                    Log.d(TAG, "Found order: " + order.getOrderId() +
+                                            " | customerId: " + orderCustomerId +
+                                            " | customerName: " + orderCustomerName +
                                             " | status: " + order.getStatus() +
                                             " | riderEmail: " + order.getAssignedRiderEmail());
-                                    
-                                    // Display order if customerId matches current user
+
+                                    // Categorize order if customerId matches current user
                                     if (orderCustomerId != null && customerId.equals(orderCustomerId)) {
-                                        ordersFound++;
-                                        Log.d(TAG, "✓ Displaying order: " + order.getOrderId() + " (ID match)");
-                                        displayOrderStatus(order);
+                                        categorizeOrder(order);
+                                        Log.d(TAG, "✓ Categorized order: " + order.getOrderId() + " (ID match)");
                                     } else {
                                         Log.d(TAG, "⊘ Skipping order (different customer): " + order.getOrderId() + " | Expected ID: " + customerId + " | Got: " + orderCustomerId);
                                     }
@@ -116,7 +122,7 @@ public class CusTrackingActivity extends AppCompatActivity {
                             }
                         }
 
-                        if (ordersFound == 0) {
+                        if (activeOrders.isEmpty() && completedOrders.isEmpty()) {
                             TextView tvNoOrders = new TextView(CusTrackingActivity.this);
                             tvNoOrders.setText("No orders to track");
                             tvNoOrders.setTextSize(16);
@@ -124,7 +130,8 @@ public class CusTrackingActivity extends AppCompatActivity {
                             ordersContainer.addView(tvNoOrders);
                             Log.d(TAG, "No matching orders found for customer: " + customerId);
                         } else {
-                            Log.d(TAG, "✓ Found " + ordersFound + " orders for customer: " + customerId);
+                            Log.d(TAG, "✓ Found " + activeOrders.size() + " active and " + completedOrders.size() + " completed orders for customer: " + customerId);
+                            displayOrdersByCategory();
                         }
                     }
 
@@ -136,6 +143,66 @@ public class CusTrackingActivity extends AppCompatActivity {
                                 Toast.LENGTH_SHORT).show();
                     }
                 });
+    }
+
+    // Categorize orders into active and completed
+    private void categorizeOrder(Order order) {
+        String status = order.getStatus();
+        if (status != null && (status.equals("Delivered Successfully") || status.equals("Received"))) {
+            completedOrders.add(order);
+        } else {
+            activeOrders.add(order);
+        }
+    }
+
+    // Display orders organized by category with section headers
+    private void displayOrdersByCategory() {
+        // Display Active Orders section
+        if (!activeOrders.isEmpty()) {
+            addCategoryHeader("Active Orders");
+            for (Order order : activeOrders) {
+                displayOrderStatus(order);
+            }
+        }
+
+        // Display Completed Orders section
+        if (!completedOrders.isEmpty()) {
+            addCategoryHeader("Completed Orders");
+            for (Order order : completedOrders) {
+                displayOrderStatus(order);
+            }
+        }
+    }
+
+    // Add a category header to the orders container
+    private void addCategoryHeader(String categoryName) {
+        LinearLayout headerLayout = new LinearLayout(this);
+        headerLayout.setOrientation(LinearLayout.VERTICAL);
+        LinearLayout.LayoutParams headerParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT);
+        headerParams.setMargins(0, 16, 0, 8);
+        headerLayout.setLayoutParams(headerParams);
+
+        TextView tvCategoryHeader = new TextView(this);
+        tvCategoryHeader.setText(categoryName);
+        tvCategoryHeader.setTextSize(18);
+        tvCategoryHeader.setTypeface(tvCategoryHeader.getTypeface(), Typeface.BOLD);
+        tvCategoryHeader.setTextColor(getResources().getColor(R.color.primary_green, null));
+        tvCategoryHeader.setPadding(16, 0, 16, 0);
+        headerLayout.addView(tvCategoryHeader);
+
+        View divider = new View(this);
+        divider.setLayoutParams(new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, 2));
+        divider.setBackgroundColor(getResources().getColor(R.color.primary_green, null));
+        LinearLayout.LayoutParams dividerParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, 2);
+        dividerParams.setMargins(16, 8, 16, 0);
+        divider.setLayoutParams(dividerParams);
+        headerLayout.addView(divider);
+
+        ordersContainer.addView(headerLayout);
     }
 
     // Display order status and action buttons for a single order
