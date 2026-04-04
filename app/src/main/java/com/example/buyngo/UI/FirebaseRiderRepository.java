@@ -299,17 +299,27 @@ final class FirebaseRiderRepository {
                 .addOnSuccessListener(snapshot -> {
                     Log.d(TAG, "Fetched " + snapshot.getChildrenCount() + " total orders from Firebase");
                     List<RiderOrder> orders = new ArrayList<>();
+                    int matchCount = 0;
+                    int noEmailCount = 0;
+                    
                     for (DataSnapshot child : snapshot.getChildren()) {
                         RiderOrder order = child.getValue(RiderOrder.class);
                         if (order != null) {
-                            Log.d(TAG, "Order: " + child.getKey() + " | assignedRiderEmail: " + order.assignedRiderEmail + " | status: " + order.status);
-                            if (riderEmail.equals(order.assignedRiderEmail)) {
-                                Log.d(TAG, "✓ MATCH FOUND for rider: " + riderEmail);
+                            Log.d(TAG, "Order: " + child.getKey() + " | assignedRiderEmail: '" + order.assignedRiderEmail + "' | status: " + order.status);
+                            
+                            if (order.assignedRiderEmail == null || order.assignedRiderEmail.isEmpty()) {
+                                noEmailCount++;
+                                Log.d(TAG, "⚠ Order has no assignedRiderEmail: " + child.getKey());
+                            }
+                            
+                            if (riderEmail != null && riderEmail.equals(order.assignedRiderEmail)) {
+                                Log.d(TAG, "✓ MATCH FOUND for rider: " + riderEmail + " | Order: " + child.getKey());
+                                matchCount++;
                                 orders.add(order);
                             }
                         }
                     }
-                    Log.d(TAG, "Found " + orders.size() + " orders for rider: " + riderEmail);
+                    Log.d(TAG, "Summary: Total orders=" + snapshot.getChildrenCount() + " | Matched=" + matchCount + " | No email=" + noEmailCount + " | For rider=" + riderEmail);
                     orders.sort((a, b) -> Long.compare(b.updatedAt, a.updatedAt));
                     callback.onSuccess(orders);
                 })
@@ -340,7 +350,8 @@ final class FirebaseRiderRepository {
         });
     }
 
-    static void updateOrderStatus(String orderId, String newStatus, VoidCallback callback) {
+    // New signature: accepts riderEmail so it can be saved when order is updated
+    static void updateOrderStatus(String orderId, String newStatus, String riderEmail, VoidCallback callback) {
         DatabaseReference orderRef = db().child(NODE_ORDERS).child(orderId);
         orderRef.get()
                 .addOnSuccessListener(snapshot -> {
@@ -357,6 +368,13 @@ final class FirebaseRiderRepository {
 
                     order.status = newStatus;
                     order.updatedAt = System.currentTimeMillis();
+                    
+                    // IMPORTANT: Store the rider's email when updating status
+                    // This ensures historical delivery data persists across logout/login
+                    if (riderEmail != null && !riderEmail.isEmpty()) {
+                        order.assignedRiderEmail = riderEmail;
+                    }
+                    
                     if (OrderStatusStore.STATUS_DELIVERED.equals(newStatus)) {
                         order.deliveredAt = System.currentTimeMillis();
                     }
@@ -369,24 +387,76 @@ final class FirebaseRiderRepository {
                 .addOnFailureListener(e -> callback.onError(
                         e.getMessage() == null ? "Failed to read order" : e.getMessage()));
     }
+    
+    // Backward compatibility: old method without riderEmail (uses null)
+    static void updateOrderStatus(String orderId, String newStatus, VoidCallback callback) {
+        updateOrderStatus(orderId, newStatus, null, callback);
+    }
 
     static void getDeliveredOrdersForRider(String riderEmail, ResultCallback<List<RiderOrder>> callback) {
+        // Fetch all orders and filter for delivered orders assigned to this rider
+        Log.d(TAG, "getDeliveredOrdersForRider called for email: " + riderEmail);
+        db().child(NODE_ORDERS).get()
+                .addOnSuccessListener(snapshot -> {
+                    Log.d(TAG, "Fetched " + snapshot.getChildrenCount() + " total orders from Firebase");
+                    List<RiderOrder> delivered = new ArrayList<>();
+                    int deliveredCount = 0;
+                    int matchedCount = 0;
+                    
+                    for (DataSnapshot child : snapshot.getChildren()) {
+                        RiderOrder order = child.getValue(RiderOrder.class);
+                        if (order != null) {
+                            // Collect all orders with "Delivered" status for logging
+                            if ("Delivered".equals(order.status)) {
+                                deliveredCount++;
+                                Log.d(TAG, "Found delivered order: " + child.getKey() + 
+                                    " | assignedRiderEmail='" + order.assignedRiderEmail + "'");
+                                
+                                // Include if assignedRiderEmail matches THIS rider
+                                if (riderEmail != null && 
+                                    order.assignedRiderEmail != null &&
+                                    riderEmail.equals(order.assignedRiderEmail)) {
+                                    matchedCount++;
+                                    Log.d(TAG, "✓ Matched delivered order for rider: " + order.orderId);
+                                    delivered.add(order);
+                                }
+                            }
+                        }
+                    }
+                    Log.d(TAG, "getDeliveredOrdersForRider Summary: Total delivered in system=" + deliveredCount + 
+                          " | Matched for this rider=" + matchedCount);
+                    
+                    delivered.sort((a, b) -> Long.compare(b.deliveredAt, a.deliveredAt));
+                    callback.onSuccess(delivered);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error fetching delivered orders: " + e.getMessage());
+                    // Return empty list on error instead of failing callback
+                    callback.onSuccess(new ArrayList<>());
+                });
+    }
+        // First, try to get orders assigned to this rider
         getAssignedOrdersForRider(riderEmail, new ResultCallback<List<RiderOrder>>() {
             @Override
             public void onSuccess(List<RiderOrder> orders) {
                 List<RiderOrder> delivered = new ArrayList<>();
                 for (RiderOrder order : orders) {
+                    // Show orders with status "Delivered" or any completion status
                     if (OrderStatusStore.STATUS_DELIVERED.equals(order.status)) {
                         delivered.add(order);
                     }
                 }
                 delivered.sort((a, b) -> Long.compare(b.deliveredAt, a.deliveredAt));
+                
+                Log.d(TAG, "getDeliveredOrdersForRider: Found " + delivered.size() + " delivered orders for rider: " + riderEmail);
                 callback.onSuccess(delivered);
             }
 
             @Override
             public void onError(String message) {
-                callback.onError(message);
+                Log.e(TAG, "Error fetching assigned orders: " + message);
+                // Return empty list instead of error to show "No delivery history yet"
+                callback.onSuccess(new ArrayList<>());
             }
         });
     }

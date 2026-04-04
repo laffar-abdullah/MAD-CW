@@ -101,80 +101,99 @@ public class RidDashboardActivity extends AppCompatActivity {
      * Loads all orders assigned to the current rider from Firebase
      */
     private void loadRiderOrders() {
-        RiderSessionStore.RiderProfile profile = RiderSessionStore.getCurrentRider(this);
-        if (profile == null) {
-            Toast.makeText(this, "Rider profile not found", Toast.LENGTH_SHORT).show();
-            startActivity(new Intent(this, RidLoginActivity.class));
-            finish();
-            return;
-        }
+        try {
+            RiderSessionStore.RiderProfile profile = RiderSessionStore.getCurrentRider(this);
+            if (profile == null) {
+                Log.w(TAG, "Rider profile is null - redirecting to login");
+                Toast.makeText(this, "Rider profile not found", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(this, RidLoginActivity.class));
+                finish();
+                return;
+            }
 
-        Log.d(TAG, "Loading orders for rider email: " + profile.email);
-        ordersContainer.removeAllViews();
+            Log.d(TAG, "Loading orders for rider email: " + profile.email);
+            ordersContainer.removeAllViews();
 
-        firebaseDatabase.getReference("orders")
-                .addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot snapshot) {
-                        ordersContainer.removeAllViews();
-
-                        if (!snapshot.exists() || snapshot.getChildrenCount() == 0) {
-                            txtNoActiveTask.setVisibility(View.VISIBLE);
-                            ordersContainer.addView(txtNoActiveTask);
-                            return;
-                        }
-
-                        Log.d(TAG, "Total orders in Firebase: " + snapshot.getChildrenCount());
-                        Log.d(TAG, "Current rider email: " + profile.email);
-                        int ordersFound = 0;
-
-                        for (DataSnapshot orderSnapshot : snapshot.getChildren()) {
+            firebaseDatabase.getReference("orders")
+                    .addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot snapshot) {
                             try {
-                                Order order = orderSnapshot.getValue(Order.class);
+                                ordersContainer.removeAllViews();
 
-                                if (order != null) {
-                                    String assignedRiderEmail = order.getAssignedRiderEmail();
-                                    Log.d(TAG, "Found order: " + order.getOrderId() + 
-                                            ", assigned rider email: " + assignedRiderEmail + 
-                                            ", status: " + order.getStatus());
-                                    
-                                    // Display order if it's assigned to current rider
-                                    if (assignedRiderEmail != null && profile.email.equals(assignedRiderEmail)) {
-                                        ordersFound++;
-                                        Log.d(TAG, "✓ Displaying order: " + order.getOrderId());
-                                        displayOrderCard(order);
-                                    } else {
-                                        Log.d(TAG, "⊘ Skipping order (different rider): " + order.getOrderId());
+                                if (!snapshot.exists() || snapshot.getChildrenCount() == 0) {
+                                    txtNoActiveTask.setVisibility(View.VISIBLE);
+                                    ordersContainer.addView(txtNoActiveTask);
+                                    return;
+                                }
+
+                                Log.d(TAG, "Total orders in Firebase: " + snapshot.getChildrenCount());
+                                Log.d(TAG, "Current rider email: " + profile.email);
+                                int ordersFound = 0;
+
+                                for (DataSnapshot orderSnapshot : snapshot.getChildren()) {
+                                    try {
+                                        Order order = orderSnapshot.getValue(Order.class);
+
+                                        if (order != null) {
+                                            String assignedRiderEmail = order.getAssignedRiderEmail();
+                                            String status = order.getStatus();
+                                            Log.d(TAG, "Found order: " + order.getOrderId() + 
+                                                    ", assigned rider email: " + assignedRiderEmail + 
+                                                    ", status: " + status);
+                                            
+                                            // Display order ONLY IF:
+                                            // 1. It's assigned to current rider
+                                            // 2. Status is ACTIVE (not Delivered, Received, or Delivered Successfully)
+                                            if (assignedRiderEmail != null && profile.email.equals(assignedRiderEmail)) {
+                                                // Filter: Only show ACTIVE statuses (in-progress deliveries)
+                                                if (isActiveOrderStatus(status)) {
+                                                    ordersFound++;
+                                                    Log.d(TAG, "✓ Displaying ACTIVE order: " + order.getOrderId() + " | Status: " + status);
+                                                    displayOrderCard(order);
+                                                } else {
+                                                    Log.d(TAG, "⊘ Skipping COMPLETED order (moved to history): " + order.getOrderId() + " | Status: " + status);
+                                                }
+                                            } else {
+                                                Log.d(TAG, "⊘ Skipping order (different rider): " + order.getOrderId());
+                                            }
+                                        } else {
+                                            Log.w(TAG, "Order is null from snapshot");
+                                        }
+                                    } catch (Exception e) {
+                                        Log.e(TAG, "Error processing individual order", e);
+                                        // Continue to next order instead of crashing
                                     }
+                                }
+
+                                if (ordersFound == 0) {
+                                    txtNoActiveTask.setVisibility(View.VISIBLE);
+                                    ordersContainer.addView(txtNoActiveTask);
+                                    Log.d(TAG, "No active orders found for rider: " + profile.email);
                                 } else {
-                                    Log.w(TAG, "Order is null from snapshot");
+                                    txtNoActiveTask.setVisibility(View.GONE);
+                                    Log.d(TAG, "✓ Found " + ordersFound + " active orders for rider: " + profile.email);
                                 }
                             } catch (Exception e) {
-                                Log.e(TAG, "Error loading order", e);
+                                Log.e(TAG, "Error in onDataChange", e);
                                 Toast.makeText(RidDashboardActivity.this,
-                                        "Error loading order: " + e.getMessage(),
+                                        "Error loading orders: " + e.getMessage(),
                                         Toast.LENGTH_SHORT).show();
                             }
                         }
 
-                        if (ordersFound == 0) {
-                            txtNoActiveTask.setVisibility(View.VISIBLE);
-                            ordersContainer.addView(txtNoActiveTask);
-                            Log.d(TAG, "No orders found for rider: " + profile.email);
-                        } else {
-                            txtNoActiveTask.setVisibility(View.GONE);
-                            Log.d(TAG, "✓ Found " + ordersFound + " orders for rider: " + profile.email);
+                        @Override
+                        public void onCancelled(DatabaseError error) {
+                            Log.e(TAG, "Failed to load orders: " + error.getMessage());
+                            Toast.makeText(RidDashboardActivity.this,
+                                    "Failed to load orders: " + error.getMessage(),
+                                    Toast.LENGTH_SHORT).show();
                         }
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError error) {
-                        Log.e(TAG, "Failed to load orders: " + error.getMessage());
-                        Toast.makeText(RidDashboardActivity.this,
-                                "Failed to load orders: " + error.getMessage(),
-                                Toast.LENGTH_SHORT).show();
-                    }
-                });
+                    });
+        } catch (Exception e) {
+            Log.e(TAG, "Critical error in loadRiderOrders", e);
+            Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
     }
 
     /**
@@ -311,4 +330,35 @@ public class RidDashboardActivity extends AppCompatActivity {
                 return getResources().getColor(R.color.text_dark, null);
         }
     }
+
+    /**
+     * Determines if an order status is "active" (still being delivered by rider).
+     * Active orders are shown in Assigned Tasks.
+     * Completed orders (Delivered, Received, etc.) are HIDDEN and moved to History tab.
+     * 
+     * ACTIVE statuses (show in assigned tasks):
+     * - Pending: Waiting for rider to pick up
+     * - Confirmed: Confirmed for rider
+     * - Awaiting Pickup: Rider assigned, ready to pick up
+     * - Picked Up: Rider picked from merchant
+     * - On the Way: Rider delivering to customer
+     * 
+     * COMPLETED statuses (HIDDEN, shown only in History):
+     * - Delivered: Rider delivered (now waiting for customer confirmation)
+     * - Received: Customer confirmed receipt
+     * - Delivered Successfully: Customer skipped review
+     */
+    private boolean isActiveOrderStatus(String status) {
+        if (status == null) {
+            return true; // Show by default if status is null
+        }
+        
+        // Show only these active statuses
+        return status.equals("Pending") ||
+               status.equals("Confirmed") ||
+               status.equals("Awaiting Pickup") ||
+               status.equals("Picked Up") ||
+               status.equals("On the Way");
+    }
 }
+

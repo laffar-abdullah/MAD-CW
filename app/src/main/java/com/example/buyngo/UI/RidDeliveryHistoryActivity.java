@@ -130,6 +130,8 @@ public class RidDeliveryHistoryActivity extends AppCompatActivity {
             return;
         }
 
+        // IMPORTANT: Fetch DIRECTLY from Firebase, not from session/local storage
+        // This ensures we get ALL past delivered orders, even from previous login sessions
         FirebaseRiderRepository.getDeliveredOrdersForRider(
                 profile.email,
                 new FirebaseRiderRepository.ResultCallback<List<FirebaseRiderRepository.RiderOrder>>() {
