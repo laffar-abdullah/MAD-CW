@@ -113,16 +113,10 @@ public class RidDeliveryHistoryActivity extends AppCompatActivity {
     // ── Private helpers ─────────────────────────────────────────────────────
 
     /**
-     * Clears any previous cards and inflates one card per completed delivery,
-     * ordered newest-first.
-     *
-     * BUG FIX: historyContainer.removeAllViews() is now called ONLY when
-     * records exist, after we have confirmed txtEmptyHistory should be hidden.
-     * When the list is empty we update visibility without touching the
-     * container, so the empty-state TextView (which lives outside the
-     * container in the fixed layout) is always reachable.
+     * Display all delivered orders for the current rider
      */
     private void renderHistory() {
+        // Get current logged-in rider information
         RiderSessionStore.RiderProfile profile = RiderSessionStore.getCurrentRider(this);
         if (profile == null) {
             startActivity(new Intent(this, RidLoginActivity.class));
@@ -130,61 +124,48 @@ public class RidDeliveryHistoryActivity extends AppCompatActivity {
             return;
         }
 
-        // IMPORTANT: Fetch DIRECTLY from Firebase, not from session/local storage
-        // This ensures we get ALL past delivered orders, even from previous login sessions
+        // Fetch delivered orders from Firebase database
         FirebaseRiderRepository.getDeliveredOrdersForRider(
                 profile.email,
                 new FirebaseRiderRepository.ResultCallback<List<FirebaseRiderRepository.RiderOrder>>() {
                     @Override
                     public void onSuccess(List<FirebaseRiderRepository.RiderOrder> records) {
-                        android.util.Log.d("RidDeliveryHistory", "onSuccess called with " + (records != null ? records.size() : "null") + " records");
-                        
-                        // Ensure UI updates run on the main thread
+                        // Update UI on main thread
                         runOnUiThread(() -> {
+                            // If no orders found, show empty state message
                             if (records == null || records.isEmpty()) {
-                                android.util.Log.d("RidDeliveryHistory", "No records found, showing empty state");
                                 txtEmptyHistory.setVisibility(View.VISIBLE);
                                 historyContainer.removeAllViews();
                                 return;
                             }
 
-                            android.util.Log.d("RidDeliveryHistory", "Found " + records.size() + " delivered orders, rendering...");
+                            // Hide empty message and show the orders
                             txtEmptyHistory.setVisibility(View.GONE);
                             historyContainer.removeAllViews();
 
+                            // Create card for each delivered order
                             LayoutInflater inflater = LayoutInflater.from(RidDeliveryHistoryActivity.this);
                             DateFormat dateFormat = android.text.format.DateFormat
                                     .getMediumDateFormat(RidDeliveryHistoryActivity.this);
 
+                            // Loop through each delivered order and create a card
                             for (FirebaseRiderRepository.RiderOrder record : records) {
                                 try {
-                                    android.util.Log.d("RidDeliveryHistory", "Inflating card for order: " + record.orderId);
-                                    
+                                    // Create card view from layout file
                                     View card = inflater.inflate(
                                             R.layout.item_delivery_history, historyContainer, false);
 
+                                    // Find text fields in the card
                                     TextView txtOrderId = card.findViewById(R.id.txtHistoryOrderId);
                                     TextView txtCustomer = card.findViewById(R.id.txtHistoryCustomer);
                                     TextView txtAddress = card.findViewById(R.id.txtHistoryAddress);
                                     TextView txtDate = card.findViewById(R.id.txtHistoryDate);
 
-                                    if (txtOrderId == null) {
-                                        android.util.Log.e("RidDeliveryHistory", "ERROR: txtHistoryOrderId not found in layout!");
-                                    }
-                                    if (txtCustomer == null) {
-                                        android.util.Log.e("RidDeliveryHistory", "ERROR: txtHistoryCustomer not found in layout!");
-                                    }
-                                    if (txtAddress == null) {
-                                        android.util.Log.e("RidDeliveryHistory", "ERROR: txtHistoryAddress not found in layout!");
-                                    }
-                                    if (txtDate == null) {
-                                        android.util.Log.e("RidDeliveryHistory", "ERROR: txtHistoryDate not found in layout!");
-                                    }
-
+                                    // Set order ID
                                     txtOrderId.setText("Order #" + record.orderId);
                                     txtCustomer.setText("Customer: " + record.customerName);
                                     
-                                    // Display address with phone number combined
+                                    // Build complete address information
                                     StringBuilder addressInfo = new StringBuilder();
                                     if (record.customerAddress != null && !record.customerAddress.isEmpty()) {
                                         addressInfo.append("Address: ").append(record.customerAddress);
@@ -192,37 +173,38 @@ public class RidDeliveryHistoryActivity extends AppCompatActivity {
                                         addressInfo.append("Address: Not provided");
                                     }
                                     
+                                    // Add phone number if available
                                     if (record.customerPhone != null && !record.customerPhone.isEmpty()) {
                                         addressInfo.append("\nPhone: ").append(record.customerPhone);
                                     }
                                     
-                                    // Add items display
+                                    // Add items list
                                     String itemsDisplay = formatItemsList(record.itemsList, record.items);
                                     if (!itemsDisplay.isEmpty()) {
                                         addressInfo.append("\nItems: ").append(itemsDisplay);
                                     }
                                     
-                                    // Add total display
+                                    // Add order total
                                     if (record.totalAmount > 0) {
                                         addressInfo.append("\nTotal: ").append(String.format("Rs. %.2f", record.totalAmount));
                                     }
                                     
+                                    // Set address and date
                                     txtAddress.setText(addressInfo.toString());
                                     txtDate.setText("Date: " + dateFormat.format(record.deliveredAt));
 
+                                    // Add card to container
                                     historyContainer.addView(card);
-                                    android.util.Log.d("RidDeliveryHistory", "✓ Card added for order: " + record.orderId);
                                 } catch (Exception e) {
-                                    android.util.Log.e("RidDeliveryHistory", "Error inflating card for order " + record.orderId, e);
+                                    // Handle error creating card
                                 }
                             }
-                            android.util.Log.d("RidDeliveryHistory", "✓ renderHistory complete, total cards added: " + historyContainer.getChildCount());
                         });
                     }
 
                     @Override
                     public void onError(String message) {
-                        android.util.Log.e("RidDeliveryHistory", "onError called: " + message);
+                        // If error occurs, show empty state
                         txtEmptyHistory.setVisibility(View.VISIBLE);
                         historyContainer.removeAllViews();
                     }
