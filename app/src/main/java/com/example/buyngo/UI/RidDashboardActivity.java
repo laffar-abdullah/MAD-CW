@@ -233,14 +233,26 @@ public class RidDashboardActivity extends AppCompatActivity {
         orderLayout.addView(tvCustomer);
 
         // Customer Address
-        if (order.getCustomerName() != null) {
-            TextView tvAddress = new TextView(this);
-            tvAddress.setText("Address: " + (order.getCustomerName() != null ? "Pending" : "No address"));
-            tvAddress.setTextSize(13);
-            tvAddress.setTextColor(getResources().getColor(R.color.text_light, null));
-            tvAddress.setPadding(0, 4, 0, 0);
-            orderLayout.addView(tvAddress);
-        }
+        TextView tvAddress = new TextView(this);
+        String addressDisplay = (order.getCustomerAddress() != null && !order.getCustomerAddress().isEmpty()) 
+                ? order.getCustomerAddress() 
+                : "Address not provided";
+        tvAddress.setText("Address: " + addressDisplay);
+        tvAddress.setTextSize(13);
+        tvAddress.setTextColor(getResources().getColor(R.color.text_dark, null));
+        tvAddress.setPadding(0, 4, 0, 0);
+        orderLayout.addView(tvAddress);
+
+        // Customer Phone
+        TextView tvPhone = new TextView(this);
+        String phoneDisplay = (order.getCustomerPhone() != null && !order.getCustomerPhone().isEmpty()) 
+                ? order.getCustomerPhone() 
+                : "Phone not provided";
+        tvPhone.setText("Phone: " + phoneDisplay);
+        tvPhone.setTextSize(13);
+        tvPhone.setTextColor(getResources().getColor(R.color.text_dark, null));
+        tvPhone.setPadding(0, 4, 0, 0);
+        orderLayout.addView(tvPhone);
 
         // Items
         String itemsDisplay = order.getItemsAsString();

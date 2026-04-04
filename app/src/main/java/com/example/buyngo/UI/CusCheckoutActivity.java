@@ -57,7 +57,7 @@ public class CusCheckoutActivity extends AppCompatActivity {
 
         // Calculate and display total
         double total = CartStore.getCartTotal(this);
-        totalPriceText.setText(String.format("$%.2f", total));
+        totalPriceText.setText(String.format("Rs. %.2f", total));
 
         confirmButton.setOnClickListener(v -> placeOrder());
     }
@@ -165,17 +165,32 @@ public class CusCheckoutActivity extends AppCompatActivity {
         // Calculate total
         double totalAmount = CartStore.getCartTotal(this);
 
+        // Get customer address and phone from checkout form
+        String customerAddress = addressEditText.getText().toString().trim();
+        String customerPhone = phoneEditText.getText().toString().trim();
+        
+        if (customerAddress.isEmpty()) {
+            customerAddress = "Address not provided";
+        }
+        if (customerPhone.isEmpty()) {
+            customerPhone = "Phone not provided";
+        }
+
         // Debug logging
         android.util.Log.d("CusCheckout", "Creating order: " + orderId);
         android.util.Log.d("CusCheckout", "Items count: " + items.size());
         android.util.Log.d("CusCheckout", "Items: " + items.toString());
         android.util.Log.d("CusCheckout", "Total: " + totalAmount);
+        android.util.Log.d("CusCheckout", "Address: " + customerAddress);
+        android.util.Log.d("CusCheckout", "Phone: " + customerPhone);
 
         // Create order object
         Order order = new Order(orderId, customerId, customerName, items, totalAmount);
         order.setStatus("Pending");
         order.setCreatedAt(System.currentTimeMillis());
         order.setUpdatedAt(System.currentTimeMillis());
+        order.setCustomerAddress(customerAddress);  // NEW: Save address
+        order.setCustomerPhone(customerPhone);      // NEW: Save phone
 
         // Save order to Firebase
         firebaseDatabase.getReference("orders").child(orderId)

@@ -54,6 +54,7 @@ final class FirebaseRiderRepository {
         public String orderId;
         public String customerName;
         public String customerAddress;
+        public String customerPhone;      // NEW: Customer's contact number
         public String status;
         public String assignedRiderEmail;
         public long updatedAt;
@@ -434,31 +435,6 @@ final class FirebaseRiderRepository {
                     // Return empty list on error instead of failing callback
                     callback.onSuccess(new ArrayList<>());
                 });
-    }
-        // First, try to get orders assigned to this rider
-        getAssignedOrdersForRider(riderEmail, new ResultCallback<List<RiderOrder>>() {
-            @Override
-            public void onSuccess(List<RiderOrder> orders) {
-                List<RiderOrder> delivered = new ArrayList<>();
-                for (RiderOrder order : orders) {
-                    // Show orders with status "Delivered" or any completion status
-                    if (OrderStatusStore.STATUS_DELIVERED.equals(order.status)) {
-                        delivered.add(order);
-                    }
-                }
-                delivered.sort((a, b) -> Long.compare(b.deliveredAt, a.deliveredAt));
-                
-                Log.d(TAG, "getDeliveredOrdersForRider: Found " + delivered.size() + " delivered orders for rider: " + riderEmail);
-                callback.onSuccess(delivered);
-            }
-
-            @Override
-            public void onError(String message) {
-                Log.e(TAG, "Error fetching assigned orders: " + message);
-                // Return empty list instead of error to show "No delivery history yet"
-                callback.onSuccess(new ArrayList<>());
-            }
-        });
     }
 
     static void addReview(

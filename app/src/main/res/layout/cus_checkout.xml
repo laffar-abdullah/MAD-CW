@@ -37,7 +37,7 @@
                 android:id="@+id/totalPriceText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Total: $0.00"
+                android:text="Total: Rs. 0.00"
                 android:textSize="20sp"
                 android:textStyle="bold"
                 android:textColor="@color/primary_green"

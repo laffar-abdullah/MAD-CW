@@ -137,39 +137,81 @@ public class RidDeliveryHistoryActivity extends AppCompatActivity {
                 new FirebaseRiderRepository.ResultCallback<List<FirebaseRiderRepository.RiderOrder>>() {
                     @Override
                     public void onSuccess(List<FirebaseRiderRepository.RiderOrder> records) {
-                        if (records.isEmpty()) {
-                            txtEmptyHistory.setVisibility(View.VISIBLE);
+                        android.util.Log.d("RidDeliveryHistory", "onSuccess called with " + (records != null ? records.size() : "null") + " records");
+                        
+                        // Ensure UI updates run on the main thread
+                        runOnUiThread(() -> {
+                            if (records == null || records.isEmpty()) {
+                                android.util.Log.d("RidDeliveryHistory", "No records found, showing empty state");
+                                txtEmptyHistory.setVisibility(View.VISIBLE);
+                                historyContainer.removeAllViews();
+                                return;
+                            }
+
+                            android.util.Log.d("RidDeliveryHistory", "Found " + records.size() + " delivered orders, rendering...");
+                            txtEmptyHistory.setVisibility(View.GONE);
                             historyContainer.removeAllViews();
-                            return;
-                        }
 
-                        txtEmptyHistory.setVisibility(View.GONE);
-                        historyContainer.removeAllViews();
+                            LayoutInflater inflater = LayoutInflater.from(RidDeliveryHistoryActivity.this);
+                            DateFormat dateFormat = android.text.format.DateFormat
+                                    .getMediumDateFormat(RidDeliveryHistoryActivity.this);
 
-                        LayoutInflater inflater = LayoutInflater.from(RidDeliveryHistoryActivity.this);
-                        DateFormat dateFormat = android.text.format.DateFormat
-                                .getMediumDateFormat(RidDeliveryHistoryActivity.this);
+                            for (FirebaseRiderRepository.RiderOrder record : records) {
+                                try {
+                                    android.util.Log.d("RidDeliveryHistory", "Inflating card for order: " + record.orderId);
+                                    
+                                    View card = inflater.inflate(
+                                            R.layout.item_delivery_history, historyContainer, false);
 
-                        for (FirebaseRiderRepository.RiderOrder record : records) {
-                            View card = inflater.inflate(
-                                    R.layout.item_delivery_history, historyContainer, false);
+                                    TextView txtOrderId = card.findViewById(R.id.txtHistoryOrderId);
+                                    TextView txtCustomer = card.findViewById(R.id.txtHistoryCustomer);
+                                    TextView txtAddress = card.findViewById(R.id.txtHistoryAddress);
+                                    TextView txtDate = card.findViewById(R.id.txtHistoryDate);
 
-                            TextView txtOrderId = card.findViewById(R.id.txtHistoryOrderId);
-                            TextView txtCustomer = card.findViewById(R.id.txtHistoryCustomer);
-                            TextView txtAddress = card.findViewById(R.id.txtHistoryAddress);
-                            TextView txtDate = card.findViewById(R.id.txtHistoryDate);
+                                    if (txtOrderId == null) {
+                                        android.util.Log.e("RidDeliveryHistory", "ERROR: txtHistoryOrderId not found in layout!");
+                                    }
+                                    if (txtCustomer == null) {
+                                        android.util.Log.e("RidDeliveryHistory", "ERROR: txtHistoryCustomer not found in layout!");
+                                    }
+                                    if (txtAddress == null) {
+                                        android.util.Log.e("RidDeliveryHistory", "ERROR: txtHistoryAddress not found in layout!");
+                                    }
+                                    if (txtDate == null) {
+                                        android.util.Log.e("RidDeliveryHistory", "ERROR: txtHistoryDate not found in layout!");
+                                    }
 
-                            txtOrderId.setText("Order #" + record.orderId);
-                            txtCustomer.setText("Customer: " + record.customerName);
-                            txtAddress.setText("Address: " + record.customerAddress);
-                            txtDate.setText("Date: " + dateFormat.format(record.deliveredAt));
+                                    txtOrderId.setText("Order #" + record.orderId);
+                                    txtCustomer.setText("Customer: " + record.customerName);
+                                    
+                                    // Display address with phone number combined
+                                    StringBuilder addressInfo = new StringBuilder();
+                                    if (record.customerAddress != null && !record.customerAddress.isEmpty()) {
+                                        addressInfo.append("Address: ").append(record.customerAddress);
+                                    } else {
+                                        addressInfo.append("Address: Not provided");
+                                    }
+                                    
+                                    if (record.customerPhone != null && !record.customerPhone.isEmpty()) {
+                                        addressInfo.append("\nPhone: ").append(record.customerPhone);
+                                    }
+                                    
+                                    txtAddress.setText(addressInfo.toString());
+                                    txtDate.setText("Date: " + dateFormat.format(record.deliveredAt));
 
-                            historyContainer.addView(card);
-                        }
+                                    historyContainer.addView(card);
+                                    android.util.Log.d("RidDeliveryHistory", "✓ Card added for order: " + record.orderId);
+                                } catch (Exception e) {
+                                    android.util.Log.e("RidDeliveryHistory", "Error inflating card for order " + record.orderId, e);
+                                }
+                            }
+                            android.util.Log.d("RidDeliveryHistory", "✓ renderHistory complete, total cards added: " + historyContainer.getChildCount());
+                        });
                     }
 
                     @Override
                     public void onError(String message) {
+                        android.util.Log.e("RidDeliveryHistory", "onError called: " + message);
                         txtEmptyHistory.setVisibility(View.VISIBLE);
                         historyContainer.removeAllViews();
                     }
