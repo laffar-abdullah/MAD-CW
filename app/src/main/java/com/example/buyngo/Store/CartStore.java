@@ -8,35 +8,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * ═══════════════════════════════════════════════════════════════════════════════
- *                              CART STORE FILE
- * ═══════════════════════════════════════════════════════════════════════════════
- * 
- * WHAT THIS FILE DOES:
- * This file manages the shopping cart. It stores what items the customer has
- * added to cart LOCALLY on their phone (not in Firebase). Think of it as a
- * temporary holding area until customer clicks "Checkout".
- * 
- * HOW IT CONNECTS TO FIREBASE:
- * CartStore is SEPARATE from Firebase. It stores data locally using SharedPreferences.
- * 
- * FLOW:
- * 1. Customer on CusHomeActivity taps "Add to Cart"
- * 2. Product data (name, price, quantity) saved to CartStore locally
- * 3. CartStore stores as JSON in phone memory using SharedPreferences
- * 4. CusCartActivity reads from CartStore and displays items
- * 5. Customer clicks "Checkout"
- * 6. CusCheckoutActivity reads cart from CartStore
- * 7. Creates Order object with cart items
- * 8. Saves Order to Firebase (NOW it goes to cloud)
- * 9. Cart cleared from phone storage
- * 
- * WHY NOT USE FIREBASE FOR CART?
- * - Faster: Local storage is quicker than cloud
- * - Cheaper: Saves Firebase database bandwidth
- * - Better UX: Customer can browse products without internet
- * - Private: Cart is only this customer's, not synced to other devices\n */
+// Manages shopping cart stored locally on phone using SharedPreferences
 public class CartStore {
     private static final String CART_PREFS = "cart_preferences";
     private static final String CART_ITEMS_KEY = "cart_items";
@@ -75,27 +47,30 @@ public class CartStore {
      * @param quantity Quantity to add
      */
     public static void addToCart(Context context, String productId, String name, String category, double price, int quantity) {
-        // Get existing cart items from phone storage
+        // STEP 1: Read existing cart items from phone local storage
         List<CartItem> items = getCartItems(context);
 
-        // Check if product already exists in cart
-        // If yes, we just increase its quantity instead of adding duplicate
+        // STEP 2: Check if product already exists in cart
+        // STEP 3: If yes, we just increase its quantity instead of adding duplicate
         boolean found = false;
         for (CartItem item : items) {
+            // STEP 4: Compare product ID to see if product already in cart
             if (item.productId.equals(productId)) {
-                // Already in cart - just add more quantity
+                // STEP 5: Product already in cart - increase its quantity
                 item.quantity += quantity;
+                // STEP 6: Mark as found so we don't add duplicate
                 found = true;
                 break;
             }
         }
 
-        // If product not found, add it as new item
+        // STEP 7: If product not found, add it as new item
         if (!found) {
+            // STEP 8: Create new CartItem with product details
             items.add(new CartItem(productId, name, category, price, quantity));
         }
 
-        // Save updated cart back to phone storage
+        // STEP 9: Save updated cart back to phone storage
         saveCartItems(context, items);
     }
 
@@ -106,11 +81,11 @@ public class CartStore {
      * @param productId Product ID to remove
      */
     public static void removeFromCart(Context context, String productId) {
-        // Get all cart items
+        // STEP 1: Get all cart items from phone storage
         List<CartItem> items = getCartItems(context);
-        // Remove the item with matching product ID
+        // STEP 2: Remove the item with matching product ID using removeIf()
         items.removeIf(item -> item.productId.equals(productId));
-        // Save updated cart
+        // STEP 3: Save updated cart (without the removed item) back to phone storage
         saveCartItems(context, items);
     }
 
@@ -121,12 +96,13 @@ public class CartStore {
      * @return List of CartItem objects
      */
     public static List<CartItem> getCartItems(Context context) {
-        // Read from SharedPreferences (phone local storage)
+        // STEP 1: Access phone's local storage using SharedPreferences
         SharedPreferences prefs = context.getSharedPreferences(CART_PREFS, Context.MODE_PRIVATE);
-        // Get JSON string (or empty array if nothing exists)
+        // STEP 2: Get JSON string from storage (default to "[]" if nothing stored)
         String json = prefs.getString(CART_ITEMS_KEY, "[]");
-        // Convert JSON back to List of CartItems
+        // STEP 3: Define what type to convert JSON into (List of CartItems)
         Type type = new TypeToken<List<CartItem>>() {}.getType();
+        // STEP 4: Convert JSON string back to List of CartItem objects
         return gson.fromJson(json, type);
     }
 
@@ -137,13 +113,16 @@ public class CartStore {
      * @return Total cart price
      */
     public static double getCartTotal(Context context) {
-        // Get all items in cart
+        // STEP 1: Get all items in cart from phone storage
         List<CartItem> items = getCartItems(context);
+        // STEP 2: Start total at 0
         double total = 0;
-        // Sum up: (price * quantity) for each item
+        // STEP 3: Loop through each item in cart
         for (CartItem item : items) {
+            // STEP 4: Add item's total (price * quantity) to running total
             total += item.getTotal();
         }
+        // STEP 5: Return final total
         return total;
     }
 
@@ -154,6 +133,8 @@ public class CartStore {
      * @return Number of unique items
      */
     public static int getCartItemCount(Context context) {
+        // STEP 1: Get all items from cart
+        // STEP 2: Return count of how many unique items are in cart
         return getCartItems(context).size();
     }
 
@@ -163,7 +144,7 @@ public class CartStore {
      * @param context Android context
      */
     public static void clearCart(Context context) {
-        // Reset cart to empty list
+        // STEP 1: Save empty list to phone storage (this deletes all cart items)
         saveCartItems(context, new ArrayList<>());
     }
 
@@ -175,14 +156,15 @@ public class CartStore {
      * @param items List of cart items to save
      */
     private static void saveCartItems(Context context, List<CartItem> items) {
-        // Get access to phone's local storage
+        // STEP 1: Get access to phone's local storage (SharedPreferences)
         SharedPreferences prefs = context.getSharedPreferences(CART_PREFS, Context.MODE_PRIVATE);
+        // STEP 2: Create editor to modify storage
         SharedPreferences.Editor editor = prefs.edit();
-        // Convert list to JSON string
+        // STEP 3: Convert list of CartItems to JSON string
         String json = gson.toJson(items);
-        // Save JSON to local storage
+        // STEP 4: Store JSON string in local storage with key "cart_items"
         editor.putString(CART_ITEMS_KEY, json);
-        // Commit the save operation
+        // STEP 5: Commit/save the changes to phone storage
         editor.apply();
     }
 }

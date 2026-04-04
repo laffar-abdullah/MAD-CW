@@ -14,27 +14,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.FirebaseDatabase;
 
-/**
- * ═══════════════════════════════════════════════════════════════════════════════
- *                         CUSTOMER SIGNUP ACTIVITY
- * ═══════════════════════════════════════════════════════════════════════════════
- * 
- * WHAT THIS SCREEN DOES:
- * This is the first screen customers see. They enter their info (name, email,
- * password, phone, address) to create an account.
- * \n * HOW IT CONNECTS TO FIREBASE:
- * 1. Customer taps "Create Account" with form filled in
- * 2. performSignup() validates all fields
- * 3. firebaseAuth.createUserWithEmailAndPassword() - Creates auth account in Firebase
- * 4. If success, saveUserProfile() creates a User model object
- * 5. Saves User object to Firebase database at /users/{userId}/
- * 6. Now customer is registered and can login\n * DATA FLOW:
- * Customer Form Input → Validation → Firebase Auth (email/password)
- *                         ↓
- *                   User Model Creation
- *                         ↓
- *                   Firebase Database Save (/users/{userId}/)\n * KEY FIREBASE CONNECTIONS:
- * - FirebaseAuth: Stores email and password securely\n * - FirebaseDatabase: Stores user profile info (name, phone, address)\n */
 public class CusSignupActivity extends AppCompatActivity {
     private EditText nameEditText;
     private EditText emailEditText;
@@ -71,10 +50,9 @@ public class CusSignupActivity extends AppCompatActivity {
         findViewById(R.id.loginLink).setOnClickListener(v -> finish());
     }
 
-    /**
-     * Validates all form fields and creates account in Firebase
-     */
+    // When customer clicks "Create Account" button
     private void performSignup() {
+        // Step 1: Get text from all form fields
         String fullName = nameEditText.getText().toString().trim();
         String email = emailEditText.getText().toString().trim();
         String password = passwordEditText.getText().toString().trim();
@@ -82,60 +60,76 @@ public class CusSignupActivity extends AppCompatActivity {
         String address = addressEditText.getText().toString().trim();
         String city = cityEditText.getText().toString().trim();
 
+        // Step 2: Check if name is filled, if not show error
         if (fullName.isEmpty()) {
             nameEditText.setError("Full name is required");
             return;
         }
 
+        // Step 3: Check if email is filled, if not show error
         if (email.isEmpty()) {
             emailEditText.setError("Email is required");
             return;
         }
 
+        // Step 4: Check if password is filled, if not show error
         if (password.isEmpty()) {
             passwordEditText.setError("Password is required");
             return;
         }
 
+        // Step 5: Check if password is at least 6 characters (Firebase requirement)
         if (password.length() < 6) {
             passwordEditText.setError("Password must be at least 6 characters");
             return;
         }
 
+        // Step 6: Check if phone is filled, if not show error
         if (phone.isEmpty()) {
             phoneEditText.setError("Phone number is required");
             return;
         }
 
+        // Step 7: Check if address is filled, if not show error
         if (address.isEmpty()) {
             addressEditText.setError("Address is required");
             return;
         }
 
+        // Step 8: Check if city is filled, if not show error
         if (city.isEmpty()) {
             cityEditText.setError("City is required");
             return;
         }
 
+        // Step 9: Disable button and show "Creating Account..." while processing
         signupButton.setEnabled(false);
         signupButton.setText("Creating Account...");
 
+        // Step 10: Send email and password to Firebase Auth to create account
         firebaseAuth.createUserWithEmailAndPassword(email, password)
+                // Step 11: If account created successfully
                 .addOnSuccessListener(authResult -> {
+                    // Get the newly created user from Firebase
                     FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
                     if (firebaseUser != null) {
+                        // Step 12: Save customer profile details to Firebase database
                         saveUserProfile(firebaseUser.getUid(), fullName, email, phone, address, city);
                     }
                 })
+                // Step 13: If account creation failed (email already exists, etc)
                 .addOnFailureListener(e -> {
+                    // Re-enable button for user to try again
                     signupButton.setEnabled(true);
                     signupButton.setText("Create Account");
+                    // Show error message why signup failed
                     Toast.makeText(this, "Signup failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
 
-    // Save user profile data to Firebase database
+    // Step 12.1: Save all customer info to Firebase database under /users/{userId}/
     private void saveUserProfile(String userId, String fullName, String email, String phone, String address, String city) {
+        // Create User object with all customer info
         User user = new User(
                 userId,
                 email,

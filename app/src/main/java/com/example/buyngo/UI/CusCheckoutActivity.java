@@ -231,51 +231,60 @@ public class CusCheckoutActivity extends AppCompatActivity {
     /**
      * Validates all fields and the payment details, then triggers order creation.
      */
+    // When customer clicks "Confirm Order" button
     private void placeOrder() {
-        // Validate address fields
+        // Step 1: Check if customer entered delivery address
         if (!validateAddressFields()) {
             return;
         }
 
-        // Validate payment method
+        // Step 2: Check if customer selected payment method (Card or Cash)
         String paymentMethod = getSelectedPaymentMethod();
         if (paymentMethod == null) {
             Toast.makeText(this, "Please select a payment method", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Validate card details if card is selected
+        // Step 3: If Card selected, check if card details are valid
         if ("Card".equals(paymentMethod) && !validateCardDetails()) {
             return;
         }
 
-        // Disable button during processing
+        // Step 4: Disable button while creating order (prevent double-click)
         confirmButton.setEnabled(false);
         confirmButton.setText("Placing Order...");
 
+        // Step 5: Check if customer is logged in
         if (firebaseAuth.getCurrentUser() == null) {
             Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show();
             resetConfirmButton();
             return;
         }
 
+        // Step 6: Get customer ID from Firebase
         String userId = firebaseAuth.getCurrentUser().getUid();
+        
+        // Step 7: Get all items from shopping cart (stored in local phone storage)
         List<CartStore.CartItem> cartItems = CartStore.getCartItems(this);
 
+        // Step 8: Check if cart has items, if empty don't allow order
         if (cartItems.isEmpty()) {
             Toast.makeText(this, "Your cart is empty", Toast.LENGTH_SHORT).show();
             resetConfirmButton();
             return;
         }
 
-        // Get customer profile and create order
+        // Step 9: Get customer's saved profile from Firebase database
         firebaseDatabase.getReference("users").child(userId)
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot snapshot) {
+                        // Step 10: Check if customer profile exists
                         if (snapshot.exists()) {
+                            // Step 11: Convert Firebase data to User object
                             User user = snapshot.getValue(User.class);
                             if (user != null) {
+                                // Step 12: Create Order object and save to Firebase
                                 createAndSaveOrder(userId, user.getFullName(),
                                         cartItems, paymentMethod);
                             } else {
@@ -296,14 +305,13 @@ public class CusCheckoutActivity extends AppCompatActivity {
                 });
     }
 
-    /**
-     * **NEW: Helper methods for validation**
-     */
+    // Check if all address fields are filled
     private boolean validateAddressFields() {
         String phone = phoneEditText != null ? phoneEditText.getText().toString().trim() : "";
         String address = addressEditText != null ? addressEditText.getText().toString().trim() : "";
         String city = cityEditText != null ? cityEditText.getText().toString().trim() : "";
 
+        // If any field is empty, show error
         if (phone.isEmpty() || address.isEmpty() || city.isEmpty()) {
             Toast.makeText(this, "Please fill in all address fields", Toast.LENGTH_SHORT).show();
             return false;
@@ -311,6 +319,7 @@ public class CusCheckoutActivity extends AppCompatActivity {
         return true;
     }
 
+    // Get which payment method customer selected
     private String getSelectedPaymentMethod() {
         if (radioCard != null && radioCard.isChecked()) {
             return "Card";

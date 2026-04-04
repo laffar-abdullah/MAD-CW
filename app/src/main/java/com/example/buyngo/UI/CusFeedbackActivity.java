@@ -146,22 +146,26 @@ public class CusFeedbackActivity extends AppCompatActivity {
         try {
             final boolean isAnonymous = (orderId == null || orderId.trim().isEmpty());
             
-            // When "Submit Feedback" button tapped
+            // When customer clicks "Submit Feedback" button
             findViewById(R.id.submitFeedbackButton).setOnClickListener(v -> {
+                // Check if form is loaded properly
                 if (ratingBar == null || reviewComment == null) {
                     Toast.makeText(this, "Form not loaded properly", Toast.LENGTH_SHORT).show();
                     return;
                 }
                 
+                // Step 1: Get the star rating customer selected
                 int rating = Math.round(ratingBar.getRating());
+                // Step 2: Get the comment customer typed
                 String comment = reviewComment.getText().toString().trim();
+                // Step 3: Check if customer selected at least 1 star
                 if (rating < 1) {
                     Toast.makeText(this, "Please select a star rating", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
-                // If no order ID, treat as anonymous review
-                // Save directly to /feedbacks/ without order details
+                // Step 4: Check if this is ANONYMOUS feedback (from nav_reviews menu)
+                // If no orderId provided, it's anonymous feedback
                 if (isAnonymous) {
                     saveAnonymousFeedbackToAdminNode(rating, comment);
                     return;

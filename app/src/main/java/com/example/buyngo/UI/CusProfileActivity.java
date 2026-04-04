@@ -62,49 +62,67 @@ import com.google.firebase.database.ValueEventListener;
      * Read logged-in customer's profile from Firebase and display it
      */
     private void loadUserProfile() {
+        // STEP 1: Get currently logged-in customer from Firebase Auth
         FirebaseUser currentUser = firebaseAuth.getCurrentUser();
 
+        // STEP 2: Check if customer is actually logged in
         if (currentUser == null) {
             Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
 
+        // STEP 3: Get customer's unique ID from Firebase Auth
         String userId = currentUser.getUid();
 
+        // STEP 4: Show "Loading..." text while fetching data from Firebase
         tvProfileName.setText("Loading...");
         tvFullName.setText("Loading...");
         tvEmail.setText("Loading...");
         tvPhoneNumber.setText("Loading...");
         tvAddress.setText("Loading...");
 
+        // STEP 5: Connect to Firebase database and read customer's profile from /users/{userId}/
         firebaseDatabase.getReference("users").child(userId)
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot snapshot) {
+                        // STEP 6: Check if customer profile exists in database
                         if (snapshot.exists()) {
                             try {
+                                // STEP 7: Convert Firebase data snapshot to User object
                                 User user = snapshot.getValue(User.class);
 
+                                // STEP 8: Check if User object created successfully
                                 if (user != null) {
+                                    // STEP 9: Get full name from User object
                                     String fullName = user.getFullName();
+                                    // STEP 10: Display full name (used in 2 places on profile)
                                     tvProfileName.setText(fullName);
                                     tvFullName.setText(fullName);
+                                    // STEP 11: Display email
                                     tvEmail.setText(user.getEmail());
+                                    // STEP 12: Display phone number (if exists, otherwise show "Not set")
                                     tvPhoneNumber.setText(user.getPhoneNumber() != null && !user.getPhoneNumber().isEmpty()
                                             ? user.getPhoneNumber() : "Not set");
 
+                                    // STEP 13: Get address from User object
                                     String address = user.getAddress();
+                                    // STEP 14: Get city from User object
                                     String city = user.getCity();
+                                    // STEP 15: Create full address by combining address + city
                                     String fullAddress = "";
 
+                                    // STEP 16: Add address to fullAddress string
                                     if (address != null && !address.isEmpty()) {
                                         fullAddress = address;
                                     }
+                                    // STEP 17: Add city to fullAddress string
                                     if (city != null && !city.isEmpty()) {
                                         fullAddress = fullAddress.isEmpty() ? city : fullAddress + ", " + city;
                                     }
 
+                                    // STEP 18: Display full address (if exists, otherwise show "Not set")
                                     tvAddress.setText(!fullAddress.isEmpty() ? fullAddress : "Not set");
                                 }
                             } catch (Exception e) {
