@@ -3,10 +3,13 @@ package com.example.buyngo.UI;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.TextUtils;
+import android.util.Base64;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -26,13 +29,13 @@ import com.bumptech.glide.Glide;
 import com.example.buyngo.R;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -42,15 +45,16 @@ import java.util.Map;
 public class AdmAddProductActivity extends AppCompatActivity {
 
     private static final String DB_URL = "https://buyngo-5b43e-default-rtdb.firebaseio.com/";
+    // Max image dimension (px) — keeps Base64 size reasonable in the DB
+    private static final int MAX_IMAGE_PX = 600;
 
     private EditText etName, etPrice, etCategory, etDescription, etStock, etBarcode;
     private ImageView ivProductImage;
     private ProgressBar progressBar;
     private DatabaseReference db;
-    private StorageReference storageRef;
 
-    private Uri selectedImageUri = null;   // URI of image chosen from gallery or camera
-    private Uri cameraImageUri   = null;   // URI of temp file for camera capture
+    private Uri selectedImageUri = null;
+    private Uri cameraImageUri   = null;
 
     // ── Barcode scanner ──────────────────────────────────────────────────────
     private final ActivityResultLauncher<ScanOptions> barcodeLauncher =
@@ -85,8 +89,8 @@ public class AdmAddProductActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.adm_add_product);
 
-        // Firebase Connection (Thuryas db)
-        db = FirebaseDatabase.getInstance("https://buyngo-5b43e-default-rtdb.firebaseio.com/").getReference();
+        // Firebase Realtime Database only — no Storage needed
+        db = FirebaseDatabase.getInstance(DB_URL).getReference();
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -94,7 +98,6 @@ public class AdmAddProductActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         toolbar.setNavigationOnClickListener(v -> finish());
 
-        // Bind views
         etName        = findViewById(R.id.etProductName);
         etPrice       = findViewById(R.id.etProductPrice);
         etCategory    = findViewById(R.id.etProductCategory);
@@ -104,17 +107,14 @@ public class AdmAddProductActivity extends AppCompatActivity {
         progressBar   = findViewById(R.id.progressBar);
         ivProductImage = findViewById(R.id.ivProductImage);
 
-        // Request camera permission
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.CAMERA}, 100);
         }
 
-        // Image picker button
         findViewById(R.id.btnPickImage).setOnClickListener(v -> showImagePickerDialog());
 
-        // Barcode scanner button
         findViewById(R.id.btnScanBarcode).setOnClickListener(v -> {
             ScanOptions options = new ScanOptions();
             options.setDesiredBarcodeFormats(ScanOptions.ALL_CODE_TYPES);
@@ -124,11 +124,9 @@ public class AdmAddProductActivity extends AppCompatActivity {
             barcodeLauncher.launch(options);
         });
 
-        // Save button
         findViewById(R.id.btnAddProductSubmit).setOnClickListener(v -> saveProduct());
     }
 
-    /** Shows a dialog to choose between Camera and Gallery. */
     private void showImagePickerDialog() {
         new AlertDialog.Builder(this)
                 .setTitle("Select Image")
@@ -156,7 +154,6 @@ public class AdmAddProductActivity extends AppCompatActivity {
         galleryLauncher.launch(intent);
     }
 
-    /** Creates a temporary image file for camera capture. */
     private File createImageFile() throws IOException {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
                 .format(new Date());
@@ -172,7 +169,6 @@ public class AdmAddProductActivity extends AppCompatActivity {
         String stockStr    = etStock.getText().toString().trim();
         String barcode     = etBarcode.getText().toString().trim();
 
-        // Validation
         if (TextUtils.isEmpty(name)) {
             etName.setError("Product name is required");
             etName.requestFocus(); return;
@@ -203,34 +199,64 @@ public class AdmAddProductActivity extends AppCompatActivity {
         progressBar.setVisibility(View.VISIBLE);
         findViewById(R.id.btnAddProductSubmit).setEnabled(false);
 
-        // If an image was selected, upload it first then save product
         if (selectedImageUri != null) {
-            uploadImageThenSave(name, price, category, description, stock, barcode);
+            String base64Image = uriToBase64(selectedImageUri);
+            if (base64Image == null) {
+                progressBar.setVisibility(View.GONE);
+                findViewById(R.id.btnAddProductSubmit).setEnabled(true);
+                Toast.makeText(this, "Failed to process image", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            saveToDatabase(name, price, category, description, stock, barcode,
+                    "data:image/jpeg;base64," + base64Image);
         } else {
-            // No image — save directly with empty imageUrl
             saveToDatabase(name, price, category, description, stock, barcode, "");
         }
     }
 
-    /** Uploads image to Firebase Storage then saves product to Realtime Database. */
-    private void uploadImageThenSave(String name, double price, String category,
-                                     String description, int stock, String barcode) {
-        String fileName = "product_" + System.currentTimeMillis() + ".jpg";
-        StorageReference imageRef = storageRef.child(fileName);
+    /**
+     * Reads the URI, down-samples the bitmap to MAX_IMAGE_PX, re-encodes as
+     * JPEG and returns the raw Base64 string (no prefix).
+     */
+    private String uriToBase64(Uri uri) {
+        try {
+            // First pass: measure dimensions only
+            BitmapFactory.Options opts = new BitmapFactory.Options();
+            opts.inJustDecodeBounds = true;
+            try (InputStream probe = getContentResolver().openInputStream(uri)) {
+                BitmapFactory.decodeStream(probe, null, opts);
+            }
+            // Calculate sub-sampling factor
+            int sampleSize = 1;
+            int w = opts.outWidth, h = opts.outHeight;
+            while (w / sampleSize > MAX_IMAGE_PX || h / sampleSize > MAX_IMAGE_PX) {
+                sampleSize *= 2;
+            }
+            opts.inJustDecodeBounds = false;
+            opts.inSampleSize = sampleSize;
 
-        imageRef.putFile(selectedImageUri)
-                .addOnSuccessListener(taskSnapshot ->
-                        imageRef.getDownloadUrl().addOnSuccessListener(uri -> {
-                            String imageUrl = uri.toString();
-                            saveToDatabase(name, price, category, description,
-                                    stock, barcode, imageUrl);
-                        }))
-                .addOnFailureListener(e -> {
-                    progressBar.setVisibility(View.GONE);
-                    findViewById(R.id.btnAddProductSubmit).setEnabled(true);
-                    Toast.makeText(this, "Image upload failed: " + e.getMessage(),
-                            Toast.LENGTH_LONG).show();
-                });
+            Bitmap bitmap;
+            try (InputStream stream = getContentResolver().openInputStream(uri)) {
+                bitmap = BitmapFactory.decodeStream(stream, null, opts);
+            }
+            if (bitmap == null) return null;
+
+            // Fine-scale if still larger than MAX_IMAGE_PX
+            int maxDim = Math.max(bitmap.getWidth(), bitmap.getHeight());
+            if (maxDim > MAX_IMAGE_PX) {
+                float scale = (float) MAX_IMAGE_PX / maxDim;
+                int newW = Math.round(bitmap.getWidth()  * scale);
+                int newH = Math.round(bitmap.getHeight() * scale);
+                bitmap = Bitmap.createScaledBitmap(bitmap, newW, newH, true);
+            }
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 75, baos);
+            return Base64.encodeToString(baos.toByteArray(), Base64.NO_WRAP);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     /** Saves the product record to Firebase Realtime Database. */
