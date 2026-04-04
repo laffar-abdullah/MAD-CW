@@ -20,6 +20,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.Map;
+
 /**
  * RidDashboardActivity — main home screen for the delivery rider.
  *
@@ -204,7 +206,20 @@ public class RidDashboardActivity extends AppCompatActivity {
         Log.d(TAG, "Displaying order: " + order.getOrderId() + 
               " | itemsList size: " + (order.getItemsList() != null ? order.getItemsList().size() : 0) +
               " | items map size: " + (order.getItems() != null ? order.getItems().size() : 0) +
-              " | total: " + order.getTotalAmount());
+              " | total: " + order.getTotalAmount() +
+              " | status: " + order.getStatus());
+        
+        if (order.getItemsList() != null && !order.getItemsList().isEmpty()) {
+            for (Order.OrderItem item : order.getItemsList()) {
+                Log.d(TAG, "  Item: " + item.quantity + "x " + item.name);
+            }
+        }
+        
+        if (order.getItems() != null && !order.getItems().isEmpty()) {
+            for (Map.Entry<String, Integer> entry : order.getItems().entrySet()) {
+                Log.d(TAG, "  Item (map): " + entry.getValue() + "x " + entry.getKey());
+            }
+        }
         
         LinearLayout orderLayout = new LinearLayout(this);
         orderLayout.setOrientation(LinearLayout.VERTICAL);

@@ -196,6 +196,17 @@ public class RidDeliveryHistoryActivity extends AppCompatActivity {
                                         addressInfo.append("\nPhone: ").append(record.customerPhone);
                                     }
                                     
+                                    // Add items display
+                                    String itemsDisplay = formatItemsList(record.itemsList, record.items);
+                                    if (!itemsDisplay.isEmpty()) {
+                                        addressInfo.append("\nItems: ").append(itemsDisplay);
+                                    }
+                                    
+                                    // Add total display
+                                    if (record.totalAmount > 0) {
+                                        addressInfo.append("\nTotal: ").append(String.format("Rs. %.2f", record.totalAmount));
+                                    }
+                                    
                                     txtAddress.setText(addressInfo.toString());
                                     txtDate.setText("Date: " + dateFormat.format(record.deliveredAt));
 
@@ -216,5 +227,31 @@ public class RidDeliveryHistoryActivity extends AppCompatActivity {
                         historyContainer.removeAllViews();
                     }
                 });
+    }
+
+    // Helper method to format items list
+    private String formatItemsList(java.util.List<Object> itemsList, java.util.Map<String, Integer> itemsMap) {
+        StringBuilder sb = new StringBuilder();
+        
+        if (itemsList != null && !itemsList.isEmpty()) {
+            // Try to format from itemsList
+            for (Object item : itemsList) {
+                if (item instanceof java.util.Map) {
+                    java.util.Map<String, Object> itemMap = (java.util.Map<String, Object>) item;
+                    String name = (String) itemMap.get("name");
+                    Object qtyObj = itemMap.get("quantity");
+                    int qty = (qtyObj instanceof Integer) ? (Integer) qtyObj : ((Number) qtyObj).intValue();
+                    if (sb.length() > 0) sb.append(", ");
+                    sb.append(qty).append("x ").append(name);
+                }
+            }
+        } else if (itemsMap != null && !itemsMap.isEmpty()) {
+            // Fallback to items map
+            for (java.util.Map.Entry<String, Integer> entry : itemsMap.entrySet()) {
+                if (sb.length() > 0) sb.append(", ");
+                sb.append(entry.getValue()).append("x ").append(entry.getKey());
+            }
+        }
+        return sb.toString();
     }
 }

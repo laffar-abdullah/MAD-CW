@@ -57,6 +57,9 @@ final class FirebaseRiderRepository {
         public String customerPhone;      // NEW: Customer's contact number
         public String status;
         public String assignedRiderEmail;
+        public java.util.List<Object> itemsList;  // Items list from Order model
+        public java.util.Map<String, Integer> items;  // Backup items map
+        public double totalAmount;  // Order total price
         public long updatedAt;
         public long deliveredAt;
 
@@ -306,7 +309,11 @@ final class FirebaseRiderRepository {
                     for (DataSnapshot child : snapshot.getChildren()) {
                         RiderOrder order = child.getValue(RiderOrder.class);
                         if (order != null) {
-                            Log.d(TAG, "Order: " + child.getKey() + " | assignedRiderEmail: '" + order.assignedRiderEmail + "' | status: " + order.status);
+                            Log.d(TAG, "Order: " + child.getKey() + 
+                                  " | assignedRiderEmail: '" + order.assignedRiderEmail + 
+                                  "' | status: " + order.status +
+                                  " | itemsList: " + (order.itemsList != null ? order.itemsList.size() + " items" : "null") +
+                                  " | total: " + order.totalAmount);
                             
                             if (order.assignedRiderEmail == null || order.assignedRiderEmail.isEmpty()) {
                                 noEmailCount++;
@@ -411,7 +418,9 @@ final class FirebaseRiderRepository {
                             if ("Delivered".equals(order.status)) {
                                 deliveredCount++;
                                 Log.d(TAG, "Found delivered order: " + child.getKey() + 
-                                    " | assignedRiderEmail='" + order.assignedRiderEmail + "'");
+                                      " | assignedRiderEmail='" + order.assignedRiderEmail + 
+                                      "' | itemsList: " + (order.itemsList != null ? order.itemsList.size() + " items" : "null") +
+                                      " | total: " + order.totalAmount);
                                 
                                 // Include if assignedRiderEmail matches THIS rider
                                 if (riderEmail != null && 

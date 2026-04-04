@@ -19,6 +19,7 @@ public class Order {
     private String riderId;
     private String riderName;
     private String assignedRiderEmail;
+    private String paymentMethod;  // NEW: Payment method (e.g., "Card", "Cash")
     private long createdAt;
     private long updatedAt;
 
@@ -42,6 +43,7 @@ public class Order {
         this.riderId = "";
         this.riderName = "";
         this.assignedRiderEmail = "";
+        this.paymentMethod = "";
     }
 
     public Order(String orderId, String customerId, String customerName,
@@ -62,6 +64,7 @@ public class Order {
         this.riderId = "";
         this.riderName = "";
         this.assignedRiderEmail = "";
+        this.paymentMethod = "";
         this.createdAt = System.currentTimeMillis();
         this.updatedAt = System.currentTimeMillis();
     }
@@ -111,7 +114,10 @@ public class Order {
         }
     }
 
-    public double getTotalAmount() { return totalAmount; }
+    public double getTotalAmount() { 
+        android.util.Log.d("Order", "getTotalAmount() for " + orderId + " = " + totalAmount);
+        return totalAmount; 
+    }
     public void setTotalAmount(double totalAmount) { this.totalAmount = totalAmount; }
 
     public String getStatus() { return status; }
@@ -142,15 +148,26 @@ public class Order {
         // First try to get items from itemsList (Firebase deserialized data)
         Map<String, Integer> itemsToUse = new HashMap<>();
         
+        android.util.Log.d("Order", "getItemsAsString() called for order " + orderId);
+        android.util.Log.d("Order", "  itemsList: " + (itemsList != null ? itemsList.size() + " items" : "null"));
+        android.util.Log.d("Order", "  items map: " + (items != null ? items.size() + " items" : "null"));
+        
         if (itemsList != null && !itemsList.isEmpty()) {
+            android.util.Log.d("Order", "  Using itemsList");
             for (OrderItem item : itemsList) {
                 itemsToUse.put(item.name, item.quantity);
+                android.util.Log.d("Order", "    - " + item.quantity + "x " + item.name);
             }
         } else if (items != null && !items.isEmpty()) {
+            android.util.Log.d("Order", "  Using items map");
             itemsToUse = items;
+            for (Map.Entry<String, Integer> e : items.entrySet()) {
+                android.util.Log.d("Order", "    - " + e.getValue() + "x " + e.getKey());
+            }
         }
         
         if (itemsToUse.isEmpty()) {
+            android.util.Log.d("Order", "  Result: No items");
             return "No items";
         }
         
@@ -161,10 +178,16 @@ public class Order {
             }
             sb.append(entry.getValue()).append("x ").append(entry.getKey());
         }
+        android.util.Log.d("Order", "  Result: " + sb.toString());
         return sb.toString();
     }
 
     public String getTotalFormatted() {
-        return String.format("Rs. %.2f", totalAmount);
+        String formatted = String.format("Rs. %.2f", totalAmount);
+        android.util.Log.d("Order", "getTotalFormatted() for " + orderId + " = " + formatted + " (totalAmount: " + totalAmount + ")");
+        return formatted;
     }
+
+    public String getPaymentMethod() { return paymentMethod; }
+    public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
 }
