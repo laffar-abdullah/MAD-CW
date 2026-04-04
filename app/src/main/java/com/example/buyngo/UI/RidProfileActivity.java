@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.text.InputType;
 import android.text.TextUtils;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -112,6 +113,8 @@ public class RidProfileActivity extends AppCompatActivity {
     // ── Photo picker launcher ────────────────────────────────────────────────
     // Registered in onCreate(); result handled in handleProfileImageSelected().
     private ActivityResultLauncher<String> profileImagePicker;
+
+    private static final String TAG = "RidProfile";
 
     // ── Views — all IDs must match rid_profile.xml exactly ──────────────────
     private TextView  txtProfileNameHeader;
@@ -337,13 +340,19 @@ public class RidProfileActivity extends AppCompatActivity {
      * @param riderEmail the email of the currently logged-in rider
      */
     private void loadReviewsSummary(String riderEmail) {
-        FirebaseRiderRepository.getReviewsForRider(
+        Log.d(TAG, "Loading reviews summary for rider: " + riderEmail);
+        
+        // Using fallback method (does NOT require Firebase index)
+        FirebaseRiderRepository.getReviewsForRiderFallback(
                 riderEmail,
                 new FirebaseRiderRepository.ResultCallback<List<FirebaseRiderRepository.RiderReview>>() {
 
                     @Override
                     public void onSuccess(List<FirebaseRiderRepository.RiderReview> reviews) {
+                        Log.d(TAG, "✓ Reviews query succeeded. Found " + reviews.size() + " reviews");
+
                         if (reviews.isEmpty()) {
+                            Log.d(TAG, "No reviews found for rider: " + riderEmail);
                             txtReviewsSummaryValue.setText("No reviews yet");
                             return;
                         }
@@ -351,6 +360,7 @@ public class RidProfileActivity extends AppCompatActivity {
                         // Compute average rating across all reviews.
                         double total = 0;
                         for (FirebaseRiderRepository.RiderReview review : reviews) {
+                            Log.d(TAG, "  - Review: " + review.rating + "⭐ by " + review.customerName);
                             total += review.rating;
                         }
                         double avg = total / reviews.size();
@@ -363,11 +373,13 @@ public class RidProfileActivity extends AppCompatActivity {
                                 reviews.size(),
                                 reviews.size() == 1 ? "review" : "reviews");
 
+                        Log.d(TAG, "Average rating: " + avg + " | Summary: " + summary);
                         txtReviewsSummaryValue.setText(summary);
                     }
 
                     @Override
                     public void onError(String message) {
+                        Log.e(TAG, "✗ Failed to load reviews: " + message);
                         // Network error — show dash so the screen is still readable.
                         txtReviewsSummaryValue.setText("— reviews");
                     }

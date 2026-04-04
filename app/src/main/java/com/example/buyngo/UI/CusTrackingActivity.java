@@ -103,6 +103,9 @@ public class CusTrackingActivity extends AppCompatActivity {
                                             " | customerName: " + orderCustomerName +
                                             " | status: " + order.getStatus() +
                                             " | riderEmail: " + order.getAssignedRiderEmail());
+                                    
+                                    Log.d(TAG, "DEBUG: Current logged-in UID: '" + customerId + "' (length: " + customerId.length() + ")");
+                                    Log.d(TAG, "DEBUG: Order customerId: '" + orderCustomerId + "' (length: " + (orderCustomerId != null ? orderCustomerId.length() : "null") + ")");
 
                                     // Categorize order if customerId matches current user
                                     if (orderCustomerId != null && customerId.equals(orderCustomerId)) {
@@ -110,6 +113,11 @@ public class CusTrackingActivity extends AppCompatActivity {
                                         Log.d(TAG, "✓ Categorized order: " + order.getOrderId() + " (ID match)");
                                     } else {
                                         Log.d(TAG, "⊘ Skipping order (different customer): " + order.getOrderId() + " | Expected ID: " + customerId + " | Got: " + orderCustomerId);
+                                        // FALLBACK: If customerId is null, still add it (in case not set properly in Firebase)
+                                        if (orderCustomerId == null || orderCustomerId.isEmpty()) {
+                                            Log.d(TAG, "⚠ Order has no customerId set. Adding to active orders as fallback.");
+                                            categorizeOrder(order);
+                                        }
                                     }
                                 } else {
                                     Log.w(TAG, "Order is null from snapshot");
@@ -146,13 +154,22 @@ public class CusTrackingActivity extends AppCompatActivity {
     }
 
     // Categorize orders into active and completed
+    // ACTIVE: Pending, Confirmed, Awaiting Pickup, Picked Up, On the Way, Delivered
+    // COMPLETED: Received (customer confirmed), Delivered Successfully (customer skipped review)
     private void categorizeOrder(Order order) {
         String status = order.getStatus();
-        if (status != null && (status.equals("Delivered Successfully") || status.equals("Received"))) {
+        
+        // Only mark as completed when CUSTOMER has confirmed delivery
+        // (Received = customer pressed "I have received", or Delivered Successfully = customer skipped review)
+        if (status != null && (status.equals("Received") || status.equals("Delivered Successfully"))) {
             completedOrders.add(order);
         } else {
+            // All other statuses are considered active (including "Delivered" which is rider's confirmation)
             activeOrders.add(order);
         }
+        
+        Log.d(TAG, "Categorized order " + order.getOrderId() + ": status='" + status + "' -> " + 
+                (completedOrders.contains(order) ? "COMPLETED" : "ACTIVE"));
     }
 
     // Display orders organized by category with section headers

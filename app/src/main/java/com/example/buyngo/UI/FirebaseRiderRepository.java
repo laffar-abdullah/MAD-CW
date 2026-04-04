@@ -399,12 +399,22 @@ final class FirebaseRiderRepository {
             String comment,
             VoidCallback callback) {
 
+        android.util.Log.d("FirebaseRiderRepository", "===== SAVING REVIEW =====");
+        android.util.Log.d("FirebaseRiderRepository", "Order ID: " + orderId);
+        android.util.Log.d("FirebaseRiderRepository", "Rider Email: " + riderEmail);
+        android.util.Log.d("FirebaseRiderRepository", "Customer Name: " + customerName);
+        android.util.Log.d("FirebaseRiderRepository", "Rating: " + rating);
+        android.util.Log.d("FirebaseRiderRepository", "Comment: " + comment);
+        
         DatabaseReference reviewsRef = db().child(NODE_REVIEWS);
         String reviewId = reviewsRef.push().getKey();
         if (reviewId == null) {
+            android.util.Log.e("FirebaseRiderRepository", "✗ Failed to generate review ID");
             callback.onError("Failed to create review id");
             return;
         }
+
+        android.util.Log.d("FirebaseRiderRepository", "Generated reviewId: " + reviewId);
 
         RiderReview review = new RiderReview();
         review.reviewId = reviewId;
@@ -415,31 +425,57 @@ final class FirebaseRiderRepository {
         review.comment = comment;
         review.createdAt = System.currentTimeMillis();
 
+        android.util.Log.d("FirebaseRiderRepository", "Saving to path: /reviews/" + reviewId);
+        
         reviewsRef.child(reviewId).setValue(review)
-                .addOnSuccessListener(unused -> callback.onSuccess())
-                .addOnFailureListener(e -> callback.onError(
-                        e.getMessage() == null ? "Failed to save review" : e.getMessage()));
+                .addOnSuccessListener(unused -> {
+                    android.util.Log.d("FirebaseRiderRepository", "✓ Review saved successfully!");
+                    android.util.Log.d("FirebaseRiderRepository", "  Path: /reviews/" + reviewId);
+                    android.util.Log.d("FirebaseRiderRepository", "  Query field (riderEmail): " + riderEmail);
+                    callback.onSuccess();
+                })
+                .addOnFailureListener(e -> {
+                    android.util.Log.e("FirebaseRiderRepository", "✗ Failed to save review: " + e.getMessage());
+                    e.printStackTrace();
+                    callback.onError(
+                        e.getMessage() == null ? "Failed to save review" : e.getMessage());
+                });
     }
 
     static void getReviewsForRider(String riderEmail, ResultCallback<List<RiderReview>> callback) {
+        android.util.Log.d("FirebaseRiderRepository", "===== QUERY REVIEWS =====");
+        android.util.Log.d("FirebaseRiderRepository", "Querying for riderEmail: '" + riderEmail + "'");
+        
         Query query = db().child(NODE_REVIEWS)
                 .orderByChild("riderEmail")
                 .equalTo(riderEmail);
 
         query.get()
                 .addOnSuccessListener(snapshot -> {
+                    android.util.Log.d("FirebaseRiderRepository", "✓ Query SUCCESS - Snapshot exists: " + snapshot.exists());
+                    android.util.Log.d("FirebaseRiderRepository", "  Children count: " + snapshot.getChildrenCount());
+                    
                     List<RiderReview> reviews = new ArrayList<>();
                     for (DataSnapshot child : snapshot.getChildren()) {
+                        android.util.Log.d("FirebaseRiderRepository", "  Processing review node: " + child.getKey());
                         RiderReview review = child.getValue(RiderReview.class);
                         if (review != null) {
+                            android.util.Log.d("FirebaseRiderRepository", "    ✓ Review: " + review.orderId + " | " + review.rating + "⭐ | riderEmail: " + review.riderEmail);
                             reviews.add(review);
+                        } else {
+                            android.util.Log.w("FirebaseRiderRepository", "    ⚠ Review is null from snapshot");
                         }
                     }
+                    android.util.Log.d("FirebaseRiderRepository", "Total reviews parsed: " + reviews.size());
                     reviews.sort((a, b) -> Long.compare(b.createdAt, a.createdAt));
                     callback.onSuccess(reviews);
                 })
-                .addOnFailureListener(e -> callback.onError(
-                        e.getMessage() == null ? "Failed to load reviews" : e.getMessage()));
+                .addOnFailureListener(e -> {
+                    android.util.Log.e("FirebaseRiderRepository", "✗ Query FAILED: " + e.getMessage());
+                    e.printStackTrace();
+                    callback.onError(
+                        e.getMessage() == null ? "Failed to load reviews" : e.getMessage());
+                });
     }
 
     static void getLatestDeliveredOrderForAnyRider(ResultCallback<RiderOrder> callback) {
@@ -491,5 +527,42 @@ final class FirebaseRiderRepository {
                 })
                 .addOnFailureListener(e -> callback.onError(
                         e.getMessage() == null ? "Failed to load order" : e.getMessage()));
+    }
+
+    // FALLBACK METHOD: Query all reviews and filter client-side
+    // Used for debugging when orderByChild query doesn't work
+    static void getReviewsForRiderFallback(String riderEmail, ResultCallback<List<RiderReview>> callback) {
+        android.util.Log.d("FirebaseRiderRepository", "===== FALLBACK QUERY (Load ALL reviews) =====");
+        
+        db().child(NODE_REVIEWS).get()
+                .addOnSuccessListener(snapshot -> {
+                    android.util.Log.d("FirebaseRiderRepository", "✓ Loaded snapshot with " + snapshot.getChildrenCount() + " total reviews");
+                    
+                    List<RiderReview> reviews = new ArrayList<>();
+                    int matchCount = 0;
+                    
+                    for (DataSnapshot child : snapshot.getChildren()) {
+                        RiderReview review = child.getValue(RiderReview.class);
+                        if (review != null) {
+                            android.util.Log.d("FirebaseRiderRepository", "  Review: " + review.reviewId + 
+                                    " | riderEmail: '" + review.riderEmail + 
+                                    "' | searching for: '" + riderEmail + "'" +
+                                    " | MATCH: " + (riderEmail.equals(review.riderEmail)));
+                            
+                            if (riderEmail.equals(review.riderEmail)) {
+                                reviews.add(review);
+                                matchCount++;
+                            }
+                        }
+                    }
+                    
+                    android.util.Log.d("FirebaseRiderRepository", "✓ Fallback found " + matchCount + " matching reviews");
+                    reviews.sort((a, b) -> Long.compare(b.createdAt, a.createdAt));
+                    callback.onSuccess(reviews);
+                })
+                .addOnFailureListener(e -> {
+                    android.util.Log.e("FirebaseRiderRepository", "✗ Fallback query failed: " + e.getMessage());
+                    callback.onError(e.getMessage());
+                });
     }
 }
