@@ -125,7 +125,6 @@ public class RidDashboardActivity extends AppCompatActivity {
 
                                 if (!snapshot.exists() || snapshot.getChildrenCount() == 0) {
                                     txtNoActiveTask.setVisibility(View.VISIBLE);
-                                    ordersContainer.addView(txtNoActiveTask);
                                     return;
                                 }
 
@@ -170,7 +169,6 @@ public class RidDashboardActivity extends AppCompatActivity {
 
                                 if (ordersFound == 0) {
                                     txtNoActiveTask.setVisibility(View.VISIBLE);
-                                    ordersContainer.addView(txtNoActiveTask);
                                     Log.d(TAG, "No active orders found for rider: " + profile.email);
                                 } else {
                                     txtNoActiveTask.setVisibility(View.GONE);
@@ -178,18 +176,14 @@ public class RidDashboardActivity extends AppCompatActivity {
                                 }
                             } catch (Exception e) {
                                 Log.e(TAG, "Error in onDataChange", e);
-                                Toast.makeText(RidDashboardActivity.this,
-                                        "Error loading orders: " + e.getMessage(),
-                                        Toast.LENGTH_SHORT).show();
+                                e.printStackTrace();
+                                Log.e(TAG, "Full exception:", e);
                             }
                         }
 
                         @Override
                         public void onCancelled(DatabaseError error) {
                             Log.e(TAG, "Failed to load orders: " + error.getMessage());
-                            Toast.makeText(RidDashboardActivity.this,
-                                    "Failed to load orders: " + error.getMessage(),
-                                    Toast.LENGTH_SHORT).show();
                         }
                     });
         } catch (Exception e) {

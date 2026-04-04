@@ -59,7 +59,7 @@ public final class OrderStatusStore {
     // them without magic strings.
     static final String STATUS_PICKED_UP   = "Picked Up";
     static final String STATUS_ON_THE_WAY  = "On the Way";
-    static final String STATUS_DELIVERED   = "Delivered";
+    static final String STATUS_DELIVERED   = "Delivered Successfully";
 
     // ── CHANGE: DEFAULT_STATUS is now package-private so RidDashboardActivity
     // can compare the status chip color correctly without a magic string.

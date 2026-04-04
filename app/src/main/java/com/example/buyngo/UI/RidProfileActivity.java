@@ -365,13 +365,11 @@ public class RidProfileActivity extends AppCompatActivity {
                         }
                         double avg = total / reviews.size();
 
-                        // Format to one decimal place.  e.g. "4.5 ★  (8 reviews)"
+                        // Format to one decimal place.  e.g. "4.5 ★" (review count removed)
                         String summary = String.format(
                                 java.util.Locale.US,
-                                "%.1f \u2605  (%d %s)",
-                                avg,
-                                reviews.size(),
-                                reviews.size() == 1 ? "review" : "reviews");
+                                "%.1f \u2605",
+                                avg);
 
                         Log.d(TAG, "Average rating: " + avg + " | Summary: " + summary);
                         txtReviewsSummaryValue.setText(summary);

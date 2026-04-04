@@ -15,34 +15,12 @@ import java.text.DateFormat;
 import java.util.List;
 
 /**
- * RidDeliveryHistoryActivity — shows a scrollable list of every order this
- * rider has completed, newest first.
  *
  * Each card is inflated from {@code item_delivery_history.xml} and populated
  * with the order snapshot that was archived when the delivery was marked
  * "Delivered" in {@link RidStatusUpdateActivity}.
  *
- * ── CHANGES FROM ORIGINAL ──────────────────────────────────────────────────
- *  BUG FIX — Critical crash / invisible empty state.
- *
- *  In the original layout (rid_delivery_history.xml) the TextView with id
- *  {@code txtEmptyHistory} was placed INSIDE the {@code historyContainer}
- *  LinearLayout.  renderHistory() called historyContainer.removeAllViews()
- *  at the start of every refresh — which detached the empty-state TextView
- *  from the view hierarchy.  The subsequent call to
- *  txtEmptyHistory.setVisibility(View.VISIBLE) operated on a detached view
- *  (no parent), so it had no visible effect.  The empty state was therefore
- *  never shown even when the history list was genuinely empty.
- *
- *  FIX (two-part):
- *   1. rid_delivery_history.xml — moved txtEmptyHistory OUTSIDE and ABOVE
- *      the historyContainer so removeAllViews() no longer touches it.
- *      See the layout file change notes for details.
- *   2. renderHistory() — now guards historyContainer.removeAllViews() so
- *      it is only called when we are about to add new cards, not when the
- *      list is empty.  This is a belt-and-suspenders fix: even if someone
- *      moves the TextView back inside the container by mistake, the logic
- *      still works correctly.
+
  *
  *  IMPROVEMENT — onResume re-renders the list so newly completed deliveries
  *  appear immediately when the rider returns from the status update screen.
@@ -148,7 +126,8 @@ public class RidDeliveryHistoryActivity extends AppCompatActivity {
                                 return;
                             }
 
-                            android.util.Log.d("RidDeliveryHistory", "Found " + records.size() + " delivered orders, rendering...");
+                            android.util.Log.d("RidDeliveryHistory", "══════════════════════════════════════════════════════════");
+                            android.util.Log.d("RidDeliveryHistory", "Found " + records.size() + " delivered orders, rendering all...");
                             txtEmptyHistory.setVisibility(View.GONE);
                             historyContainer.removeAllViews();
 
@@ -156,9 +135,10 @@ public class RidDeliveryHistoryActivity extends AppCompatActivity {
                             DateFormat dateFormat = android.text.format.DateFormat
                                     .getMediumDateFormat(RidDeliveryHistoryActivity.this);
 
+                            int cardCount = 0;
                             for (FirebaseRiderRepository.RiderOrder record : records) {
                                 try {
-                                    android.util.Log.d("RidDeliveryHistory", "Inflating card for order: " + record.orderId);
+                                    android.util.Log.d("RidDeliveryHistory", "  [" + (cardCount + 1) + "/" + records.size() + "] Inflating card for order: " + record.orderId);
                                     
                                     View card = inflater.inflate(
                                             R.layout.item_delivery_history, historyContainer, false);
@@ -170,15 +150,19 @@ public class RidDeliveryHistoryActivity extends AppCompatActivity {
 
                                     if (txtOrderId == null) {
                                         android.util.Log.e("RidDeliveryHistory", "ERROR: txtHistoryOrderId not found in layout!");
+                                        continue;
                                     }
                                     if (txtCustomer == null) {
                                         android.util.Log.e("RidDeliveryHistory", "ERROR: txtHistoryCustomer not found in layout!");
+                                        continue;
                                     }
                                     if (txtAddress == null) {
                                         android.util.Log.e("RidDeliveryHistory", "ERROR: txtHistoryAddress not found in layout!");
+                                        continue;
                                     }
                                     if (txtDate == null) {
                                         android.util.Log.e("RidDeliveryHistory", "ERROR: txtHistoryDate not found in layout!");
+                                        continue;
                                     }
 
                                     txtOrderId.setText("Order #" + record.orderId);
@@ -210,13 +194,23 @@ public class RidDeliveryHistoryActivity extends AppCompatActivity {
                                     txtAddress.setText(addressInfo.toString());
                                     txtDate.setText("Date: " + dateFormat.format(record.deliveredAt));
 
+                                    // CRITICAL: Explicitly set layout params to ensure card is displayed
+                                    LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
+                                            LinearLayout.LayoutParams.MATCH_PARENT,
+                                            LinearLayout.LayoutParams.WRAP_CONTENT);
+                                    card.setLayoutParams(layoutParams);
+                                    
                                     historyContainer.addView(card);
-                                    android.util.Log.d("RidDeliveryHistory", "✓ Card added for order: " + record.orderId);
+                                    cardCount++;
+                                    android.util.Log.d("RidDeliveryHistory", "    ✓ Card added successfully. Total in container: " + historyContainer.getChildCount());
                                 } catch (Exception e) {
                                     android.util.Log.e("RidDeliveryHistory", "Error inflating card for order " + record.orderId, e);
+                                    e.printStackTrace();
                                 }
                             }
-                            android.util.Log.d("RidDeliveryHistory", "✓ renderHistory complete, total cards added: " + historyContainer.getChildCount());
+                            android.util.Log.d("RidDeliveryHistory", "══════════════════════════════════════════════════════════");
+                            android.util.Log.d("RidDeliveryHistory", "✓ renderHistory COMPLETE - Total cards added: " + cardCount + " | Container child count: " + historyContainer.getChildCount());
+                            android.util.Log.d("RidDeliveryHistory", "══════════════════════════════════════════════════════════");
                         });
                     }
 
