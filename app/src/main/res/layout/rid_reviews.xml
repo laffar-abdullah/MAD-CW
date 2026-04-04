@@ -1,4 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    rid_reviews.xml
+
+    ── WHAT'S ON THIS SCREEN ───────────────────────────────────────────────
+    1. Toolbar             — "My Reviews" title + back arrow
+    2. Empty-state label   — shown when no reviews exist (outside scrollview
+                             so removeAllViews() can never detach it — see bug fix)
+    3. ScrollView          — reviewsContainer LinearLayout holds inflated
+                             item_rider_review cards, one per review
+    4. Bottom nav bar      — Tasks / History / Reviews (active) / Profile
+
+    ── HOW DATA FLOWS ──────────────────────────────────────────────────────
+    RidReviewsActivity.renderReviews()
+      → RiderSessionStore.getCurrentRider()           reads logged-in email
+      → FirebaseRiderRepository.getReviewsForRider()  queries /reviews
+           filter: riderEmail == profile.email
+           sort:   createdAt DESC (newest first)
+      → for each RiderReview: inflate item_rider_review, bind fields, addView()
+-->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -6,6 +25,7 @@
     android:orientation="vertical"
     android:background="@color/screen_bg">
 
+    <!-- Toolbar — setSupportActionBar in Java wires the back arrow -->
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
@@ -15,104 +35,86 @@
         app:titleTextColor="@color/toolbar_text"
         app:navigationIcon="?attr/homeAsUpIndicator" />
 
+    <!--
+        Empty-state label — MUST be OUTSIDE the reviewsContainer so that
+        historyContainer.removeAllViews() (called on every refresh) does NOT
+        detach this view from the hierarchy.  If it were inside, setVisibility()
+        on a detached view would have no effect and the empty state would never show.
+        ID: R.id.txtNoReviews
+    -->
     <TextView
         android:id="@+id/txtNoReviews"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:padding="40dp"
+        android:padding="48dp"
         android:text="No reviews yet"
         android:textColor="@color/text_light"
+        android:textSize="16sp"
         android:visibility="gone" />
 
+    <!-- Review cards are inflated from item_rider_review.xml and added here -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1">
+
         <LinearLayout
             android:id="@+id/reviewsContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="12dp" />
+
     </ScrollView>
 
+    <!-- ── Bottom navigation bar ────────────────────────────────────────── -->
+    <!-- Reviews tab icon/text is tinted green = active tab indicator        -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="64dp"
         android:orientation="horizontal"
         android:background="@color/white"
         android:elevation="8dp">
-        <LinearLayout
-            android:id="@+id/navDashboard"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center">
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
+
+        <LinearLayout android:id="@+id/navDashboard"
+            android:layout_width="0dp" android:layout_height="match_parent"
+            android:layout_weight="1" android:orientation="vertical" android:gravity="center">
+            <ImageView android:layout_width="24dp" android:layout_height="24dp"
                 android:src="@android:drawable/ic_menu_today" />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Tasks"
-                android:textSize="10sp" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Tasks" android:textSize="10sp" />
         </LinearLayout>
-        <LinearLayout
-            android:id="@+id/navHistory"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center">
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
+
+        <LinearLayout android:id="@+id/navHistory"
+            android:layout_width="0dp" android:layout_height="match_parent"
+            android:layout_weight="1" android:orientation="vertical" android:gravity="center">
+            <ImageView android:layout_width="24dp" android:layout_height="24dp"
                 android:src="@android:drawable/ic_menu_recent_history" />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="History"
-                android:textSize="10sp" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="History" android:textSize="10sp" />
         </LinearLayout>
-        <LinearLayout
-            android:id="@+id/navReviews"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center">
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
+
+        <LinearLayout android:id="@+id/navReviews"
+            android:layout_width="0dp" android:layout_height="match_parent"
+            android:layout_weight="1" android:orientation="vertical" android:gravity="center">
+            <ImageView android:layout_width="24dp" android:layout_height="24dp"
                 android:src="@android:drawable/btn_star_big_on"
                 app:tint="@color/primary_green" />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Reviews"
-                android:textSize="10sp"
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Reviews" android:textSize="10sp"
                 android:textColor="@color/primary_green" />
         </LinearLayout>
-        <LinearLayout
-            android:id="@+id/navProfile"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center">
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
+
+        <LinearLayout android:id="@+id/navProfile"
+            android:layout_width="0dp" android:layout_height="match_parent"
+            android:layout_weight="1" android:orientation="vertical" android:gravity="center">
+            <ImageView android:layout_width="24dp" android:layout_height="24dp"
                 android:src="@android:drawable/ic_menu_myplaces" />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Profile"
-                android:textSize="10sp" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Profile" android:textSize="10sp" />
         </LinearLayout>
+
     </LinearLayout>
 
 </LinearLayout>

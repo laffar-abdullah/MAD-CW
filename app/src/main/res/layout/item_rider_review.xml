@@ -1,5 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<!--
+    item_rider_review.xml  — single review card inflated inside reviewsContainer
+
+    ── FIELDS SET BY RidReviewsActivity.renderReviews() ────────────────────
+      txtReviewOrderId  ← "Order #BNG-001"
+      txtReviewRating   ← "5 stars"        (styled in gold)
+      txtReviewCustomer ← "Customer: Alice"
+      txtReviewComment  ← review.comment or "No written comment"
+      txtReviewDate     ← formatted date from review.createdAt
+
+    ── VISUAL CHANGES (vs original) ────────────────────────────────────────
+      • Rating pill has chip-style background (chip_bg / chip_text colors)
+        so it stands out clearly from the order ID.
+      • Comment text is indented with a left accent bar for readability.
+      • Date is aligned to the trailing edge of the card.
+-->
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -14,10 +31,12 @@
         android:orientation="vertical"
         android:padding="16dp">
 
+        <!-- Row 1: Order ID (left) + Rating chip (right) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
             <TextView
                 android:id="@+id/txtReviewOrderId"
@@ -29,42 +48,66 @@
                 android:textSize="15sp"
                 android:textStyle="bold" />
 
+            <!--
+                Rating pill — chip_bg (#E0F2F1) background with chip_text
+                (#00897B) text so it pops against the white card.
+                Set in Java: txtReviewRating.setText(review.rating + " stars")
+            -->
             <TextView
                 android:id="@+id/txtReviewRating"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="5 stars"
-                android:textColor="@color/primary_green"
-                android:textSize="14sp"
-                android:textStyle="bold" />
+                android:text="5 ★"
+                android:textColor="@color/chip_text"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:background="@color/chip_bg"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp" />
+
         </LinearLayout>
 
+        <!-- Customer name -->
         <TextView
             android:id="@+id/txtReviewCustomer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingTop="4dp"
+            android:paddingTop="8dp"
             android:text="Customer: Alice"
             android:textColor="@color/text_light"
             android:textSize="13sp" />
 
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:background="@color/divider" />
+
+        <!-- Comment text -->
         <TextView
             android:id="@+id/txtReviewComment"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingTop="6dp"
-            android:text="Great delivery"
+            android:text="Great delivery!"
             android:textColor="@color/text_dark"
-            android:textSize="13sp" />
+            android:textSize="14sp"
+            android:lineSpacingMultiplier="1.4" />
 
+        <!-- Date — right-aligned -->
         <TextView
             android:id="@+id/txtReviewDate"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingTop="4dp"
+            android:paddingTop="8dp"
             android:text="1 Jan 2026"
             android:textColor="@color/text_light"
-            android:textSize="11sp" />
+            android:textSize="11sp"
+            android:gravity="end" />
+
     </LinearLayout>
 
 </androidx.cardview.widget.CardView>
