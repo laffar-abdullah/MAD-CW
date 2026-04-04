@@ -124,7 +124,11 @@ public class RidStatusUpdateActivity extends AppCompatActivity {
             return;
         }
 
-        FirebaseRiderRepository.updateOrderStatus(currentOrderId, status,
+        // Get the current rider's email to save with the order update
+        RiderSessionStore.RiderProfile profile = RiderSessionStore.getCurrentRider(this);
+        String riderEmail = (profile != null) ? profile.email : null;
+
+        FirebaseRiderRepository.updateOrderStatus(currentOrderId, status, riderEmail,
                 new FirebaseRiderRepository.VoidCallback() {
                     @Override
                     public void onSuccess() {

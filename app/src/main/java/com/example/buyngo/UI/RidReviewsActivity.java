@@ -139,7 +139,7 @@ public class RidReviewsActivity extends AppCompatActivity {
 
         for (FirebaseRiderRepository.RiderReview review : reviews) {
             Log.d(TAG, "  - Order #" + review.orderId + " | " + review.rating + "⭐ | " + review.customerName);
-            
+
             View card = inflater.inflate(
                     R.layout.item_rider_review,
                     reviewsContainer,

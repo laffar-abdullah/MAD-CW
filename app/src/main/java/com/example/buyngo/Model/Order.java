@@ -10,6 +10,8 @@ public class Order {
     private String orderId;
     private String customerId;
     private String customerName;
+    private String customerAddress;  // NEW: Customer's delivery address
+    private String customerPhone;     // NEW: Customer's contact number
     private Map<String, Integer> items;
     private List<OrderItem> itemsList;  // New field for Firebase serialization
     private double totalAmount;
