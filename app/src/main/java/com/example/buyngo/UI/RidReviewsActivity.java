@@ -106,48 +106,83 @@ public class RidReviewsActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess(List<FirebaseRiderRepository.RiderReview> reviews) {
                         Log.d(TAG, "✓ Query succeeded. Found " + reviews.size() + " reviews");
-                        reviewsContainer.removeAllViews();
-
+                        
+                        // DEBUG: If no reviews found with indexed query, try fallback
                         if (reviews.isEmpty()) {
-                            Log.d(TAG, "No reviews found for rider: " + profile.email);
-                            txtNoReviews.setVisibility(View.VISIBLE);
+                            Log.d(TAG, "⚠ No reviews found! Trying fallback query...");
+                            FirebaseRiderRepository.getReviewsForRiderFallback(
+                                    profile.email,
+                                    new FirebaseRiderRepository.ResultCallback<List<FirebaseRiderRepository.RiderReview>>() {
+                                        @Override
+                                        public void onSuccess(List<FirebaseRiderRepository.RiderReview> fallbackReviews) {
+                                            Log.d(TAG, "✓ Fallback query found " + fallbackReviews.size() + " reviews");
+                                            displayReviews(fallbackReviews);
+                                        }
+
+                                        @Override
+                                        public void onError(String message) {
+                                            Log.e(TAG, "✗ Fallback query also failed: " + message);
+                                            displayReviews(reviews); // Show empty state
+                                        }
+                                    });
                             return;
                         }
-
-                        Log.d(TAG, "Displaying " + reviews.size() + " reviews:");
-                        txtNoReviews.setVisibility(View.GONE);
-                        LayoutInflater inflater = LayoutInflater.from(RidReviewsActivity.this);
-                        DateFormat dateFormat = android.text.format.DateFormat
-                                .getMediumDateFormat(RidReviewsActivity.this);
-
-                        for (FirebaseRiderRepository.RiderReview review : reviews) {
-                            Log.d(TAG, "  - Order #" + review.orderId + " | " + review.rating + "⭐ | " + review.customerName);
-                            
-                            View card = inflater.inflate(
-                                    R.layout.item_rider_review,
-                                    reviewsContainer,
-                                    false);
-
-                            TextView txtOrderId = card.findViewById(R.id.txtReviewOrderId);
-                            TextView txtRating = card.findViewById(R.id.txtReviewRating);
-                            TextView txtCustomer = card.findViewById(R.id.txtReviewCustomer);
-                            TextView txtComment = card.findViewById(R.id.txtReviewComment);
-                            TextView txtDate = card.findViewById(R.id.txtReviewDate);
-
-                            txtOrderId.setText("Order #" + review.orderId);
-                            txtRating.setText(review.rating + " stars");
-                            txtCustomer.setText("Customer: " + review.customerName);
-                            txtComment.setText(
-                                    review.comment == null || review.comment.trim().isEmpty()
-                                            ? "No written comment"
-                                            : review.comment);
-                            txtDate.setText(dateFormat.format(review.createdAt));
-
-                            reviewsContainer.addView(card);
-                        }
+                        
+                        displayReviews(reviews);
                     }
 
                     @Override
+                    public void onError(String message) {
+                        Log.e(TAG, "✗ Query error: " + message);
+                        reviewsContainer.removeAllViews();
+                        txtNoReviews.setVisibility(View.VISIBLE);
+                    }
+                });
+    }
+
+    private void displayReviews(List<FirebaseRiderRepository.RiderReview> reviews) {
+        Log.d(TAG, "===== DISPLAYING REVIEWS =====");
+        Log.d(TAG, "Total reviews to display: " + reviews.size());
+        reviewsContainer.removeAllViews();
+
+        if (reviews.isEmpty()) {
+            Log.d(TAG, "No reviews found for rider");
+            txtNoReviews.setVisibility(View.VISIBLE);
+            return;
+        }
+
+        Log.d(TAG, "Displaying " + reviews.size() + " reviews:");
+        txtNoReviews.setVisibility(View.GONE);
+        LayoutInflater inflater = LayoutInflater.from(RidReviewsActivity.this);
+        DateFormat dateFormat = android.text.format.DateFormat
+                .getMediumDateFormat(RidReviewsActivity.this);
+
+        for (FirebaseRiderRepository.RiderReview review : reviews) {
+            Log.d(TAG, "  - Order #" + review.orderId + " | " + review.rating + "⭐ | " + review.customerName);
+            
+            View card = inflater.inflate(
+                    R.layout.item_rider_review,
+                    reviewsContainer,
+                    false);
+
+            TextView txtOrderId = card.findViewById(R.id.txtReviewOrderId);
+            TextView txtRating = card.findViewById(R.id.txtReviewRating);
+            TextView txtCustomer = card.findViewById(R.id.txtReviewCustomer);
+            TextView txtComment = card.findViewById(R.id.txtReviewComment);
+            TextView txtDate = card.findViewById(R.id.txtReviewDate);
+
+            txtOrderId.setText("Order #" + review.orderId);
+            txtRating.setText(review.rating + " stars");
+            txtCustomer.setText("Customer: " + review.customerName);
+            txtComment.setText(
+                    review.comment == null || review.comment.trim().isEmpty()
+                            ? "No written comment"
+                            : review.comment);
+            txtDate.setText(dateFormat.format(review.createdAt));
+
+            reviewsContainer.addView(card);
+        }
+    }
                     public void onError(String message) {
                         Log.e(TAG, "✗ Failed to load reviews: " + message);
                         reviewsContainer.removeAllViews();
