@@ -18,12 +18,18 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-public class CusProductDetailActivity extends AppCompatActivity {
+/**
+ * ═══════════════════════════════════════════════════════════════════════════════
+ *                   CUSTOMER PRODUCT DETAIL ACTIVITY
+ * ═══════════════════════════════════════════════════════════════════════════════
+ * 
+ * WHAT THIS SCREEN DOES:\n * Shows detailed information for a selected product (full description, image).\n * Allows customer to select quantity and add to cart.\n * \n * HOW IT CONNECTS TO FIREBASE:\n * 1. CusHomeActivity passes productId to this screen\n * 2. loadProductFromFirebase() reads product details from /products/{productId}/\n * 3. Displays name, category, price, description\n * 4. When "Add to Cart" clicked, saves product to CartStore (local storage)\n * 5. Returns to home/cart\n * \n * DATA FLOW:\n * Firebase /products/{productId}/ → Load into Product object → Display details\n *                                              ↓\n *                                    Customer selects quantity\n *                                              ↓\n *                                    CartStore.addToCart() (local save)\n * \n * IMPORTANT:\n * - Reads product details from Firebase (read-only)\n * - Does NOT save to Firebase directly\n * - Cart stored locally using CartStore\n * ═══════════════════════════════════════════════════════════════════════════════\n */\npublic class CusProductDetailActivity extends AppCompatActivity {
     private TextView productName;
     private TextView productCategory;
     private TextView productPrice;
     private TextView productDescription;
     private EditText quantityInput;
+    // Firebase connection - read product details
     private DatabaseReference db;
     private Product currentProduct;
     private String productId;
@@ -33,6 +39,7 @@ public class CusProductDetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.cus_product_detail);
 
+        // Connect to Firebase to read product data
         db = FirebaseDatabase.getInstance().getReference();
 
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -45,6 +52,7 @@ public class CusProductDetailActivity extends AppCompatActivity {
         productDescription = findViewById(R.id.productDescription);
         quantityInput = findViewById(R.id.quantityInput);
 
+        // Get product ID passed from CusHomeActivity
         Intent intent = getIntent();
         productId = intent.getStringExtra("productId");
 
@@ -54,8 +62,10 @@ public class CusProductDetailActivity extends AppCompatActivity {
             return;
         }
 
+        // Load product details from Firebase
         loadProductFromFirebase(productId);
 
+        // When "Add to Cart" clicked, save to CartStore and return
         findViewById(R.id.addToCartButton).setOnClickListener(v -> {
             if (currentProduct == null) {
                 Toast.makeText(this, "Product data not loaded yet", Toast.LENGTH_SHORT).show();
@@ -70,6 +80,7 @@ public class CusProductDetailActivity extends AppCompatActivity {
                 return;
             }
 
+            // Add to CartStore (local phone storage)
             CartStore.addToCart(
                     this,
                     currentProduct.getId(),
@@ -85,7 +96,9 @@ public class CusProductDetailActivity extends AppCompatActivity {
         });
     }
 
-    // Fetch product details from Firebase database
+    /**
+     * Load product details from Firebase database
+     */
     private void loadProductFromFirebase(String productId) {
         db.child("products").child(productId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override

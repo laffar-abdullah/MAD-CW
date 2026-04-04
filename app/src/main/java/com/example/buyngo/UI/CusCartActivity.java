@@ -16,7 +16,8 @@ import com.example.buyngo.Store.CartStore;
 
 import java.util.List;
 
-public class CusCartActivity extends AppCompatActivity {
+/**
+ * ═══════════════════════════════════════════════════════════════════════════════\n *                         CUSTOMER CART ACTIVITY\n * ═══════════════════════════════════════════════════════════════════════════════\n * \n * WHAT THIS SCREEN DOES:\n * Shows all items customer added to cart. Displays price, quantity, total.\n * Customer can remove items or proceed to checkout.\n * \n * HOW IT CONNECTS TO FIREBASE:\n * This screen does NOT connect to Firebase directly.\n * It reads cart from CartStore (local phone storage).\n * When customer clicks "Checkout", data goes to Firebase.\n * \n * DATA FLOW:\n * CartStore (local) → Display items → Customer removes items OR clicks Checkout\n *                                                                      ↓\n *                                                      Goes to CusCheckoutActivity\n *                                                      Creates Order in Firebase\n * \n * IMPORTANT:\n * - Cart data is LOCAL only (CartStore, not Firebase)\n * - When checkout clicked, order is THEN saved to Firebase\n * ═══════════════════════════════════════════════════════════════════════════════\n */\npublic class CusCartActivity extends AppCompatActivity {
     private LinearLayout cartItemsContainer;
     private TextView totalPriceText;
     private Button checkoutButton;
@@ -34,16 +35,18 @@ public class CusCartActivity extends AppCompatActivity {
         totalPriceText = findViewById(R.id.totalPriceText);
         checkoutButton = findViewById(R.id.checkoutButton);
 
+        // Display current cart items from local storage
         displayCartItems();
 
+        // When "Checkout" tapped, validate cart and go to payment screen
         checkoutButton.setOnClickListener(v -> {
+            // Get items from CartStore (local storage)
             List<CartStore.CartItem> items = CartStore.getCartItems(this);
             if (items.isEmpty()) {
                 Toast.makeText(this, "Cart is empty", Toast.LENGTH_SHORT).show();
                 return;
             }
-            // Debug: show number of items
-            Toast.makeText(this, "Checking out " + items.size() + " items", Toast.LENGTH_SHORT).show();
+            // Go to checkout (here Order will be created and saved to Firebase)
             startActivity(new Intent(this, CusCheckoutActivity.class));
         });
     }
@@ -51,10 +54,13 @@ public class CusCartActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        // Refresh cart display when coming back to this screen
         displayCartItems();
     }
 
-    // Display all items in shopping cart
+    /**
+     * Read cart items from local storage and display on screen
+     */
     private void displayCartItems() {
         cartItemsContainer.removeAllViews();
 

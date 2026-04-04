@@ -24,8 +24,10 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CusHomeActivity extends AppCompatActivity {
+/**
+ * ═══════════════════════════════════════════════════════════════════════════════\n *                         CUSTOMER HOME ACTIVITY\n * ═══════════════════════════════════════════════════════════════════════════════\n * \n * WHAT THIS SCREEN DOES:\n * This is the main shopping screen. Shows all available products from Firebase.\n * Customers can browse items, select quantity, and add to cart.\n * \n * HOW IT CONNECTS TO FIREBASE:\n * 1. When screen opens, loadProductsFromFirebase() is called\n * 2. Reads /products/ collection from Firebase database\n * 3. Each product is converted to a Product model object\n * 4. Displays products as cards on screen\n * 5. When customer adds to cart, product data saved to CartStore (local storage)\n * \n * DATA FLOW:\n * Firebase /products/ → Load into Product objects → Display as cards\n *                                     ↓\n *                           Customer taps \"Add to Cart\"\n *                                     ↓\n *                  Product data saved to CartStore (local phone storage)\n * \n * IMPORTANT NOTES:\n * - This screen READS products from Firebase (read-only)\n * - Cart is stored locally (not in Firebase) using CartStore\n * - Bottom navigation allows jumping to cart, orders, feedback, profile\n * ═══════════════════════════════════════════════════════════════════════════════\n */\npublic class CusHomeActivity extends AppCompatActivity {
     private LinearLayout productContainer;
+    // Firebase connection - reads product data from cloud
     private DatabaseReference db;
     private TextView cartCountBadge;
 
@@ -34,7 +36,7 @@ public class CusHomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.cus_home);
 
-        // Connect to Firebase database
+        // Connect to Firebase database to read products
         db = FirebaseDatabase.getInstance("https://buyngo-5b43e-default-rtdb.firebaseio.com/").getReference();
         productContainer = findViewById(R.id.productContainer);
 
@@ -42,8 +44,10 @@ public class CusHomeActivity extends AppCompatActivity {
         btnProfile.setOnClickListener(v ->
                 startActivity(new Intent(this, CusProfileActivity.class)));
 
+        // Load all products from Firebase and display them
         loadProductsFromFirebase();
 
+        // Set up bottom navigation menu
         BottomNavigationView bottomNav = findViewById(R.id.bottomNavigation);
         bottomNav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();

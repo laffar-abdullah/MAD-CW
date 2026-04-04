@@ -19,6 +19,19 @@ import com.example.buyngo.R;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * ═══════════════════════════════════════════════════════════════════════════════
+ *                      CUSTOMER FEEDBACK ACTIVITY
+ *                  (MAIN FEATURE - FEEDBACK SYSTEM)
+ * ═══════════════════════════════════════════════════════════════════════════════
+ * 
+ * WHAT THIS SCREEN DOES:
+ * Allows customers to rate and review their delivery experience after order
+ * is completed. Also allows anonymous feedback from app menu.
+ * 
+ * HOW IT CONNECTS TO FIREBASE:
+ * 
+ * TWO FEEDBACK MODES:\n * \n * MODE 1: ORDER-BASED FEEDBACK (After delivery)\n * 1. Order delivered → This screen automatically shown with orderId\n * 2. Customer rates 1-5 stars and writes comment\n * 3. Loads order details from Firebase (/orders/{orderId}/)\n * 4. Gets rider email from order data\n * 5. Saves Review to TWO places:\n *    - /reviews/{reviewId} (rider sees feedback about them)\n *    - /feedbacks/{feedbackId} (admin sees all feedback)\n * 6. Updates order status to "Delivered Successfully"\n * \n * MODE 2: ANONYMOUS FEEDBACK (From nav_reviews menu)\n * 1. Customer taps "Reviews" from home menu\n * 2. Opens this screen with NO orderId\n * 3. Customer gives rating and comment anonymously\n * 4. Saves to /feedbacks/{feedbackId} only\n * 5. Marked with isAnonymous=true\n * \n * FIREBASE OPERATIONS:\n * - READ: Order data (/orders/{orderId}/) to get rider email\n * - WRITE: Review to /reviews/{riderEmail}/\n * - WRITE: Feedback to /feedbacks/\n * - UPDATE: Order status to "Delivered Successfully"\n * \n * DATA FLOW:\n * \n * ORDER-BASED:\n * Order → This screen shown → Customer rates → Review object created\n *                                                       ↓\n *                    Saved to /reviews/ AND /feedbacks/\n *                                                       ↓\n *                    Order marked "Delivered Successfully"\n *                                                       ↓\n *             Rider can see feedback about them\n *             Admin can see all feedback\n * \n * ANONYMOUS:\n * nav_reviews menu → This screen shown → Customer rates → Feedback object created\n *                                                               ↓\n *                                    Saved to /feedbacks/ only\n *                                                               ↓\n *                              Admin can see anonymous feedback\n * \n * KEY FEATURES:\n * - Submit button enabled ONLY if rating given (1+ stars)\n * - Can skip mandatory feedback (shows confirmation dialog)\n * - Real-time rating display (shows \"X / 5\" as customer slides)\n * - Handles both order-based and anonymous reviews\n * ═══════════════════════════════════════════════════════════════════════════════\n */
 public class CusFeedbackActivity extends AppCompatActivity {
 
     private static final String DB_URL = "https://buyngo-5b43e-default-rtdb.firebaseio.com/";
@@ -73,7 +86,7 @@ public class CusFeedbackActivity extends AppCompatActivity {
             return;
         }
         
-        // Get orderId from intent
+        // Get orderId from intent (null if anonymous feedback from nav_reviews)
         orderId = getIntent().getStringExtra("orderId");
         Log.d(TAG, "Order ID: " + orderId);
         
@@ -118,6 +131,7 @@ public class CusFeedbackActivity extends AppCompatActivity {
 
         try {
             if (ratingBar != null && ratingLabel != null) {
+                // Update rating label as customer slides the bar
                 ratingBar.setOnRatingBarChangeListener((bar, rating, fromUser) -> {
                     if (rating <= 0f) {
                         ratingLabel.setText("Tap a star to rate");
@@ -126,11 +140,13 @@ public class CusFeedbackActivity extends AppCompatActivity {
                     ratingLabel.setText((int) rating + " / 5");
                 });
             }
+        } catch (Exception e) {
         }
 
         try {
             final boolean isAnonymous = (orderId == null || orderId.trim().isEmpty());
             
+            // When "Submit Feedback" button tapped
             findViewById(R.id.submitFeedbackButton).setOnClickListener(v -> {
                 if (ratingBar == null || reviewComment == null) {
                     Toast.makeText(this, "Form not loaded properly", Toast.LENGTH_SHORT).show();
@@ -145,12 +161,14 @@ public class CusFeedbackActivity extends AppCompatActivity {
                 }
 
                 // If no order ID, treat as anonymous review
+                // Save directly to /feedbacks/ without order details
                 if (isAnonymous) {
                     saveAnonymousFeedbackToAdminNode(rating, comment);
                     return;
                 }
 
-                // For order-based reviews, get order details and rider email
+                // For order-based reviews, get order details and rider email from Firebase
+                // Then save review linked to that rider
                 com.google.firebase.database.FirebaseDatabase.getInstance("https://buyngo-5b43e-default-rtdb.firebaseio.com/")
                         .getReference("orders")
                         .child(orderId)
