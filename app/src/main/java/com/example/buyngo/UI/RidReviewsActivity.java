@@ -100,34 +100,14 @@ public class RidReviewsActivity extends AppCompatActivity {
         Log.d(TAG, "Rider Email: " + profile.email);
         Log.d(TAG, "Querying reviews for rider email: '" + profile.email + "'");
 
-        FirebaseRiderRepository.getReviewsForRider(
+        // Using fallback method (does NOT require Firebase index)
+        // Loads all reviews and filters client-side by riderEmail
+        FirebaseRiderRepository.getReviewsForRiderFallback(
                 profile.email,
                 new FirebaseRiderRepository.ResultCallback<List<FirebaseRiderRepository.RiderReview>>() {
                     @Override
                     public void onSuccess(List<FirebaseRiderRepository.RiderReview> reviews) {
                         Log.d(TAG, "✓ Query succeeded. Found " + reviews.size() + " reviews");
-                        
-                        // DEBUG: If no reviews found with indexed query, try fallback
-                        if (reviews.isEmpty()) {
-                            Log.d(TAG, "⚠ No reviews found! Trying fallback query...");
-                            FirebaseRiderRepository.getReviewsForRiderFallback(
-                                    profile.email,
-                                    new FirebaseRiderRepository.ResultCallback<List<FirebaseRiderRepository.RiderReview>>() {
-                                        @Override
-                                        public void onSuccess(List<FirebaseRiderRepository.RiderReview> fallbackReviews) {
-                                            Log.d(TAG, "✓ Fallback query found " + fallbackReviews.size() + " reviews");
-                                            displayReviews(fallbackReviews);
-                                        }
-
-                                        @Override
-                                        public void onError(String message) {
-                                            Log.e(TAG, "✗ Fallback query also failed: " + message);
-                                            displayReviews(reviews); // Show empty state
-                                        }
-                                    });
-                            return;
-                        }
-                        
                         displayReviews(reviews);
                     }
 
@@ -182,12 +162,5 @@ public class RidReviewsActivity extends AppCompatActivity {
 
             reviewsContainer.addView(card);
         }
-    }
-                    public void onError(String message) {
-                        Log.e(TAG, "✗ Failed to load reviews: " + message);
-                        reviewsContainer.removeAllViews();
-                        txtNoReviews.setVisibility(View.VISIBLE);
-                    }
-                });
     }
 }

@@ -341,8 +341,9 @@ public class RidProfileActivity extends AppCompatActivity {
      */
     private void loadReviewsSummary(String riderEmail) {
         Log.d(TAG, "Loading reviews summary for rider: " + riderEmail);
-
-        FirebaseRiderRepository.getReviewsForRider(
+        
+        // Using fallback method (does NOT require Firebase index)
+        FirebaseRiderRepository.getReviewsForRiderFallback(
                 riderEmail,
                 new FirebaseRiderRepository.ResultCallback<List<FirebaseRiderRepository.RiderReview>>() {
 
