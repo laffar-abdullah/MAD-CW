@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Checkout screen: delivery address + payment method selection -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -6,14 +7,17 @@
     android:orientation="vertical"
     android:background="@color/screen_bg">
 
+    <!-- Top toolbar with back arrow and title -->
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="@color/toolbar_bg"
+        app:navigationIcon="@android:drawable/ic_menu_close_clear_cancel"
         app:title="Checkout"
         app:titleTextColor="@color/toolbar_text" />
 
+    <!-- Scrollable content area so the form works on small screens -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -25,6 +29,7 @@
             android:orientation="vertical"
             android:padding="16dp">
 
+            <!-- ══ ORDER SUMMARY ══════════════════════════════════════ -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -33,17 +38,19 @@
                 android:textSize="18sp"
                 android:textColor="@color/text_dark" />
 
+            <!-- Shows the total cart value, e.g. "Rs. 1,250.00" -->
             <TextView
                 android:id="@+id/totalPriceText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Total: Rs. 0.00"
-                android:textSize="20sp"
+                android:textSize="22sp"
                 android:textStyle="bold"
                 android:textColor="@color/primary_green"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="8dp"
                 android:layout_marginBottom="24dp" />
 
+            <!-- ══ DELIVERY ADDRESS ═══════════════════════════════════ -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -51,15 +58,15 @@
                 android:textStyle="bold"
                 android:textSize="16sp"
                 android:textColor="@color/text_dark"
-                android:layout_marginTop="8dp" />
+                android:layout_marginBottom="8dp" />
 
+            <!-- Phone number field -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Phone Number"
-                android:textSize="14sp"
+                android:textSize="13sp"
                 android:textColor="@color/text_light"
-                android:layout_marginTop="12dp"
                 android:layout_marginBottom="4dp" />
 
             <EditText
@@ -67,21 +74,22 @@
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:inputType="phone"
-                android:hint="Phone number"
+                android:hint="Enter your phone number"
                 android:textSize="15sp"
                 android:textColor="@color/text_dark"
                 android:textColorHint="@color/text_light"
                 android:paddingStart="12dp"
                 android:paddingEnd="12dp"
-                android:background="@drawable/search_bg" />
+                android:background="@drawable/search_bg"
+                android:layout_marginBottom="12dp" />
 
+            <!-- Street address field -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Address"
-                android:textSize="14sp"
+                android:text="Street Address"
+                android:textSize="13sp"
                 android:textColor="@color/text_light"
-                android:layout_marginTop="12dp"
                 android:layout_marginBottom="4dp" />
 
             <EditText
@@ -89,21 +97,22 @@
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:inputType="text"
-                android:hint="Delivery address"
+                android:hint="Enter your street address"
                 android:textSize="15sp"
                 android:textColor="@color/text_dark"
                 android:textColorHint="@color/text_light"
                 android:paddingStart="12dp"
                 android:paddingEnd="12dp"
-                android:background="@drawable/search_bg" />
+                android:background="@drawable/search_bg"
+                android:layout_marginBottom="12dp" />
 
+            <!-- City field -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="City"
-                android:textSize="14sp"
+                android:textSize="13sp"
                 android:textColor="@color/text_light"
-                android:layout_marginTop="12dp"
                 android:layout_marginBottom="4dp" />
 
             <EditText
@@ -111,7 +120,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:inputType="text"
-                android:hint="City"
+                android:hint="Enter your city"
                 android:textSize="15sp"
                 android:textColor="@color/text_dark"
                 android:textColorHint="@color/text_light"
@@ -119,9 +128,184 @@
                 android:paddingEnd="12dp"
                 android:background="@drawable/search_bg" />
 
+            <!-- ══ PAYMENT METHOD ═════════════════════════════════════ -->
+            <!-- Divider between address and payment sections -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/divider"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="16dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Payment Method"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:textColor="@color/text_dark"
+                android:layout_marginBottom="12dp" />
+
+            <!-- Radio group — customer picks ONE payment method -->
+            <RadioGroup
+                android:id="@+id/paymentRadioGroup"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <!-- Option 1: Demo card payment -->
+                <RadioButton
+                    android:id="@+id/radioCard"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:text="💳  Pay by Card (Demo)"
+                    android:textSize="15sp"
+                    android:textColor="@color/text_dark"
+                    android:checked="true"
+                    android:paddingStart="8dp"
+                    android:buttonTint="@color/primary_green" />
+
+                <!-- Option 2: Cash on Delivery -->
+                <RadioButton
+                    android:id="@+id/radioCOD"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:text="💵  Cash on Delivery (COD)"
+                    android:textSize="15sp"
+                    android:textColor="@color/text_dark"
+                    android:paddingStart="8dp"
+                    android:buttonTint="@color/primary_green" />
+
+            </RadioGroup>
+
+            <!-- ══ CARD DETAILS (shown only when "Card" is selected) ═ -->
+            <!-- This entire block is hidden when the customer picks COD -->
+            <LinearLayout
+                android:id="@+id/cardDetailsLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@color/surface_card"
+                android:padding="16dp"
+                android:layout_marginTop="12dp"
+                android:visibility="visible">
+
+                <!-- Demo card notice — reassures users no real charge happens -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="🔒  Demo Card — No real charge will be made"
+                    android:textSize="12sp"
+                    android:textColor="@color/primary_green"
+                    android:textStyle="italic"
+                    android:layout_marginBottom="12dp" />
+
+                <!-- Card number field -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Card Number"
+                    android:textSize="13sp"
+                    android:textColor="@color/text_light"
+                    android:layout_marginBottom="4dp" />
+
+                <EditText
+                    android:id="@+id/cardNumberEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:inputType="number"
+                    android:hint="1234 5678 9012 3456"
+                    android:maxLength="19"
+                    android:textSize="16sp"
+                    android:textColor="@color/text_dark"
+                    android:textColorHint="@color/text_light"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:background="@drawable/search_bg"
+                    android:layout_marginBottom="12dp" />
+
+                <!-- Expiry and CVV side by side -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:weightSum="2">
+
+                    <!-- Expiry date -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:layout_marginEnd="8dp">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Expiry Date"
+                            android:textSize="13sp"
+                            android:textColor="@color/text_light"
+                            android:layout_marginBottom="4dp" />
+
+                        <EditText
+                            android:id="@+id/cardExpiryEditText"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:inputType="text"
+                            android:hint="MM/YY"
+                            android:maxLength="5"
+                            android:textSize="15sp"
+                            android:textColor="@color/text_dark"
+                            android:textColorHint="@color/text_light"
+                            android:paddingStart="12dp"
+                            android:paddingEnd="12dp"
+                            android:background="@drawable/search_bg" />
+                    </LinearLayout>
+
+                    <!-- CVV -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:layout_marginStart="8dp">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="CVV"
+                            android:textSize="13sp"
+                            android:textColor="@color/text_light"
+                            android:layout_marginBottom="4dp" />
+
+                        <EditText
+                            android:id="@+id/cardCvvEditText"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:inputType="numberPassword"
+                            android:hint="123"
+                            android:maxLength="3"
+                            android:textSize="15sp"
+                            android:textColor="@color/text_dark"
+                            android:textColorHint="@color/text_light"
+                            android:paddingStart="12dp"
+                            android:paddingEnd="12dp"
+                            android:background="@drawable/search_bg" />
+                    </LinearLayout>
+                </LinearLayout>
+
+            </LinearLayout>
+            <!-- End of card details section -->
+
+            <!-- Bottom padding so the confirm button doesn't overlap content -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="16dp" />
+
         </LinearLayout>
     </ScrollView>
 
+    <!-- "Confirm Order" button — fixed at the bottom of the screen -->
     <Button
         android:id="@+id/confirmButton"
         android:layout_width="match_parent"
@@ -130,6 +314,7 @@
         android:text="Confirm Order"
         android:textColor="@color/white"
         android:background="@color/primary_green"
-        android:textSize="16sp" />
+        android:textSize="16sp"
+        android:textStyle="bold" />
 
 </LinearLayout>
