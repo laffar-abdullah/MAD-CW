@@ -87,7 +87,7 @@ public class CusCartActivity extends AppCompatActivity {
 
             itemName.setText(item.name);
             itemQty.setText("Qty: " + item.quantity);
-            itemPrice.setText(String.format("$%.2f", item.getTotal()));
+            itemPrice.setText(String.format("Rs. %.2f", item.getTotal()));
 
             removeBtn.setOnClickListener(v -> {
                 CartStore.removeFromCart(this, item.productId);
@@ -99,6 +99,6 @@ public class CusCartActivity extends AppCompatActivity {
         }
 
         double total = CartStore.getCartTotal(this);
-        totalPriceText.setText(String.format("$%.2f", total));
+        totalPriceText.setText(String.format("Rs. %.2f", total));
     }
 }

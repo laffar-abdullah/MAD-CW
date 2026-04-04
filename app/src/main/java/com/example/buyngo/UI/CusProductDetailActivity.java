@@ -91,13 +91,43 @@ public class CusProductDetailActivity extends AppCompatActivity {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
                 if (snapshot.exists()) {
-                    currentProduct = snapshot.getValue(Product.class);
+                    try {
+                        currentProduct = new Product();
+                        currentProduct.setId(snapshot.getKey());
+                        currentProduct.setName(snapshot.child("name").getValue(String.class));
+                        currentProduct.setCategory(snapshot.child("category").getValue(String.class));
+                        currentProduct.setDescription(snapshot.child("description").getValue(String.class));
+                        currentProduct.setImageUrl(snapshot.child("imageUrl").getValue(String.class));
+                        
+                        // Handle price which might be Double, Long, or String in Firebase
+                        Double price = 0.0;
+                        Object priceObj = snapshot.child("price").getValue();
+                        if (priceObj != null) {
+                            if (priceObj instanceof Double) {
+                                price = (Double) priceObj;
+                            } else if (priceObj instanceof Long) {
+                                price = ((Long) priceObj).doubleValue();
+                            } else if (priceObj instanceof String) {
+                                try {
+                                    price = Double.parseDouble((String) priceObj);
+                                } catch (NumberFormatException e) {
+                                    android.util.Log.w("ProductDetail", "Invalid price format: " + priceObj);
+                                    price = 0.0;
+                                }
+                            }
+                        }
+                        currentProduct.setPrice(price);
+                        
+                        Long stock = snapshot.child("stock").getValue(Long.class);
+                        currentProduct.setStock(stock != null ? stock.intValue() : 0);
 
-                    if (currentProduct != null) {
                         productName.setText(currentProduct.getName());
                         productCategory.setText(currentProduct.getCategory());
-                        productPrice.setText(String.format("$%.2f", currentProduct.getPrice()));
+                        productPrice.setText(String.format("Rs. %.2f", currentProduct.getPrice()));
                         productDescription.setText(currentProduct.getDescription());
+                    } catch (Exception e) {
+                        Toast.makeText(CusProductDetailActivity.this, "Error loading product: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        finish();
                     }
                 } else {
                     Toast.makeText(CusProductDetailActivity.this, "Product not found", Toast.LENGTH_SHORT).show();

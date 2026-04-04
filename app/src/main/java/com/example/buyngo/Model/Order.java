@@ -126,6 +126,12 @@ public class Order {
     public String getAssignedRiderEmail() { return assignedRiderEmail; }
     public void setAssignedRiderEmail(String assignedRiderEmail) { this.assignedRiderEmail = assignedRiderEmail; }
 
+    public String getCustomerAddress() { return customerAddress; }
+    public void setCustomerAddress(String customerAddress) { this.customerAddress = customerAddress; }
+
+    public String getCustomerPhone() { return customerPhone; }
+    public void setCustomerPhone(String customerPhone) { this.customerPhone = customerPhone; }
+
     public long getCreatedAt() { return createdAt; }
     public void setCreatedAt(long createdAt) { this.createdAt = createdAt; }
 
@@ -159,6 +165,6 @@ public class Order {
     }
 
     public String getTotalFormatted() {
-        return String.format("$%.2f", totalAmount);
+        return String.format("Rs. %.2f", totalAmount);
     }
 }

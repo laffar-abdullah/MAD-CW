@@ -81,7 +81,25 @@ public class CusHomeActivity extends AppCompatActivity {
                         String id = productSnapshot.getKey();
                         String name = productSnapshot.child("name").getValue(String.class);
                         String category = productSnapshot.child("category").getValue(String.class);
-                        Double price = productSnapshot.child("price").getValue(Double.class);
+                        
+                        // Handle price which might be Double, Long, or String in Firebase
+                        Double price = 0.0;
+                        Object priceObj = productSnapshot.child("price").getValue();
+                        if (priceObj != null) {
+                            if (priceObj instanceof Double) {
+                                price = (Double) priceObj;
+                            } else if (priceObj instanceof Long) {
+                                price = ((Long) priceObj).doubleValue();
+                            } else if (priceObj instanceof String) {
+                                try {
+                                    price = Double.parseDouble((String) priceObj);
+                                } catch (NumberFormatException e) {
+                                    android.util.Log.w("CusHome", "Invalid price format: " + priceObj);
+                                    price = 0.0;
+                                }
+                            }
+                        }
+                        
                         String description = productSnapshot.child("description").getValue(String.class);
                         String imageUrl = productSnapshot.child("imageUrl").getValue(String.class);
                         Long stock = productSnapshot.child("stock").getValue(Long.class);
@@ -90,7 +108,7 @@ public class CusHomeActivity extends AppCompatActivity {
                         product.setId(id);
                         product.setName(name);
                         product.setCategory(category);
-                        product.setPrice(price != null ? price : 0.0);
+                        product.setPrice(price);
                         product.setDescription(description);
                         product.setImageUrl(imageUrl);
                         product.setStock(stock != null ? stock.intValue() : 0);
@@ -117,7 +135,7 @@ public class CusHomeActivity extends AppCompatActivity {
 
                     productName.setText(product.getName());
                     productCategory.setText(product.getCategory() != null ? product.getCategory() : "N/A");
-                    productPrice.setText(String.format("$%.2f", product.getPrice()));
+                    productPrice.setText(String.format("Rs. %.2f", product.getPrice()));
                     
                     // Set default quantity to 1
                     quantityInput.setText("1");
