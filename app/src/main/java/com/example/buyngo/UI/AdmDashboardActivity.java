@@ -1,4 +1,4 @@
-package com.example.buyngo.UI;
+﻿package com.example.buyngo.UI;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -71,7 +71,7 @@ public class AdmDashboardActivity extends AppCompatActivity {
         loadDashboardStats();
     }
 
-    /** Fetches product count, total orders, and pending orders from Realtime Database. */
+    
     private void loadDashboardStats() {
 
         // Total products

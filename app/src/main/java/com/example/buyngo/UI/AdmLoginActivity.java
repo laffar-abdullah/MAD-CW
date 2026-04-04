@@ -1,4 +1,4 @@
-package com.example.buyngo.UI;
+﻿package com.example.buyngo.UI;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -40,3 +40,4 @@ public class AdmLoginActivity extends AppCompatActivity {
         });
     }
 }
+

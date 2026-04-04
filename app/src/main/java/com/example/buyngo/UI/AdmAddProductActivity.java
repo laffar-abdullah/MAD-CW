@@ -1,4 +1,4 @@
-package com.example.buyngo.UI;
+﻿package com.example.buyngo.UI;
 
 import android.Manifest;
 import android.content.Intent;
@@ -214,10 +214,7 @@ public class AdmAddProductActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Reads the URI, down-samples the bitmap to MAX_IMAGE_PX, re-encodes as
-     * JPEG and returns the raw Base64 string (no prefix).
-     */
+    
     private String uriToBase64(Uri uri) {
         try {
             // First pass: measure dimensions only
@@ -259,7 +256,7 @@ public class AdmAddProductActivity extends AppCompatActivity {
         }
     }
 
-    /** Saves the product record to Firebase Realtime Database. */
+    
     private void saveToDatabase(String name, double price, String category,
                                 String description, int stock, String barcode,
                                 String imageUrl) {
@@ -288,3 +285,4 @@ public class AdmAddProductActivity extends AppCompatActivity {
                 });
     }
 }
+

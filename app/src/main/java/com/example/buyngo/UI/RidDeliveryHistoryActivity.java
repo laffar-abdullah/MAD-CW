@@ -1,4 +1,4 @@
-package com.example.buyngo.UI;
+﻿package com.example.buyngo.UI;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -14,41 +14,7 @@ import com.example.buyngo.R;
 import java.text.DateFormat;
 import java.util.List;
 
-/**
- * RidDeliveryHistoryActivity — shows a scrollable list of every order this
- * rider has completed, newest first.
- *
- * Each card is inflated from {@code item_delivery_history.xml} and populated
- * with the order snapshot that was archived when the delivery was marked
- * "Delivered" in {@link RidStatusUpdateActivity}.
- *
- * ── CHANGES FROM ORIGINAL ──────────────────────────────────────────────────
- *  BUG FIX — Critical crash / invisible empty state.
- *
- *  In the original layout (rid_delivery_history.xml) the TextView with id
- *  {@code txtEmptyHistory} was placed INSIDE the {@code historyContainer}
- *  LinearLayout.  renderHistory() called historyContainer.removeAllViews()
- *  at the start of every refresh — which detached the empty-state TextView
- *  from the view hierarchy.  The subsequent call to
- *  txtEmptyHistory.setVisibility(View.VISIBLE) operated on a detached view
- *  (no parent), so it had no visible effect.  The empty state was therefore
- *  never shown even when the history list was genuinely empty.
- *
- *  FIX (two-part):
- *   1. rid_delivery_history.xml — moved txtEmptyHistory OUTSIDE and ABOVE
- *      the historyContainer so removeAllViews() no longer touches it.
- *      See the layout file change notes for details.
- *   2. renderHistory() — now guards historyContainer.removeAllViews() so
- *      it is only called when we are about to add new cards, not when the
- *      list is empty.  This is a belt-and-suspenders fix: even if someone
- *      moves the TextView back inside the container by mistake, the logic
- *      still works correctly.
- *
- *  IMPROVEMENT — onResume re-renders the list so newly completed deliveries
- *  appear immediately when the rider returns from the status update screen.
- *  (This was already present in the original; kept unchanged.)
- * ───────────────────────────────────────────────────────────────────────────
- */
+
 public class RidDeliveryHistoryActivity extends AppCompatActivity {
 
     // Container that receives the dynamically inflated history cards.
@@ -112,9 +78,7 @@ public class RidDeliveryHistoryActivity extends AppCompatActivity {
 
     // ── Private helpers ─────────────────────────────────────────────────────
 
-    /**
-     * Display all delivered orders for the current rider
-     */
+    
     private void renderHistory() {
         // Get current logged-in rider information
         RiderSessionStore.RiderProfile profile = RiderSessionStore.getCurrentRider(this);
@@ -237,3 +201,4 @@ public class RidDeliveryHistoryActivity extends AppCompatActivity {
         return sb.toString();
     }
 }
+

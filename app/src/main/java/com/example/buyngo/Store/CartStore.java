@@ -1,4 +1,4 @@
-package com.example.buyngo.Store;
+﻿package com.example.buyngo.Store;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -36,16 +36,7 @@ public class CartStore {
         }
     }
 
-    /**
-     * Adds a product to the cart or increments its quantity if already exists.
-     * 
-     * @param context Android context
-     * @param productId Unique product identifier
-     * @param name Product name
-     * @param category Product category
-     * @param price Product price
-     * @param quantity Quantity to add
-     */
+    
     public static void addToCart(Context context, String productId, String name, String category, double price, int quantity) {
         // STEP 1: Read existing cart items from phone local storage
         List<CartItem> items = getCartItems(context);
@@ -74,12 +65,7 @@ public class CartStore {
         saveCartItems(context, items);
     }
 
-    /**
-     * Removes a product from the cart.
-     * 
-     * @param context Android context
-     * @param productId Product ID to remove
-     */
+    
     public static void removeFromCart(Context context, String productId) {
         // STEP 1: Get all cart items from phone storage
         List<CartItem> items = getCartItems(context);
@@ -89,12 +75,7 @@ public class CartStore {
         saveCartItems(context, items);
     }
 
-    /**
-     * Gets all items currently in the cart.
-     * 
-     * @param context Android context
-     * @return List of CartItem objects
-     */
+    
     public static List<CartItem> getCartItems(Context context) {
         // STEP 1: Access phone's local storage using SharedPreferences
         SharedPreferences prefs = context.getSharedPreferences(CART_PREFS, Context.MODE_PRIVATE);
@@ -106,12 +87,7 @@ public class CartStore {
         return gson.fromJson(json, type);
     }
 
-    /**
-     * Calculates the total price of all items in cart.
-     * 
-     * @param context Android context
-     * @return Total cart price
-     */
+    
     public static double getCartTotal(Context context) {
         // STEP 1: Get all items in cart from phone storage
         List<CartItem> items = getCartItems(context);
@@ -126,35 +102,20 @@ public class CartStore {
         return total;
     }
 
-    /**
-     * Gets the number of items in cart.
-     * 
-     * @param context Android context
-     * @return Number of unique items
-     */
+    
     public static int getCartItemCount(Context context) {
         // STEP 1: Get all items from cart
         // STEP 2: Return count of how many unique items are in cart
         return getCartItems(context).size();
     }
 
-    /**
-     * Clears the entire cart.
-     * 
-     * @param context Android context
-     */
+    
     public static void clearCart(Context context) {
         // STEP 1: Save empty list to phone storage (this deletes all cart items)
         saveCartItems(context, new ArrayList<>());
     }
 
-    /**
-     * Saves cart items to SharedPreferences using JSON serialization.
-     * This stores cart in phone's local storage so it persists even if app closes.
-     * 
-     * @param context Android context
-     * @param items List of cart items to save
-     */
+    
     private static void saveCartItems(Context context, List<CartItem> items) {
         // STEP 1: Get access to phone's local storage (SharedPreferences)
         SharedPreferences prefs = context.getSharedPreferences(CART_PREFS, Context.MODE_PRIVATE);
@@ -168,3 +129,4 @@ public class CartStore {
         editor.apply();
     }
 }
+

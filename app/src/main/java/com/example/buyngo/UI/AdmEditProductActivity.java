@@ -1,4 +1,4 @@
-package com.example.buyngo.UI;
+﻿package com.example.buyngo.UI;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -164,7 +164,7 @@ public class AdmEditProductActivity extends AppCompatActivity {
         return File.createTempFile("IMG_" + timeStamp, ".jpg", storageDir);
     }
 
-    /** Loads existing product data from Firebase and fills the form. */
+    
     private void loadProductData() {
         progressBar.setVisibility(View.VISIBLE);
 
@@ -276,9 +276,7 @@ public class AdmEditProductActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Down-samples the image from URI, encodes as JPEG Base64.
-     */
+    
     private String uriToBase64(Uri uri) {
         try {
             BitmapFactory.Options opts = new BitmapFactory.Options();
@@ -317,9 +315,7 @@ public class AdmEditProductActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Decodes a data-URI Base64 string back to a Bitmap for Glide.
-     */
+    
     private Bitmap decodeBase64ToBitmap(String dataUri) {
         try {
             String base64 = dataUri.substring(dataUri.indexOf(",") + 1);
@@ -357,3 +353,4 @@ public class AdmEditProductActivity extends AppCompatActivity {
                 });
     }
 }
+

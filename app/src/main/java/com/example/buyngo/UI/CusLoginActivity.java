@@ -1,4 +1,4 @@
-package com.example.buyngo.UI;
+﻿package com.example.buyngo.UI;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -12,14 +12,7 @@ import com.example.buyngo.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-/**
- * ═══════════════════════════════════════════════════════════════════════════════
- *                       CUSTOMER LOGIN ACTIVITY
- * ═══════════════════════════════════════════════════════════════════════════════
- * 
- * WHAT THIS SCREEN DOES:
- * Existing customers log in with email and password.
- * \n * HOW IT CONNECTS TO FIREBASE:\n * 1. Customer enters email and password\n * 2. performLogin() sends email/password to Firebase Auth\n * 3. Firebase verifies credentials (email/password must match signup)\n * 4. If successful, customer logged in\n * 5. Navigate to home screen (products list)\n * \n * DATA FLOW:\n * Email/Password Form → Firebase Auth verification → Success → CusHomeActivity\n * \n * IMPORTANT:\n * - Firebase Auth handles password security (never sent in plain text)\n * - Customer ID (UID) stored by Firebase Auth\n * - Other profile data stored in /users/{userId}/ collection\n * ═══════════════════════════════════════════════════════════════════════════════\n */\npublic class CusLoginActivity extends AppCompatActivity {
+\npublic class CusLoginActivity extends AppCompatActivity {
     private EditText emailEditText;
     private EditText passwordEditText;
     private Button loginButton;
@@ -46,9 +39,7 @@ import com.google.firebase.auth.FirebaseUser;
                 startActivity(new Intent(this, CusSignupActivity.class)));
     }
 
-    /**
-     * Validate email/password and verify with Firebase Auth
-     */
+    
     private void performLogin() {
         // STEP 1: Get email from form field
         String email = emailEditText.getText().toString().trim();
@@ -98,3 +89,4 @@ import com.google.firebase.auth.FirebaseUser;
                 });
     }
 }
+

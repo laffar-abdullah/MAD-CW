@@ -1,4 +1,4 @@
-package com.example.buyngo.UI;
+﻿package com.example.buyngo.UI;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -15,12 +15,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-/**
- * ═══════════════════════════════════════════════════════════════════════════════
- *                       CUSTOMER PROFILE ACTIVITY
- * ═══════════════════════════════════════════════════════════════════════════════
- * 
- * WHAT THIS SCREEN DOES:\n * Shows logged-in customer's profile information (name, email, phone, address).\n * Also has Logout button to exit account.\n * \n * HOW IT CONNECTS TO FIREBASE:\n * 1. When screen opens, loadUserProfile() is called\n * 2. Gets logged-in customer ID from Firebase Auth\n * 3. Reads user profile data from /users/{userId}/ in Firebase database\n * 4. Displays name, email, phone, address\n * 5. Logout button calls firebaseAuth.signOut() then goes to login screen\n * \n * DATA FLOW:\n * Firebase Auth (get customer ID) → Read from /users/{userId}/ → Display info\n * \n * IMPORTANT:\n * - This is READ-ONLY (customer cannot edit profile in this version)\n * - Profile data saved during signup and used for checkout address\n * ═══════════════════════════════════════════════════════════════════════════════\n */\npublic class CusProfileActivity extends AppCompatActivity {
+\npublic class CusProfileActivity extends AppCompatActivity {
     private TextView tvProfileName, tvFullName, tvEmail, tvPhoneNumber, tvAddress;
     // Get logged-in customer ID
     private FirebaseAuth firebaseAuth;
@@ -58,9 +53,7 @@ import com.google.firebase.database.ValueEventListener;
         loadUserProfile();
     }
 
-    /**
-     * Read logged-in customer's profile from Firebase and display it
-     */
+    
     private void loadUserProfile() {
         // STEP 1: Get currently logged-in customer from Firebase Auth
         FirebaseUser currentUser = firebaseAuth.getCurrentUser();
@@ -140,3 +133,4 @@ import com.google.firebase.database.ValueEventListener;
                 });
     }
 }
+

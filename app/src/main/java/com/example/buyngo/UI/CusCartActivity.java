@@ -1,4 +1,4 @@
-package com.example.buyngo.UI;
+﻿package com.example.buyngo.UI;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -16,8 +16,7 @@ import com.example.buyngo.Store.CartStore;
 
 import java.util.List;
 
-/**
- * ═══════════════════════════════════════════════════════════════════════════════\n *                         CUSTOMER CART ACTIVITY\n * ═══════════════════════════════════════════════════════════════════════════════\n * \n * WHAT THIS SCREEN DOES:\n * Shows all items customer added to cart. Displays price, quantity, total.\n * Customer can remove items or proceed to checkout.\n * \n * HOW IT CONNECTS TO FIREBASE:\n * This screen does NOT connect to Firebase directly.\n * It reads cart from CartStore (local phone storage).\n * When customer clicks "Checkout", data goes to Firebase.\n * \n * DATA FLOW:\n * CartStore (local) → Display items → Customer removes items OR clicks Checkout\n *                                                                      ↓\n *                                                      Goes to CusCheckoutActivity\n *                                                      Creates Order in Firebase\n * \n * IMPORTANT:\n * - Cart data is LOCAL only (CartStore, not Firebase)\n * - When checkout clicked, order is THEN saved to Firebase\n * ═══════════════════════════════════════════════════════════════════════════════\n */\npublic class CusCartActivity extends AppCompatActivity {
+\npublic class CusCartActivity extends AppCompatActivity {
     private LinearLayout cartItemsContainer;
     private TextView totalPriceText;
     private Button checkoutButton;
@@ -58,9 +57,7 @@ import java.util.List;
         displayCartItems();
     }
 
-    /**
-     * Read cart items from local storage and display on screen
-     */
+    
     private void displayCartItems() {
         // STEP 1: Clear screen of old cart items (in case items were removed)
         cartItemsContainer.removeAllViews();
@@ -133,3 +130,4 @@ import java.util.List;
         totalPriceText.setText(String.format("Rs. %.2f", total));
     }
 }
+

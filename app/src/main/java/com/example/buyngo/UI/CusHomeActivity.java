@@ -1,4 +1,4 @@
-package com.example.buyngo.UI;
+﻿package com.example.buyngo.UI;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -24,8 +24,7 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * ═══════════════════════════════════════════════════════════════════════════════\n *                         CUSTOMER HOME ACTIVITY\n * ═══════════════════════════════════════════════════════════════════════════════\n * \n * WHAT THIS SCREEN DOES:\n * This is the main shopping screen. Shows all available products from Firebase.\n * Customers can browse items, select quantity, and add to cart.\n * \n * HOW IT CONNECTS TO FIREBASE:\n * 1. When screen opens, loadProductsFromFirebase() is called\n * 2. Reads /products/ collection from Firebase database\n * 3. Each product is converted to a Product model object\n * 4. Displays products as cards on screen\n * 5. When customer adds to cart, product data saved to CartStore (local storage)\n * \n * DATA FLOW:\n * Firebase /products/ → Load into Product objects → Display as cards\n *                                     ↓\n *                           Customer taps \"Add to Cart\"\n *                                     ↓\n *                  Product data saved to CartStore (local phone storage)\n * \n * IMPORTANT NOTES:\n * - This screen READS products from Firebase (read-only)\n * - Cart is stored locally (not in Firebase) using CartStore\n * - Bottom navigation allows jumping to cart, orders, feedback, profile\n * ═══════════════════════════════════════════════════════════════════════════════\n */\npublic class CusHomeActivity extends AppCompatActivity {
+\npublic class CusHomeActivity extends AppCompatActivity {
     private LinearLayout productContainer;
     // Firebase connection - reads product data from cloud
     private DatabaseReference db;
@@ -218,9 +217,7 @@ import java.util.List;
         updateCartCounter();
     }
 
-    /**
-     * Updates the cart item counter on the home screen
-     */
+    
     private void updateCartCounter() {
         int cartCount = CartStore.getCartItemCount(this);
         if (cartCountBadge != null) {
@@ -233,3 +230,4 @@ import java.util.List;
         }
     }
 }
+
