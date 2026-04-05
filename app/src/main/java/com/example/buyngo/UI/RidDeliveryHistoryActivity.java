@@ -67,7 +67,6 @@ public class RidDeliveryHistoryActivity extends AppCompatActivity {
         renderHistory();
     }
 
-    // ── Private helpers ─────────────────────────────────────────────────────
 
     /**
      * Display all delivered orders for the current rider
@@ -101,11 +100,18 @@ public class RidDeliveryHistoryActivity extends AppCompatActivity {
                             historyContainer.removeAllViews();
 
                             // Create card for each delivered order
+                            LayoutInflater inflater = LayoutInflater.from(RidDeliveryHistoryActivity.this);
+                            DateFormat dateFormat = android.text.format.DateFormat
+                                    .getMediumDateFormat(RidDeliveryHistoryActivity.this);
+
+                            for (FirebaseRiderRepository.RiderOrder record : records) {
                                 try {
                                     // Inflate card layout
+                                    View card = inflater.inflate(
                                             R.layout.item_delivery_history, historyContainer, false);
 
                                     // Bind card views
+                                    TextView txtOrderId = card.findViewById(R.id.txtHistoryOrderId);
                                     TextView txtCustomer = card.findViewById(R.id.txtHistoryCustomer);
                                     TextView txtAddress = card.findViewById(R.id.txtHistoryAddress);
                                     TextView txtDate = card.findViewById(R.id.txtHistoryDate);
