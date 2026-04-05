@@ -7,13 +7,8 @@
 4. **Track** - See delivery status in real-time
 5. **Feedback** - Rate delivery (MAIN FEATURE)
 
----
 
-## Simple Flow
-
-```
-CUSTOMER JOURNEY
-================
+CUSTOMER 
 
 1. SIGNUP
    Customer opens app
@@ -50,8 +45,7 @@ CUSTOMER JOURNEY
    OR go to Reviews menu anytime for anonymous feedback
 
 
-ADMIN JOURNEY
-=============
+ADMIN 
 
 1. LOGIN
    Admin enters email and password
@@ -90,8 +84,7 @@ ADMIN JOURNEY
    Monitor delivery quality
 
 
-RIDER JOURNEY
-=============
+RIDER 
 
 1. LOGIN
    Rider enters email and password
@@ -132,7 +125,7 @@ RIDER JOURNEY
 
 ---
 
-## Database Structure (Simple)
+## Database Structure 
 
 ```
 /users/{customerId}/
@@ -156,24 +149,4 @@ RIDER JOURNEY
   - rating
   - comment
   - anonymous (true/false)
-```
 
----
-
-## Key Points
-
-- **Cart**: Stored locally on phone (NOT Firebase)
-- **Orders**: Saved to Firebase when customer checks out
-- **Feedback**: Can be order-based OR anonymous
-- **Real-time Updates**: Rider updates status → Customer sees instantly
-
----
-
-## Main Feature: Feedback System
-
-Why is feedback the main feature?
-
-1. **Two Modes**: Automatic (after delivery) + Anonymous (anytime)
-2. **Real-time**: Saved and visible to admin
-3. **Quality Control**: Tracks delivery performance
-4. **Customer-friendly**: Easy 1-5 star rating

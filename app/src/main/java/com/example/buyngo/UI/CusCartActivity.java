@@ -16,7 +16,7 @@ import com.example.buyngo.Store.CartStore;
 
 import java.util.List;
 
-\npublic class CusCartActivity extends AppCompatActivity {
+public class CusCartActivity extends AppCompatActivity {
     private LinearLayout cartItemsContainer;
     private TextView totalPriceText;
     private Button checkoutButton;

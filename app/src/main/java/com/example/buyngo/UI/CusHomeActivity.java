@@ -24,7 +24,7 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
-\npublic class CusHomeActivity extends AppCompatActivity {
+public class CusHomeActivity extends AppCompatActivity {
     private LinearLayout productContainer;
     // Firebase connection - reads product data from cloud
     private DatabaseReference db;

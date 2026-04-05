@@ -15,7 +15,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-\npublic class CusProfileActivity extends AppCompatActivity {
+public class CusProfileActivity extends AppCompatActivity {
     private TextView tvProfileName, tvFullName, tvEmail, tvPhoneNumber, tvAddress;
     // Get logged-in customer ID
     private FirebaseAuth firebaseAuth;
