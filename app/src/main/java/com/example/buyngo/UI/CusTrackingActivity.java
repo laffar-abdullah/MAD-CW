@@ -10,6 +10,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
@@ -413,6 +414,12 @@ public class CusTrackingActivity extends AppCompatActivity {
         sepParams.setMargins(0, 16, 0, 0);
         separator.setLayoutParams(sepParams);
 
+        // ADD CLICK LISTENER TO ORDER CARD - When clicked, show detailed popup
+        orderLayout.setClickable(true);
+        orderLayout.setFocusable(true);
+        orderLayout.setBackgroundColor(getResources().getColor(R.color.white, null));
+        orderLayout.setOnClickListener(v -> showOrderDetailsPopup(order));
+
         ordersContainer.addView(orderLayout);
         ordersContainer.addView(separator);
     }
@@ -462,5 +469,55 @@ public class CusTrackingActivity extends AppCompatActivity {
             default:
                 return getResources().getColor(R.color.text_dark, null);
         }
+    }
+
+   private void showOrderDetailsPopup(Order order) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        
+        // popup layout
+        LinearLayout popupLayout = new LinearLayout(this);
+        popupLayout.setOrientation(LinearLayout.VERTICAL);
+        popupLayout.setPadding(16, 16, 16, 16);
+
+        TextView orderIdText = new TextView(this);
+        orderIdText.setText("Order ID: " + order.getOrderId());
+        orderIdText.setTextSize(16);
+        orderIdText.setTypeface(null, android.graphics.Typeface.BOLD);
+        LinearLayout.LayoutParams idParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        idParams.setMargins(0, 0, 0, 12);
+        popupLayout.addView(orderIdText, idParams);
+
+        TextView statusText = new TextView(this);
+        statusText.setText("Status: " + order.getStatus());
+        statusText.setTextSize(14);
+        statusText.setTextColor(getStatusColor(order.getStatus()));
+        LinearLayout.LayoutParams statusParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        statusParams.setMargins(0, 0, 0, 12);
+        popupLayout.addView(statusText, statusParams);
+
+        TextView totalText = new TextView(this);
+        totalText.setText("Total: Rs. " + order.getTotalAmount());
+        totalText.setTextSize(14);
+        totalText.setTypeface(null, android.graphics.Typeface.BOLD);
+        LinearLayout.LayoutParams totalParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        totalParams.setMargins(0, 0, 0, 12);
+        popupLayout.addView(totalText, totalParams);
+
+        TextView addressText = new TextView(this);
+        addressText.setText("Address: " + order.getCustomerAddress());
+        addressText.setTextSize(13);
+        LinearLayout.LayoutParams addressParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        addressParams.setMargins(0, 0, 0, 12);
+        popupLayout.addView(addressText, addressParams);
+
+        // show
+        builder.setView(popupLayout);
+        builder.setPositiveButton("Close", (dialog, which) -> dialog.dismiss());
+        builder.setCancelable(true);
+        builder.show();
     }
 }
