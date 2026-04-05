@@ -23,12 +23,7 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * ═══════════════════════════════════════════════════════════════════════════════
- *                      CUSTOMER ORDER TRACKING ACTIVITY
- * ═══════════════════════════════════════════════════════════════════════════════
- * 
- * WHAT THIS SCREEN DOES:\n * Shows all orders placed by logged-in customer with their current status.\n * Displays active orders (pending, being delivered) and completed orders.\n * \n * HOW IT CONNECTS TO FIREBASE:\n * 1. When screen opens, loadCustomerOrders() is called\n * 2. Reads ALL orders from Firebase /orders/ collection\n * 3. Filters to only show orders where customerId matches logged-in customer\n * 4. Uses LISTENER (not one-time read) so updates appear instantly\n * 5. When rider updates order status in their app, customer sees it real-time\n * \n * DATA FLOW:\n * Firebase /orders/ → Filter by customer ID → Display active/completed tabs\n *                                      ↓\n *                    Real-time listener watches for status changes\n *                                      ↓\n *                    When status changes, screen updates instantly\n * \n * ORDER STATUSES:\n * ACTIVE: Order Placed, Picked Up, On the Way, Delivered\n * COMPLETED: Received (customer confirmed), Delivered Successfully (feedback given)\n * \n * IMPORTANT:\n * - This is REAL-TIME - uses ValueEventListener not one-time query\n * - Customer only sees their own orders (filtered by customerId)\n * - When rider updates status, customer sees instantly (no refresh needed)\n * ═══════════════════════════════════════════════════════════════════════════════\n */\npublic class CusTrackingActivity extends AppCompatActivity {
+public class CusTrackingActivity extends AppCompatActivity {
 
     private LinearLayout ordersContainer;
     private FirebaseAuth firebaseAuth;              // Get logged-in customer

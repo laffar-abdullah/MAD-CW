@@ -18,12 +18,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-/**
- * ═══════════════════════════════════════════════════════════════════════════════
- *                   CUSTOMER PRODUCT DETAIL ACTIVITY
- * ═══════════════════════════════════════════════════════════════════════════════
- * 
- * WHAT THIS SCREEN DOES:\n * Shows detailed information for a selected product (full description, image).\n * Allows customer to select quantity and add to cart.\n * \n * HOW IT CONNECTS TO FIREBASE:\n * 1. CusHomeActivity passes productId to this screen\n * 2. loadProductFromFirebase() reads product details from /products/{productId}/\n * 3. Displays name, category, price, description\n * 4. When "Add to Cart" clicked, saves product to CartStore (local storage)\n * 5. Returns to home/cart\n * \n * DATA FLOW:\n * Firebase /products/{productId}/ → Load into Product object → Display details\n *                                              ↓\n *                                    Customer selects quantity\n *                                              ↓\n *                                    CartStore.addToCart() (local save)\n * \n * IMPORTANT:\n * - Reads product details from Firebase (read-only)\n * - Does NOT save to Firebase directly\n * - Cart stored locally using CartStore\n * ═══════════════════════════════════════════════════════════════════════════════\n */\npublic class CusProductDetailActivity extends AppCompatActivity {
+public class CusProductDetailActivity extends AppCompatActivity {
     private TextView productName;
     private TextView productCategory;
     private TextView productPrice;

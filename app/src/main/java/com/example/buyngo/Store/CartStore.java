@@ -36,7 +36,7 @@ import java.util.List;
  * - Faster: Local storage is quicker than cloud
  * - Cheaper: Saves Firebase database bandwidth
  * - Better UX: Customer can browse products without internet
- * - Private: Cart is only this customer's, not synced to other devices\n */
+ * - Private: Cart is only this customer's, not synced to other devices */
 public class CartStore {
     private static final String CART_PREFS = "cart_preferences";
     private static final String CART_ITEMS_KEY = "cart_items";

@@ -22,19 +22,19 @@ import com.google.firebase.database.FirebaseDatabase;
  * WHAT THIS SCREEN DOES:
  * This is the first screen customers see. They enter their info (name, email,
  * password, phone, address) to create an account.
- * \n * HOW IT CONNECTS TO FIREBASE:
+ *  * HOW IT CONNECTS TO FIREBASE:
  * 1. Customer taps "Create Account" with form filled in
  * 2. performSignup() validates all fields
  * 3. firebaseAuth.createUserWithEmailAndPassword() - Creates auth account in Firebase
  * 4. If success, saveUserProfile() creates a User model object
  * 5. Saves User object to Firebase database at /users/{userId}/
- * 6. Now customer is registered and can login\n * DATA FLOW:
+ * 6. Now customer is registered and can login * DATA FLOW:
  * Customer Form Input → Validation → Firebase Auth (email/password)
  *                         ↓
  *                   User Model Creation
  *                         ↓
- *                   Firebase Database Save (/users/{userId}/)\n * KEY FIREBASE CONNECTIONS:
- * - FirebaseAuth: Stores email and password securely\n * - FirebaseDatabase: Stores user profile info (name, phone, address)\n */
+ *                   Firebase Database Save (/users/{userId}/) * KEY FIREBASE CONNECTIONS:
+ * - FirebaseAuth: Stores email and password securely * - FirebaseDatabase: Stores user profile info (name, phone, address) */
 public class CusSignupActivity extends AppCompatActivity {
     private EditText nameEditText;
     private EditText emailEditText;
