@@ -160,6 +160,12 @@ public class RidDeliveryHistoryActivity extends AppCompatActivity {
     }
 
     // Helper method to format items list
+    private String formatItemsList(java.util.List<Object> itemsList, java.util.Map<String, Integer> itemsMap) {
+        StringBuilder sb = new StringBuilder();
+
+        if (itemsList != null && !itemsList.isEmpty()) {
+            // Format from itemsList
+            for (Object item : itemsList) {
                 if (item instanceof java.util.Map) {
                     java.util.Map<String, Object> itemMap = (java.util.Map<String, Object>) item;
                     String name = (String) itemMap.get("name");

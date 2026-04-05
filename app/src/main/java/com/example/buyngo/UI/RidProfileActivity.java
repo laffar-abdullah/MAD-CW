@@ -43,26 +43,11 @@ public class RidProfileActivity extends AppCompatActivity {
     private TextView  txtTotalDeliveriesValue;   // shows "N Deliveries"
     private TextView  txtReviewsSummaryValue;    // shows "4.5 ★"
     private ImageView imgProfilePicture;
+    private Button    btnChangePassword;
 
     // ── Firebase Realtime Database ───────────────────────────────────────────
     // Used only for the password-change flow (reads /riders node directly).
     private DatabaseReference dbRef;
-
-    // ────────────────────────────────────────────────────────────────────────
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        // Session guard — unauthenticated users go to login immediately.
-        if (!RiderSessionStore.isLoggedIn(this)) {
-            startActivity(new Intent(this, RidLoginActivity.class));
-            finish();
-            return;
-        }
-
-        setContentView(R.layout.rid_profile);
-
     private static final String TAG = "RidProfile";
 
     @Override
