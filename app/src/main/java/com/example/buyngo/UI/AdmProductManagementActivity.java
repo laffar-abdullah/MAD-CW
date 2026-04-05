@@ -102,13 +102,17 @@ public class AdmProductManagementActivity extends AppCompatActivity {
             barcodeLauncher.launch(options);
         });
 
-        etSearch.addTextChangedListener(new TextWatcher() {
-            @Override public void beforeTextChanged(CharSequence s, int st, int c, int a) {}
-            @Override public void onTextChanged(CharSequence s, int st, int b, int c) {
-                filterProducts(s.toString());
-            }
-            @Override public void afterTextChanged(Editable s) {}
-        });
+        if (etSearch != null) {
+            etSearch.addTextChangedListener(new TextWatcher() {
+                @Override public void beforeTextChanged(CharSequence s, int st, int c, int a) {}
+                @Override public void onTextChanged(CharSequence s, int st, int b, int c) {
+                    filterProducts(s.toString());
+                }
+                @Override public void afterTextChanged(Editable s) {}
+            });
+        } else {
+            android.util.Log.e("AdmProductMgmt", "Search EditText (etSearch) not found in layout!");
+        }
 
         loadProducts();
     }
@@ -121,16 +125,29 @@ public class AdmProductManagementActivity extends AppCompatActivity {
 
     private void loadProducts() {
         progressBar.setVisibility(View.VISIBLE);
+        tvEmpty.setVisibility(View.GONE);
+        
         db.child("products").orderByChild("name")
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         progressBar.setVisibility(View.GONE);
                         allProducts.clear();
+                        
+                        if (!snapshot.exists()) {
+                            tvEmpty.setText("No products available");
+                            tvEmpty.setVisibility(View.VISIBLE);
+                            adapter.notifyDataSetChanged();
+                            return;
+                        }
+                        
                         for (DataSnapshot child : snapshot.getChildren()) {
                             allProducts.add(child);
                         }
-                        filterProducts(etSearch.getText().toString());
+                        
+                        // Reapply current search filter
+                        String currentSearch = etSearch != null ? etSearch.getText().toString() : "";
+                        filterProducts(currentSearch);
                     }
 
                     @Override
@@ -145,20 +162,39 @@ public class AdmProductManagementActivity extends AppCompatActivity {
 
     private void filterProducts(String query) {
         filteredProducts.clear();
+        
+        if (query == null) {
+            query = "";
+        }
+        
         String q = query.toLowerCase().trim();
+        
         for (DataSnapshot snap : allProducts) {
             String name     = snap.child("name").getValue(String.class);
             String category = snap.child("category").getValue(String.class);
             String barcode  = snap.child("barcode").getValue(String.class);
-            if (q.isEmpty()
-                    || (name != null && name.toLowerCase().contains(q))
+            
+            // If search is empty, show all products
+            if (q.isEmpty()) {
+                filteredProducts.add(snap);
+            }
+            // If search term matches name, category, or barcode
+            else if ((name != null && name.toLowerCase().contains(q))
                     || (category != null && category.toLowerCase().contains(q))
                     || (barcode != null && !barcode.isEmpty() && barcode.toLowerCase().contains(q))) {
                 filteredProducts.add(snap);
             }
         }
+        
         adapter.notifyDataSetChanged();
-        tvEmpty.setVisibility(filteredProducts.isEmpty() ? View.VISIBLE : View.GONE);
+        
+        // Show empty message if no results
+        if (filteredProducts.isEmpty() && !q.isEmpty()) {
+            tvEmpty.setText("No products found for \"" + query + "\"");
+            tvEmpty.setVisibility(View.VISIBLE);
+        } else {
+            tvEmpty.setVisibility(View.GONE);
+        }
     }
 
     private void filterByBarcode(String barcode) {
