@@ -79,21 +79,7 @@
                     android:background="@color/primary_green_dark"
                     android:padding="2dp" />
 
-                <!--
-                    btnChangePhoto — also launches the photo picker.
-                    ID: R.id.btnChangePhoto
-                -->
-                <Button
-                    android:id="@+id/btnChangePhoto"
-                    android:layout_width="wrap_content"
-                    android:layout_height="30dp"
-                    android:layout_marginTop="8dp"
-                    android:paddingStart="16dp"
-                    android:paddingEnd="16dp"
-                    android:text="Change Photo"
-                    android:textColor="@color/white"
-                    android:textSize="11sp"
-                    android:background="@color/primary_green_dark" />
+
 
                 <!-- Rider's name — set in bindRiderData() from RiderSessionStore -->
                 <TextView
@@ -116,15 +102,7 @@
 
             </LinearLayout>
 
-            <!-- ══════════════════════════════════════════════════════════════
-                 STATS ROW — two mini-cards side by side
-                 Left card:   Total Deliveries  (from Firebase /orders)
-                 Right card:  Reviews average   (from Firebase /reviews)
-
-                 Java wires these in:
-                   loadDeliveryCount() → txtTotalDeliveriesValue
-                   loadReviewsSummary() → txtReviewsSummaryValue
-                 ══════════════════════════════════════════════════════════════ -->
+           //load delivery count and reviews avg/summary
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -283,6 +261,19 @@
                         android:textAllCaps="true" android:letterSpacing="0.08" />
                     <TextView
                         android:id="@+id/txtVehicleValue"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="—" android:textSize="15sp"
+                        android:textColor="@color/text_dark" android:paddingBottom="14dp" android:paddingTop="2dp" />
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp"
+                        android:background="@color/divider" android:layout_marginBottom="14dp" />
+
+                    <!-- Birthdate -->
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="Birthdate" android:textSize="11sp" android:textColor="@color/text_light"
+                        android:textAllCaps="true" android:letterSpacing="0.08" />
+                    <TextView
+                        android:id="@+id/txtBirthdateValue"
                         android:layout_width="wrap_content" android:layout_height="wrap_content"
                         android:text="—" android:textSize="15sp"
                         android:textColor="@color/text_dark" android:paddingTop="2dp" />

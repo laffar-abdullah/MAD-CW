@@ -19,17 +19,13 @@ final class RiderSessionStore {
     private static final String KEY_NAME         = "name";
     private static final String KEY_PHONE        = "phone";
     private static final String KEY_VEHICLE      = "vehicle";
+    private static final String KEY_BIRTHDATE    = "birthdate";
     private static final String KEY_PROFILE_IMAGE_URL = "profile_image_url";
 
     // Utility class — no instances.
     private RiderSessionStore() { }
 
-    // ── Session persistence ─────────────────────────────────────────────────
 
-    /**
-     * Persists the rider identity so subsequent screens can read profile data
-     * without re-authenticating.
-     */
     static void saveSession(Context context, RiderProfile profile) {
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
                 .edit()
@@ -38,6 +34,7 @@ final class RiderSessionStore {
                 .putString(KEY_NAME,    profile.name)
                 .putString(KEY_PHONE,   profile.phone)
                 .putString(KEY_VEHICLE, profile.vehicle)
+                .putString(KEY_BIRTHDATE, profile.birthdate)
                 .putString(KEY_PROFILE_IMAGE_URL, profile.profileImageUrl)
                 .apply();
     }
@@ -66,8 +63,9 @@ final class RiderSessionStore {
                 prefs.getString(KEY_NAME,    "James Rider"),
                 prefs.getString(KEY_EMAIL,   "rider@buyngo.com"),
                 prefs.getString(KEY_PHONE,   "077 775 5668"),
-            prefs.getString(KEY_VEHICLE, "Motorbike - XYZ 4521"),
-            prefs.getString(KEY_PROFILE_IMAGE_URL, null));
+                prefs.getString(KEY_VEHICLE, "Motorbike - XYZ 4521"),
+                prefs.getString(KEY_BIRTHDATE, "1990-01-01"),
+                prefs.getString(KEY_PROFILE_IMAGE_URL, null));
     }
 
     /**
@@ -104,13 +102,15 @@ final class RiderSessionStore {
         final String email;
         final String phone;
         final String vehicle;
+        final String birthdate;
         final String profileImageUrl;
 
-        RiderProfile(String name, String email, String phone, String vehicle, String profileImageUrl) {
+        RiderProfile(String name, String email, String phone, String vehicle, String birthdate, String profileImageUrl) {
             this.name            = name;
             this.email           = email;
             this.phone           = phone;
             this.vehicle         = vehicle;
+            this.birthdate       = birthdate;
             this.profileImageUrl = profileImageUrl;
         }
     }

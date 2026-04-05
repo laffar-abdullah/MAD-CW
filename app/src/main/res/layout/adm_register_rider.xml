@@ -3,8 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@color/screen_bg">
+    android:background="@color/screen_bg"
+    android:orientation="vertical">
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
@@ -30,151 +30,181 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_marginBottom="24dp"
-                android:text="Fill in the rider details below."
                 android:gravity="center"
-                android:textSize="14sp"
-                android:textColor="@color/text_light" />
+                android:text="Fill in the rider details below."
+                android:textColor="@color/text_light"
+                android:textSize="14sp" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="4dp"
                 android:text="Full Name"
-                android:textSize="14sp"
-                android:textColor="@color/text_light" />
+                android:textColor="@color/text_light"
+                android:textSize="14sp" />
+
             <EditText
                 android:id="@+id/etRiderName"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
-                android:inputType="textPersonName"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/search_bg"
                 android:hint="Rider full name"
                 android:imeOptions="actionNext"
-                android:textSize="15sp"
-                android:textColor="@color/text_dark"
-                android:textColorHint="@color/text_light"
+                android:inputType="textPersonName"
                 android:paddingStart="12dp"
                 android:paddingEnd="12dp"
-                android:layout_marginBottom="16dp"
-                android:background="@drawable/search_bg" />
+                android:textColor="@color/text_dark"
+                android:textColorHint="@color/text_light"
+                android:textSize="15sp" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="4dp"
                 android:text="Phone Number"
-                android:textSize="14sp"
-                android:textColor="@color/text_light" />
+                android:textColor="@color/text_light"
+                android:textSize="14sp" />
+
             <EditText
                 android:id="@+id/etRiderPhone"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
-                android:inputType="phone"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/search_bg"
                 android:hint="e.g. 012-3456789"
                 android:imeOptions="actionNext"
-                android:textSize="15sp"
-                android:textColor="@color/text_dark"
-                android:textColorHint="@color/text_light"
+                android:inputType="phone"
                 android:paddingStart="12dp"
                 android:paddingEnd="12dp"
-                android:layout_marginBottom="16dp"
-                android:background="@drawable/search_bg" />
+                android:textColor="@color/text_dark"
+                android:textColorHint="@color/text_light"
+                android:textSize="15sp" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="4dp"
                 android:text="Vehicle Type"
-                android:textSize="14sp"
-                android:textColor="@color/text_light" />
+                android:textColor="@color/text_light"
+                android:textSize="14sp" />
+
             <EditText
                 android:id="@+id/etVehicleType"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
-                android:inputType="textCapWords"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/search_bg"
                 android:hint="e.g. Motorbike"
                 android:imeOptions="actionNext"
-                android:textSize="15sp"
-                android:textColor="@color/text_dark"
-                android:textColorHint="@color/text_light"
+                android:inputType="textCapWords"
                 android:paddingStart="12dp"
                 android:paddingEnd="12dp"
-                android:layout_marginBottom="16dp"
-                android:background="@drawable/search_bg" />
+                android:textColor="@color/text_dark"
+                android:textColorHint="@color/text_light"
+                android:textSize="15sp" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="4dp"
                 android:text="Vehicle Number"
-                android:textSize="14sp"
-                android:textColor="@color/text_light" />
+                android:textColor="@color/text_light"
+                android:textSize="14sp" />
+
             <EditText
                 android:id="@+id/etVehicleNumber"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
-                android:inputType="textCapCharacters"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/search_bg"
                 android:hint="e.g. XYZ 4521"
                 android:imeOptions="actionNext"
-                android:textSize="15sp"
-                android:textColor="@color/text_dark"
-                android:textColorHint="@color/text_light"
+                android:inputType="textCapCharacters"
                 android:paddingStart="12dp"
                 android:paddingEnd="12dp"
+                android:textColor="@color/text_dark"
+                android:textColorHint="@color/text_light"
+                android:textSize="15sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"
+                android:text="Birthdate"
+                android:textColor="@color/text_light"
+                android:textSize="14sp" />
+
+            <EditText
+                android:id="@+id/etRiderBirthdate"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
                 android:layout_marginBottom="16dp"
-                android:background="@drawable/search_bg" />
+                android:background="@drawable/search_bg"
+                android:hint="YYYY-MM-DD (e.g. 2000-05-15)"
+                android:imeOptions="actionNext"
+                android:inputType="number"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:textColor="@color/text_dark"
+                android:textColorHint="@color/text_light"
+                android:textSize="15sp" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="4dp"
                 android:text="Login Email"
-                android:textSize="14sp"
-                android:textColor="@color/text_light" />
+                android:textColor="@color/text_light"
+                android:textSize="14sp" />
+
             <EditText
                 android:id="@+id/etRiderEmail"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
-                android:inputType="textEmailAddress"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/search_bg"
                 android:hint="rider@buyngo.com"
                 android:imeOptions="actionNext"
-                android:textSize="15sp"
-                android:textColor="@color/text_dark"
-                android:textColorHint="@color/text_light"
+                android:inputType="textEmailAddress"
                 android:paddingStart="12dp"
                 android:paddingEnd="12dp"
-                android:layout_marginBottom="16dp"
-                android:background="@drawable/search_bg" />
+                android:textColor="@color/text_dark"
+                android:textColorHint="@color/text_light"
+                android:textSize="15sp" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="4dp"
                 android:text="Login Password"
-                android:textSize="14sp"
-                android:textColor="@color/text_light" />
+                android:textColor="@color/text_light"
+                android:textSize="14sp" />
+
             <EditText
                 android:id="@+id/etRiderPassword"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
-                android:inputType="textPassword"
+                android:layout_marginBottom="24dp"
+                android:background="@drawable/search_bg"
                 android:hint="Set a password"
                 android:imeOptions="actionDone"
-                android:textSize="15sp"
-                android:textColor="@color/text_dark"
-                android:textColorHint="@color/text_light"
+                android:inputType="textPassword"
                 android:paddingStart="12dp"
                 android:paddingEnd="12dp"
-                android:layout_marginBottom="32dp"
-                android:background="@drawable/search_bg" />
+                android:textColor="@color/text_dark"
+                android:textColorHint="@color/text_light"
+                android:textSize="15sp" />
 
             <Button
                 android:id="@+id/btnRegisterRider"
                 android:layout_width="match_parent"
                 android:layout_height="52dp"
+                android:background="@drawable/search_bg"
                 android:text="Register Rider"
-                android:textSize="16sp"
                 android:textColor="@color/white"
-                android:background="@drawable/search_bg" />
+                android:textSize="16sp" />
+
         </LinearLayout>
     </ScrollView>
 

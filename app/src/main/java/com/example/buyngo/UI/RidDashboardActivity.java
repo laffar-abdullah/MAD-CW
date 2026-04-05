@@ -23,10 +23,26 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.Map;
 
 /**
- * RidDashboardActivity — main home screen for the delivery rider.
+ * VIVA FOCUS: Rider Dashboard — Main Rider Home Screen
  *
- * Shows all assigned delivery tasks and lets the rider navigate to
- * Delivery History, Reviews, and Profile via a bottom navigation bar.
+ * Shows ONLY ACTIVE delivery tasks assigned to THIS RIDER.
+ * Active tasks are those with status in: "Awaiting Pickup", "Picked Up", "On the Way"
+ * 
+ * KEY FEATURES:
+ * 1. Real-time Firebase query with value listener (updates when orders change)
+ * 2. Rider email filtering: Shows only orders assigned to current logged-in rider
+ * 3. Status filtering: Completed orders ("Delivered Successfully") moved to History
+ * 4. Dynamic UI: Cards added/removed as rider accepts/completes deliveries
+ * 
+ * CRITICAL BUG FIXED:
+ * - Old: Called ordersContainer.addView(txtNoActiveTask) but view was already in XML
+ * - Error: "Specified child already has a parent" crash on empty state
+ * - Now: Use visibility toggle (VISIBLE/GONE) instead of addView()
+ * 
+ * NAVIGATION:
+ * - Toolbar: Back button, header
+ * - Bottom nav: This screen (Dashboard) + History, Reviews, Profile
+ * - Each order card: Tappable to start delivery status update flow
  */
 public class RidDashboardActivity extends AppCompatActivity {
 
@@ -352,23 +368,6 @@ public class RidDashboardActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Determines if an order status is "active" (still being delivered by rider).
-     * Active orders are shown in Assigned Tasks.
-     * Completed orders (Delivered, Received, etc.) are HIDDEN and moved to History tab.
-     * 
-     * ACTIVE statuses (show in assigned tasks):
-     * - Pending: Waiting for rider to pick up
-     * - Confirmed: Confirmed for rider
-     * - Awaiting Pickup: Rider assigned, ready to pick up
-     * - Picked Up: Rider picked from merchant
-     * - On the Way: Rider delivering to customer
-     * 
-     * COMPLETED statuses (HIDDEN, shown only in History):
-     * - Delivered: Rider delivered (now waiting for customer confirmation)
-     * - Received: Customer confirmed receipt
-     * - Delivered Successfully: Customer skipped review
-     */
     private boolean isActiveOrderStatus(String status) {
         if (status == null) {
             return true; // Show by default if status is null

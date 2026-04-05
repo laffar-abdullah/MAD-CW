@@ -1,5 +1,7 @@
 package com.example.buyngo.UI;
 
+
+
 import androidx.annotation.NonNull;
 import android.net.Uri;
 import android.util.Log;
@@ -39,6 +41,7 @@ final class FirebaseRiderRepository {
         public String name;
         public String phone;
         public String email;
+        public String birthdate;
         public String password;
         public String vehicle;
         public String vehicleNumber;
@@ -54,10 +57,10 @@ final class FirebaseRiderRepository {
         public String orderId;
         public String customerName;
         public String customerAddress;
-        public String customerPhone;      // NEW: Customer's contact number
+        public String customerPhone;
         public String status;
         public String assignedRiderEmail;
-        public java.util.List<Object> itemsList;  // Items list from Order model
+        public java.util.List<Object> itemsList;  // Items list from order model
         public java.util.Map<String, Integer> items;  // Backup items map
         public double totalAmount;  // Order total price
         public long updatedAt;
@@ -102,6 +105,7 @@ final class FirebaseRiderRepository {
             String phone,
             String vehicleType,
             String vehicleNumber,
+            String birthdate,
             String email,
             String password,
             ResultCallback<RiderAccount> callback) {
@@ -121,6 +125,7 @@ final class FirebaseRiderRepository {
                     account.riderId = riderId;
                     account.name = name;
                     account.phone = phone;
+                    account.birthdate = birthdate;
                     account.email = email;
                     account.password = password;
                     account.vehicle = vehicleType;
@@ -164,43 +169,6 @@ final class FirebaseRiderRepository {
                         e.getMessage() == null ? "Login failed" : e.getMessage()));
     }
 
-    static void updateRiderProfileImage(String email, Uri imageUri, ResultCallback<RiderAccount> callback) {
-        if (imageUri == null) {
-            callback.onError("Please choose a profile picture");
-            return;
-        }
-
-        String riderId = riderIdFromEmail(email);
-        DatabaseReference riderRef = db().child(NODE_RIDERS).child(riderId);
-        StorageReference imageRef = FirebaseStorage.getInstance()
-                .getReference()
-                .child("rider_profiles")
-                .child(riderId)
-                .child("profile.jpg");
-
-        imageRef.putFile(imageUri)
-                .addOnSuccessListener(taskSnapshot -> imageRef.getDownloadUrl()
-                        .addOnSuccessListener(downloadUri -> riderRef.get()
-                                .addOnSuccessListener(snapshot -> {
-                                    RiderAccount account = snapshot.getValue(RiderAccount.class);
-                                    if (account == null) {
-                                        callback.onError("Rider account not found");
-                                        return;
-                                    }
-
-                                    account.profileImageUrl = downloadUri.toString();
-                                    riderRef.setValue(account)
-                                            .addOnSuccessListener(unused -> callback.onSuccess(account))
-                                            .addOnFailureListener(e -> callback.onError(
-                                                    e.getMessage() == null ? "Failed to save profile picture" : e.getMessage()));
-                                })
-                                .addOnFailureListener(e -> callback.onError(
-                                        e.getMessage() == null ? "Failed to load rider account" : e.getMessage())))
-                        .addOnFailureListener(e -> callback.onError(
-                                e.getMessage() == null ? "Failed to resolve profile picture URL" : e.getMessage())))
-                .addOnFailureListener(e -> callback.onError(
-                        e.getMessage() == null ? "Failed to upload profile picture" : e.getMessage()));
-    }
 
     static void changeRiderPassword(
             String email,
@@ -358,7 +326,6 @@ final class FirebaseRiderRepository {
         });
     }
 
-    // New signature: accepts riderEmail so it can be saved when order is updated
     static void updateOrderStatus(String orderId, String newStatus, String riderEmail, VoidCallback callback) {
         DatabaseReference orderRef = db().child(NODE_ORDERS).child(orderId);
         orderRef.get()
@@ -555,10 +522,10 @@ final class FirebaseRiderRepository {
                     callback.onSuccess(reviews);
                 })
                 .addOnFailureListener(e -> {
-                    android.util.Log.e("FirebaseRiderRepository", "✗ Query FAILED: " + e.getMessage());
-                    e.printStackTrace();
-                    callback.onError(
-                        e.getMessage() == null ? "Failed to load reviews" : e.getMessage());
+                    android.util.Log.e("FirebaseRiderRepository", "✗ Indexed Query FAILED: " + e.getMessage());
+                    android.util.Log.d("FirebaseRiderRepository", "Falling back to client-side filtering...");
+                    // Fallback to client-side filtering when index is not available
+                    getReviewsForRiderFallback(riderEmail, callback);
                 });
     }
 
