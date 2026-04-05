@@ -46,12 +46,12 @@ public class RidLoginActivity extends AppCompatActivity {
         riderLoginButton.setOnClickListener(v -> handleLogin());
     }
 
-    /** Validates the form then delegates authentication to RiderSessionStore. */
+    // Validate form and authenticate rider
     private void handleLogin() {
         String email    = riderEmailEditText.getText().toString().trim();
         String password = riderPasswordEditText.getText().toString();
 
-        // Client-side validation: reject before hitting the store.
+        // Validate email and password
         if (TextUtils.isEmpty(email) || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             riderEmailEditText.setError("Enter a valid email");
             riderEmailEditText.requestFocus();
@@ -64,7 +64,7 @@ public class RidLoginActivity extends AppCompatActivity {
             return;
         }
 
-        // Verify credentials against the known rider accounts.
+        // Authenticate with Firebase
         riderLoginButton.setEnabled(false);
 
         FirebaseRiderRepository.authenticateRider(email, password,

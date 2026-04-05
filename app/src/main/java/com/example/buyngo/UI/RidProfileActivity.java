@@ -30,83 +30,7 @@ import com.example.buyngo.R;
 import java.util.List;
 
 /**
- * ════════════════════════════════════════════════════════════════════════════
- * RidProfileActivity
- * ════════════════════════════════════════════════════════════════════════════
- *
- * PURPOSE:
- *   Shows the logged-in rider's profile details and two stat panels:
- *     • Total Deliveries  — count from Firebase orders (status = "Delivered",
- *                           assignedRiderEmail == logged-in rider's email).
- *     • Reviews           — average star rating from Firebase reviews table
- *                           (riderEmail == logged-in rider's email).
- *
- *   The rider can also change their password or their profile photo.
- *
- * ── HOW DATA FLOWS ──────────────────────────────────────────────────────────
- *
- *  1.  RiderSessionStore.getCurrentRider(context)
- *          └─ reads SharedPreferences "buyngo_rider_session"
- *          └─ returns RiderProfile { name, email, phone, vehicle, ... }
- *          └─ used to fill name / email / phone / vehicle TextViews
- *
- *  2.  FirebaseRiderRepository.getDeliveredOrdersForRider(email, callback)
- *          └─ queries Firebase Realtime Database /orders
- *          └─ filters: assignedRiderEmail == riderEmail AND status == "Delivered"
- *          └─ returns List<RiderOrder>  →  size() = total deliveries
- *          └─ result written to txtTotalDeliveriesValue  (e.g. "12 Deliveries")
- *
- *  3.  FirebaseRiderRepository.getReviewsForRider(email, callback)
- *          └─ queries Firebase Realtime Database /reviews
- *          └─ filters: riderEmail == logged-in rider email
- *          └─ returns List<RiderReview>  →  average of all review.rating values
- *          └─ result written to txtReviewsSummaryValue  (e.g. "4.5 ★ (8 reviews)")
- *
- * ── FIREBASE DATABASE SCHEMA ────────────────────────────────────────────────
- *
- *   /orders/{orderId}/
- *       orderId              : String
- *       customerName         : String
- *       customerAddress      : String
- *       status               : String  ("Awaiting Pickup" | "Picked Up" |
- *                                        "On the Way" | "Delivered")
- *       assignedRiderEmail   : String  ← set by AdmAssignRiderActivity
- *       deliveredAt          : long    ← set when status becomes "Delivered"
- *
- *   /reviews/{reviewId}/
- *       reviewId     : String
- *       orderId      : String
- *       riderEmail   : String   ← matches rider's login email
- *       customerName : String
- *       rating       : int      (1–5)
- *       comment      : String
- *       createdAt    : long
- *
- *   /riders/{riderId}/
- *       name, email, password, phone, vehicle …
- *
- * ── BUGS FIXED ──────────────────────────────────────────────────────────────
- *
- *  BUG 1 — imgProfilePicture & btnChangePhoto had commented-out findViewByIds
- *           causing instant NPE on launch.  FIXED: uncommented.
- *
- *  BUG 2 — btnChangePassword used wrong layout ID "btnChangePass".
- *           FIXED: now uses R.id.btnChangePassword matching the layout.
- *
- *  BUG 3 — showChangePasswordDialog called unimplemented repository method.
- *           FIXED: direct Firebase Realtime DB query instead.
- *
- *  BUG 4 — navProfile tap launched duplicate RidProfileActivity.
- *           FIXED: now calls bindRiderData() to refresh in-place.
- *
- * ── NEW FEATURES ─────────────────────────────────────────────────────────────
- *
- *  NEW 1 — Total deliveries now queried from Firebase (getDeliveredOrdersForRider)
- *           instead of reading an unreliable local SharedPreferences count.
- *
- *  NEW 2 — Reviews summary (average rating + count) queried from Firebase
- *           (getReviewsForRider) and displayed in the txtReviewsSummaryValue view.
- * ════════════════════════════════════════════════════════════════════════════
+ * Shows rider profile with total deliveries and average reviews
  */
 public class RidProfileActivity extends AppCompatActivity {
 
@@ -154,17 +78,15 @@ public class RidProfileActivity extends AppCompatActivity {
 
         setContentView(R.layout.rid_profile);
 
-        // Initialise Firebase Realtime Database root reference (for password changes).
+        // Initialize Firebase
         dbRef = FirebaseDatabase.getInstance().getReference();
 
-        // ── Toolbar ──────────────────────────────────────────────────────────
-        // setSupportActionBar wires up the Toolbar as the ActionBar so the
-        // back arrow (homeAsUpIndicator in the XML) works correctly.
+        // Setup toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setNavigationOnClickListener(v -> finish());
 
-        // ── View binding ─────────────────────────────────────────────────────
+        // Bind views
         txtProfileNameHeader   = findViewById(R.id.txtProfileNameHeader);
         txtFullNameValue       = findViewById(R.id.txtFullNameValue);
         txtEmailValue          = findViewById(R.id.txtEmailValue);
@@ -172,32 +94,20 @@ public class RidProfileActivity extends AppCompatActivity {
         txtVehicleValue        = findViewById(R.id.txtVehicleValue);
         txtTotalDeliveriesValue = findViewById(R.id.txtTotalDeliveriesValue);
         txtReviewsSummaryValue  = findViewById(R.id.txtReviewsSummaryValue);
+        imgProfilePicture = findViewById(R.id.imgProfilePicture);
+        btnChangePassword = findViewById(R.id.btnChangePassword);
+        btnChangePassword.setOnClickListener(v -> showChangePasswordDialog());
 
-    // BUG 1 FIX: these were commented-out in the original, causing NPE.
-    imgProfilePicture = findViewById(R.id.imgProfilePicture);
-
-    // BUG 2 FIX: was R.id.btnChangePass (wrong ID), field stayed null.
-    btnChangePassword = findViewById(R.id.btnChangePassword);
-
-    // BUG 3 FIX: calls our own dialog which queries Firebase directly.
-    btnChangePassword.setOnClickListener(v -> showChangePasswordDialog());        // ── Bottom navigation ─────────────────────────────────────────────────
-        // Each tab navigates to the corresponding screen, EXCEPT navProfile
-        // which refreshes data in-place (BUG 4 FIX — was launching a duplicate).
+        // Setup bottom navigation
         findViewById(R.id.navDashboard).setOnClickListener(v ->
                 startActivity(new Intent(this, RidDashboardActivity.class)));
-
         findViewById(R.id.navHistory).setOnClickListener(v ->
                 startActivity(new Intent(this, RidDeliveryHistoryActivity.class)));
-
         findViewById(R.id.navReviews).setOnClickListener(v ->
                 startActivity(new Intent(this, RidReviewsActivity.class)));
-
-        // BUG 4 FIX: was launching a duplicate RidProfileActivity; now refreshes.
         findViewById(R.id.navProfile).setOnClickListener(v -> bindRiderData());
 
-        // ── Logout ────────────────────────────────────────────────────────────
-        // Clears the SharedPrefs session then goes to Welcome, clearing the entire
-        // back stack so the Back button cannot return to a protected screen.
+        // Setup logout
         findViewById(R.id.btnLogout).setOnClickListener(v -> {
             RiderSessionStore.clearSession(this);
             Intent intent = new Intent(this, AuthWelcomeActivity.class);
@@ -205,38 +115,20 @@ public class RidProfileActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        // ── Load all data ─────────────────────────────────────────────────────
         bindRiderData();
     }
 
-    // ── onResume refreshes stats if the rider navigated back from Reviews/History
     @Override
     protected void onResume() {
         super.onResume();
         bindRiderData();
     }
 
-    // ════════════════════════════════════════════════════════════════════════
-    // bindRiderData()
-    // ════════════════════════════════════════════════════════════════════════
-    /**
-     * Main data-binding entry point.  Called from onCreate and onResume.
-     *
-     * Step 1 — Fill static profile fields from RiderSessionStore (local cache).
-     * Step 2 — Query Firebase for delivered order count (NEW 1).
-     * Step 3 — Query Firebase for reviews average (NEW 2).
-     *
-     * WHY TWO FIREBASE CALLS?
-     *   Delivery count and reviews live in different Firebase nodes (/orders
-     *   and /reviews).  We fire both calls in parallel so the screen loads as
-     *   fast as possible — neither call blocks the other.
-     */
+    // Load rider profile and stats
     private void bindRiderData() {
-        // ── Step 1: Fill basic profile from session cache (instant, no network) ──
         RiderSessionStore.RiderProfile profile = RiderSessionStore.getCurrentRider(this);
 
         if (profile == null) {
-            // Session was unexpectedly cleared — redirect to login.
             startActivity(new Intent(this, RidLoginActivity.class));
             finish();
             return;
@@ -248,14 +140,12 @@ public class RidProfileActivity extends AppCompatActivity {
         txtPhoneValue.setText(profile.phone);
         txtVehicleValue.setText(profile.vehicle);
 
-        // Show a placeholder until Firebase returns.
         txtTotalDeliveriesValue.setText("Loading…");
         txtReviewsSummaryValue.setText("Loading…");
 
-        // Load profile photo if a URL was saved; fall back to launcher icon.
+        // Load profile image
         if (imgProfilePicture != null) {
             if (!TextUtils.isEmpty(profile.profileImageUrl)) {
-                // Glide is declared in build.gradle — loads the URL asynchronously.
                 com.bumptech.glide.Glide.with(this)
                         .load(profile.profileImageUrl)
                         .placeholder(R.mipmap.ic_launcher_round)
@@ -266,130 +156,57 @@ public class RidProfileActivity extends AppCompatActivity {
             }
         }
 
-        // ── Step 2: Delivery count from Firebase ─────────────────────────────
-        // FirebaseRiderRepository.getDeliveredOrdersForRider() fetches all orders
-        // from /orders, filters by assignedRiderEmail == profile.email AND
-        // status == "Delivered", then returns the matching list.
-        // We only need the count here, so we call .size().
         loadDeliveryCount(profile.email);
-
-        // ── Step 3: Reviews summary from Firebase ────────────────────────────
-        // FirebaseRiderRepository.getReviewsForRider() queries /reviews where
-        // riderEmail == profile.email.  We compute the average rating here.
         loadReviewsSummary(profile.email);
     }
 
-    // ════════════════════════════════════════════════════════════════════════
-    // loadDeliveryCount()  — NEW 1
-    // ════════════════════════════════════════════════════════════════════════
-    /**
-     * Queries /orders filtered to this rider's delivered orders and displays
-     * the total count in txtTotalDeliveriesValue.
-     *
-     * CONNECTION TO FIREBASE:
-     *   FirebaseRiderRepository.getDeliveredOrdersForRider(riderEmail, callback)
-     *     → reads /orders in Realtime Database
-     *     → client-side filter: assignedRiderEmail == riderEmail
-     *                         AND status == "Delivered"
-     *     → returns List<RiderOrder>
-     *
-     * @param riderEmail the email of the currently logged-in rider
-     */
+    // Load total deliveries
     private void loadDeliveryCount(String riderEmail) {
         FirebaseRiderRepository.getDeliveredOrdersForRider(
                 riderEmail,
                 new FirebaseRiderRepository.ResultCallback<List<FirebaseRiderRepository.RiderOrder>>() {
-
                     @Override
                     public void onSuccess(List<FirebaseRiderRepository.RiderOrder> orders) {
                         int count = orders.size();
-                        // e.g. "12 Deliveries"
                         txtTotalDeliveriesValue.setText(count + " Deliveries");
                     }
-
                     @Override
                     public void onError(String message) {
-                        // Network error — show dash so the screen is still readable.
                         txtTotalDeliveriesValue.setText("— Deliveries");
                     }
                 });
     }
 
-    // ════════════════════════════════════════════════════════════════════════
-    // loadReviewsSummary()  — NEW 2
-    // ════════════════════════════════════════════════════════════════════════
-    /**
-     * Queries /reviews filtered to this rider and displays an average-rating
-     * summary in txtReviewsSummaryValue.
-     *
-     * CONNECTION TO FIREBASE:
-     *   FirebaseRiderRepository.getReviewsForRider(riderEmail, callback)
-     *     → queries /reviews node with .orderByChild("riderEmail").equalTo(email)
-     *     → returns List<RiderReview> { rating (int 1–5), comment, customerName, … }
-     *
-     * DISPLAY FORMAT:
-     *   0 reviews  → "No reviews yet"
-     *   N reviews  → "4.5 ★  (8 reviews)"
-     *
-     * @param riderEmail the email of the currently logged-in rider
-     */
+    // Load average reviews rating
     private void loadReviewsSummary(String riderEmail) {
-        Log.d(TAG, "Loading reviews summary for rider: " + riderEmail);
-        
-        // Using fallback method (does NOT require Firebase index)
+        Log.d(TAG, "Loading reviews for: " + riderEmail);
         FirebaseRiderRepository.getReviewsForRiderFallback(
                 riderEmail,
                 new FirebaseRiderRepository.ResultCallback<List<FirebaseRiderRepository.RiderReview>>() {
-
                     @Override
                     public void onSuccess(List<FirebaseRiderRepository.RiderReview> reviews) {
-                        Log.d(TAG, "✓ Reviews query succeeded. Found " + reviews.size() + " reviews");
-
                         if (reviews.isEmpty()) {
-                            Log.d(TAG, "No reviews found for rider: " + riderEmail);
                             txtReviewsSummaryValue.setText("No reviews yet");
                             return;
                         }
 
-                        // Compute average rating across all reviews.
                         double total = 0;
                         for (FirebaseRiderRepository.RiderReview review : reviews) {
-                            Log.d(TAG, "  - Review: " + review.rating + "⭐ by " + review.customerName);
                             total += review.rating;
                         }
                         double avg = total / reviews.size();
-
-                        // Format to one decimal place.  e.g. "4.5 ★"
-                        String summary = String.format(
-                                java.util.Locale.US,
-                                "%.1f ★",
-                                avg);
-
-                        Log.d(TAG, "Average rating: " + avg + " | Summary: " + summary);
+                        String summary = String.format(java.util.Locale.US, "%.1f ★", avg);
                         txtReviewsSummaryValue.setText(summary);
                     }
-
                     @Override
                     public void onError(String message) {
-                        Log.e(TAG, "✗ Failed to load reviews: " + message);
-                        // Network error — show dash so the screen is still readable.
+                        Log.e(TAG, "Failed to load reviews: " + message);
                         txtReviewsSummaryValue.setText("— reviews");
                     }
                 });
     }
 
-    // ════════════════════════════════════════════════════════════════════════
-    // Change password dialog  —  BUG 3 FIX
-    // ════════════════════════════════════════════════════════════════════════
-    /**
-     * Shows a 3-field dialog: current password, new password, confirm.
-     * On "Save", calls changePasswordInFirebase() to verify and persist.
-     *
-     * BUG 3 FIX EXPLAINED:
-     *   Original code called FirebaseRiderRepository.changeRiderPassword() —
-     *   that method actually EXISTS in this project's FirebaseRiderRepository.java
-     *   so we call it directly now, keeping the logic in the repository layer.
-     */
+    // Show password change dialog
     private void showChangePasswordDialog() {
         RiderSessionStore.RiderProfile profile = RiderSessionStore.getCurrentRider(this);
         if (profile == null) {
@@ -440,8 +257,6 @@ public class RidProfileActivity extends AppCompatActivity {
                         return;
                     }
 
-                    // Delegate to repository which reads /riders/{riderId}
-                    // verifies currentPassword, then writes newPassword.
                     FirebaseRiderRepository.changeRiderPassword(
                             profile.email, current, next,
                             new FirebaseRiderRepository.ResultCallback<FirebaseRiderRepository.RiderAccount>() {
