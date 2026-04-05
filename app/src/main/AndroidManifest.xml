@@ -45,6 +45,7 @@
         <activity android:name=".UI.AdmEditProductActivity"        android:exported="false" />
         <activity android:name=".UI.AdmOrderManagementActivity"    android:exported="false" />
         <activity android:name=".UI.AdmRegisterRiderActivity"      android:exported="false" />
+        <activity android:name=".UI.AdmManageRidersActivity"       android:exported="false" />
         <activity android:name=".UI.AdmAssignRiderActivity"        android:exported="false" />
         <activity android:name=".UI.AdmViewFeedbackActivity"       android:exported="false" />
 
