@@ -1,4 +1,4 @@
-﻿package com.example.buyngo.UI;
+package com.example.buyngo.UI;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -16,6 +16,23 @@ import com.example.buyngo.Store.CartStore;
 
 import java.util.List;
 
+/**
+ * CusCartActivity - Display shopping cart for customer
+ * 
+ * This activity does NOT connect to Firebase directly.
+ * It reads cart from CartStore (local phone storage).
+ * When customer clicks "Checkout", data goes to Firebase.
+ * 
+ * DATA FLOW:
+ * CartStore (local) → Display items → Customer removes items OR clicks Checkout
+ *                                                                      ↓
+ *                                                      Goes to CusCheckoutActivity
+ *                                                      Creates Order in Firebase
+ * 
+ * IMPORTANT:
+ * - Cart data is LOCAL only (CartStore, not Firebase)
+ * - When checkout clicked, order is THEN saved to Firebase
+ */
 public class CusCartActivity extends AppCompatActivity {
     private LinearLayout cartItemsContainer;
     private TextView totalPriceText;
@@ -57,7 +74,9 @@ public class CusCartActivity extends AppCompatActivity {
         displayCartItems();
     }
 
-    
+    /**
+     * Read cart items from local storage and display on screen
+     */
     private void displayCartItems() {
         // STEP 1: Clear screen of old cart items (in case items were removed)
         cartItemsContainer.removeAllViews();
@@ -130,4 +149,3 @@ public class CusCartActivity extends AppCompatActivity {
         totalPriceText.setText(String.format("Rs. %.2f", total));
     }
 }
-
