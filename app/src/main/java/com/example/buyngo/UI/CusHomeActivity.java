@@ -1,4 +1,4 @@
-ckage com.example.buyngo.UI;
+package com.example.buyngo.UI;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -24,7 +24,8 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CusHomeActivity extends AppCompatActivity {
+/**
+ * ═══════════════════════════════════════════════════════════════════════════════\n *                         CUSTOMER HOME ACTIVITY\n * ═══════════════════════════════════════════════════════════════════════════════\n * \n * WHAT THIS SCREEN DOES:\n * This is the main shopping screen. Shows all available products from Firebase.\n * Customers can browse items, select quantity, and add to cart.\n * \n * HOW IT CONNECTS TO FIREBASE:\n * 1. When screen opens, loadProductsFromFirebase() is called\n * 2. Reads /products/ collection from Firebase database\n * 3. Each product is converted to a Product model object\n * 4. Displays products as cards on screen\n * 5. When customer adds to cart, product data saved to CartStore (local storage)\n * \n * DATA FLOW:\n * Firebase /products/ → Load into Product objects → Display as cards\n *                                     ↓\n *                           Customer taps \"Add to Cart\"\n *                                     ↓\n *                  Product data saved to CartStore (local phone storage)\n * \n * IMPORTANT NOTES:\n * - This screen READS products from Firebase (read-only)\n * - Cart is stored locally (not in Firebase) using CartStore\n * - Bottom navigation allows jumping to cart, orders, feedback, profile\n * ═══════════════════════════════════════════════════════════════════════════════\n */\npublic class CusHomeActivity extends AppCompatActivity {
     private LinearLayout productContainer;
     // Firebase connection - reads product data from cloud
     private DatabaseReference db;
@@ -68,33 +69,24 @@ public class CusHomeActivity extends AppCompatActivity {
 
     // Load all products from Firebase database
     private void loadProductsFromFirebase() {
-        // STEP 1: Connect to Firebase database /products/ collection
         db.child("products").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                // STEP 2: Clear screen (remove old products before showing new ones)
                 productContainer.removeAllViews();
 
-                // STEP 3: Check if any products exist in database
                 if (!dataSnapshot.hasChildren()) {
                     Toast.makeText(CusHomeActivity.this, "No products available", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
-                // STEP 4: Create empty list to store all products
                 List<Product> products = new ArrayList<>();
-                
-                // STEP 5: Loop through each product in Firebase database
                 for (DataSnapshot productSnapshot : dataSnapshot.getChildren()) {
                     try {
-                        // STEP 6: Get product ID from Firebase
                         String id = productSnapshot.getKey();
-                        // STEP 7: Get product name from Firebase
                         String name = productSnapshot.child("name").getValue(String.class);
-                        // STEP 8: Get product category from Firebase
                         String category = productSnapshot.child("category").getValue(String.class);
                         
-                        // STEP 9: Get price from Firebase (handle different data types: Double, Long, String)
+                        // Handle price which might be Double, Long, or String in Firebase
                         Double price = 0.0;
                         Object priceObj = productSnapshot.child("price").getValue();
                         if (priceObj != null) {
@@ -112,14 +104,10 @@ public class CusHomeActivity extends AppCompatActivity {
                             }
                         }
                         
-                        // STEP 10: Get product description from Firebase
                         String description = productSnapshot.child("description").getValue(String.class);
-                        // STEP 11: Get product image URL from Firebase
                         String imageUrl = productSnapshot.child("imageUrl").getValue(String.class);
-                        // STEP 12: Get available stock from Firebase
                         Long stock = productSnapshot.child("stock").getValue(Long.class);
 
-                        // STEP 13: Create new Product object and set all fields from Firebase data
                         Product product = new Product();
                         product.setId(id);
                         product.setName(name);
@@ -129,60 +117,46 @@ public class CusHomeActivity extends AppCompatActivity {
                         product.setImageUrl(imageUrl);
                         product.setStock(stock != null ? stock.intValue() : 0);
 
-                        // STEP 14: Add product to list (now in memory, not in Firebase)
                         products.add(product);
                     } catch (Exception e) {
                         Toast.makeText(CusHomeActivity.this, "Error loading product", Toast.LENGTH_SHORT).show();
                     }
                 }
 
-                // STEP 15: Create layout inflater to make product cards (UI elements)
                 LayoutInflater inflater = LayoutInflater.from(CusHomeActivity.this);
-                
-                // STEP 16: Loop through products again and create visual card for each one
                 for (Product product : products) {
-                    // STEP 17: Skip products with no name
                     if (product.getName() == null || product.getName().isEmpty()) {
                         continue;
                     }
 
-                    // STEP 18: Inflate product card layout from XML file
                     android.view.View cardView = inflater.inflate(R.layout.item_product_card, productContainer, false);
 
-                    // STEP 19: Get UI elements from card (name, category, price, quantity, button)
                     TextView productName = cardView.findViewById(R.id.productName);
                     TextView productCategory = cardView.findViewById(R.id.productCategory);
                     TextView productPrice = cardView.findViewById(R.id.productPrice);
                     EditText quantityInput = cardView.findViewById(R.id.quantityInput);
                     Button addBtn = cardView.findViewById(R.id.addToCartBtn);
 
-                    // STEP 20: Set text on card (product name)
                     productName.setText(product.getName());
-                    // STEP 21: Set text on card (product category)
                     productCategory.setText(product.getCategory() != null ? product.getCategory() : "N/A");
-                    // STEP 22: Set text on card (product price)
                     productPrice.setText(String.format("Rs. %.2f", product.getPrice()));
                     
-                    // STEP 23: Set default quantity to 1
+                    // Set default quantity to 1
                     quantityInput.setText("1");
 
-                    // STEP 24: Create final copy to avoid closure issue with loop variable
+                    // Create final copy to avoid closure issue with loop variable
                     final Product currentProduct = product;
                     
-                    // STEP 25: When customer clicks "Add to Cart" button
                     addBtn.setOnClickListener(v -> {
-                        // STEP 26: Get quantity customer entered
                         String qtyStr = quantityInput.getText().toString().trim();
-                        // STEP 27: Convert quantity string to number (default 1 if empty)
                         int quantity = qtyStr.isEmpty() ? 1 : Integer.parseInt(qtyStr);
 
-                        // STEP 28: Validate quantity is greater than 0
                         if (quantity <= 0) {
                             Toast.makeText(CusHomeActivity.this, "Please enter a valid quantity", Toast.LENGTH_SHORT).show();
                             return;
                         }
 
-                        // STEP 29: Call CartStore to add product to local phone storage (NOT Firebase)
+                        // Add directly to cart without going to product detail page
                         CartStore.addToCart(
                                 CusHomeActivity.this,
                                 currentProduct.getId(),
@@ -192,13 +166,10 @@ public class CusHomeActivity extends AppCompatActivity {
                                 quantity
                         );
 
-                        // STEP 30: Show confirmation message to customer
                         Toast.makeText(CusHomeActivity.this, quantity + " x " + currentProduct.getName() + " added to cart!", Toast.LENGTH_SHORT).show();
-                        // STEP 31: Reset quantity field back to 1 for next product
-                        quantityInput.setText("1");
+                        quantityInput.setText("1"); // Reset quantity for next purchase
                     });
 
-                    // STEP 32: Add card to screen
                     productContainer.addView(cardView);
                 }
             }
@@ -217,7 +188,9 @@ public class CusHomeActivity extends AppCompatActivity {
         updateCartCounter();
     }
 
-    
+    /**
+     * Updates the cart item counter on the home screen
+     */
     private void updateCartCounter() {
         int cartCount = CartStore.getCartItemCount(this);
         if (cartCountBadge != null) {
@@ -230,4 +203,3 @@ public class CusHomeActivity extends AppCompatActivity {
         }
     }
 }
-

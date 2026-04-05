@@ -1,4 +1,4 @@
-ckage com.example.buyngo.UI;
+package com.example.buyngo.UI;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -19,6 +19,19 @@ import com.example.buyngo.R;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * ═══════════════════════════════════════════════════════════════════════════════
+ *                      CUSTOMER FEEDBACK ACTIVITY
+ *                  (MAIN FEATURE - FEEDBACK SYSTEM)
+ * ═══════════════════════════════════════════════════════════════════════════════
+ * 
+ * WHAT THIS SCREEN DOES:
+ * Allows customers to rate and review their delivery experience after order
+ * is completed. Also allows anonymous feedback from app menu.
+ * 
+ * HOW IT CONNECTS TO FIREBASE:
+ * 
+ * TWO FEEDBACK MODES:\n * \n * MODE 1: ORDER-BASED FEEDBACK (After delivery)\n * 1. Order delivered → This screen automatically shown with orderId\n * 2. Customer rates 1-5 stars and writes comment\n * 3. Loads order details from Firebase (/orders/{orderId}/)\n * 4. Gets rider email from order data\n * 5. Saves Review to TWO places:\n *    - /reviews/{reviewId} (rider sees feedback about them)\n *    - /feedbacks/{feedbackId} (admin sees all feedback)\n * 6. Updates order status to "Delivered Successfully"\n * \n * MODE 2: ANONYMOUS FEEDBACK (From nav_reviews menu)\n * 1. Customer taps "Reviews" from home menu\n * 2. Opens this screen with NO orderId\n * 3. Customer gives rating and comment anonymously\n * 4. Saves to /feedbacks/{feedbackId} only\n * 5. Marked with isAnonymous=true\n * \n * FIREBASE OPERATIONS:\n * - READ: Order data (/orders/{orderId}/) to get rider email\n * - WRITE: Review to /reviews/{riderEmail}/\n * - WRITE: Feedback to /feedbacks/\n * - UPDATE: Order status to "Delivered Successfully"\n * \n * DATA FLOW:\n * \n * ORDER-BASED:\n * Order → This screen shown → Customer rates → Review object created\n *                                                       ↓\n *                    Saved to /reviews/ AND /feedbacks/\n *                                                       ↓\n *                    Order marked "Delivered Successfully"\n *                                                       ↓\n *             Rider can see feedback about them\n *             Admin can see all feedback\n * \n * ANONYMOUS:\n * nav_reviews menu → This screen shown → Customer rates → Feedback object created\n *                                                               ↓\n *                                    Saved to /feedbacks/ only\n *                                                               ↓\n *                              Admin can see anonymous feedback\n * \n * KEY FEATURES:\n * - Submit button enabled ONLY if rating given (1+ stars)\n * - Can skip mandatory feedback (shows confirmation dialog)\n * - Real-time rating display (shows \"X / 5\" as customer slides)\n * - Handles both order-based and anonymous reviews\n * ═══════════════════════════════════════════════════════════════════════════════\n */
 public class CusFeedbackActivity extends AppCompatActivity {
 
     private static final String DB_URL = "https://buyngo-5b43e-default-rtdb.firebaseio.com/";
@@ -133,26 +146,22 @@ public class CusFeedbackActivity extends AppCompatActivity {
         try {
             final boolean isAnonymous = (orderId == null || orderId.trim().isEmpty());
             
-            // When customer clicks "Submit Feedback" button
+            // When "Submit Feedback" button tapped
             findViewById(R.id.submitFeedbackButton).setOnClickListener(v -> {
-                // Check if form is loaded properly
                 if (ratingBar == null || reviewComment == null) {
                     Toast.makeText(this, "Form not loaded properly", Toast.LENGTH_SHORT).show();
                     return;
                 }
                 
-                // Step 1: Get the star rating customer selected
                 int rating = Math.round(ratingBar.getRating());
-                // Step 2: Get the comment customer typed
                 String comment = reviewComment.getText().toString().trim();
-                // Step 3: Check if customer selected at least 1 star
                 if (rating < 1) {
                     Toast.makeText(this, "Please select a star rating", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
-                // Step 4: Check if this is ANONYMOUS feedback (from nav_reviews menu)
-                // If no orderId provided, it's anonymous feedback
+                // If no order ID, treat as anonymous review
+                // Save directly to /feedbacks/ without order details
                 if (isAnonymous) {
                     saveAnonymousFeedbackToAdminNode(rating, comment);
                     return;

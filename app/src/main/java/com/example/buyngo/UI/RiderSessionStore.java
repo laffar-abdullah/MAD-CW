@@ -1,9 +1,13 @@
-ckage com.example.buyngo.UI;
+package com.example.buyngo.UI;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 
-
+/**
+   Stores rider credentials in SharedPreferences so the app remembers who is
+   logged in across activity re-starts.  All methods are package-private so
+   only rider UI classes can call them.
+*/
 final class RiderSessionStore {
 
     // SharedPreferences file used exclusively for rider session data.
@@ -22,7 +26,10 @@ final class RiderSessionStore {
 
     // ── Session persistence ─────────────────────────────────────────────────
 
-    
+    /**
+     * Persists the rider identity so subsequent screens can read profile data
+     * without re-authenticating.
+     */
     static void saveSession(Context context, RiderProfile profile) {
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
                 .edit()
@@ -35,13 +42,20 @@ final class RiderSessionStore {
                 .apply();
     }
 
-    
+    /**
+     * @return {@code true} while there is an active rider session.
+     */
     static boolean isLoggedIn(Context context) {
         return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
                 .getBoolean(KEY_IS_LOGGED_IN, false);
     }
 
-    
+    /**
+     * Reads back the full profile stored by {@link #saveSession}.
+     *
+     * @return the current rider's profile, or {@code null} when no session
+     *         is active.
+     */
     static RiderProfile getCurrentRider(Context context) {
         SharedPreferences prefs =
                 context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
@@ -56,7 +70,12 @@ final class RiderSessionStore {
             prefs.getString(KEY_PROFILE_IMAGE_URL, null));
     }
 
-    
+    /**
+     * Returns the logged-in rider's email address, used by
+     * {@link OrderStatusStore} to scope per-rider data keys.
+     *
+     * @return the email string, or {@code null} when no session is active.
+     */
     static String getCurrentRiderEmail(Context context) {
         SharedPreferences prefs =
                 context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
@@ -66,7 +85,10 @@ final class RiderSessionStore {
         return prefs.getString(KEY_EMAIL, null);
     }
 
-    
+    /**
+     * Wipes all session data.  Called by the logout button in
+     * {@link RidProfileActivity}.
+     */
     static void clearSession(Context context) {
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
                 .edit()
@@ -76,7 +98,7 @@ final class RiderSessionStore {
 
     // ── Data class ──────────────────────────────────────────────────────────
 
-    
+    /** Immutable snapshot of a rider's profile. */
     static final class RiderProfile {
         final String name;
         final String email;
@@ -93,4 +115,3 @@ final class RiderSessionStore {
         }
     }
 }
-

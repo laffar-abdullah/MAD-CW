@@ -1,4 +1,4 @@
-ckage com.example.buyngo.Model;
+package com.example.buyngo.Model;
 
 public class Rider {
     private String riderId;

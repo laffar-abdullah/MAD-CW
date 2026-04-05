@@ -1,4 +1,4 @@
-ckage com.example.buyngo.UI;
+package com.example.buyngo.UI;
 
 import android.os.Bundle;
 import android.view.View;
@@ -159,4 +159,3 @@ public class AdmAssignRiderActivity extends AppCompatActivity {
                 });
     }
 }
-

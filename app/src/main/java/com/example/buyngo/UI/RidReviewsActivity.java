@@ -1,4 +1,4 @@
-ckage com.example.buyngo.UI;
+package com.example.buyngo.UI;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -15,7 +15,26 @@ import com.example.buyngo.R;
 import java.text.DateFormat;
 import java.util.List;
 
-
+/**
+ * RidReviewsActivity — shows customer feedback cards for this rider.
+ *
+ * In the current build the review cards are static (hard-coded in
+ * rid_reviews.xml).  The screen is fully navigable from the bottom nav and
+ * is protected by a session guard.
+ *
+ * ── CHANGES FROM ORIGINAL ──────────────────────────────────────────────────
+ *  BUG FIX — The original navReviews bottom-nav listener (the active tab on
+ *  this screen) launched a NEW RidReviewsActivity on top of the current one,
+ *  stacking duplicates on the back stack every time the rider tapped
+ *  "Reviews" while already viewing their reviews.
+ *  FIX: the navReviews listener is now a no-op (does nothing) since the
+ *  rider is already on this screen.  Tapping the active tab should never
+ *  create a second copy of the same activity.
+ *
+ *  IMPROVEMENT — setSupportActionBar() is now called on the Toolbar so the
+ *  system ActionBar is replaced properly and the up/back button works.
+ * ───────────────────────────────────────────────────────────────────────────
+ */
 public class RidReviewsActivity extends AppCompatActivity {
 
     private LinearLayout reviewsContainer;

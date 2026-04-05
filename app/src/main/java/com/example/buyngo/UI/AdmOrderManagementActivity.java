@@ -1,4 +1,4 @@
-ckage com.example.buyngo.UI;
+package com.example.buyngo.UI;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -54,7 +54,9 @@ public class AdmOrderManagementActivity extends AppCompatActivity {
         loadOrdersFromFirebase();
     }
 
-    
+    /**
+     * Adds a "Clear All Orders" button to the toolbar menu
+     */
     private void addClearAllOrdersButton() {
         TextView btnClearAll = new TextView(this);
         btnClearAll.setText("Clear All");
@@ -68,7 +70,9 @@ public class AdmOrderManagementActivity extends AppCompatActivity {
         toolbar.addView(btnClearAll);
     }
 
-    
+    /**
+     * Shows a confirmation dialog before clearing all orders
+     */
     private void showClearAllConfirmation() {
         new android.app.AlertDialog.Builder(this)
                 .setTitle("Clear All Orders")
@@ -78,7 +82,9 @@ public class AdmOrderManagementActivity extends AppCompatActivity {
                 .show();
     }
 
-    
+    /**
+     * Clears all orders from Firebase
+     */
     private void clearAllOrders() {
         firebaseDatabase.getReference("orders").removeValue()
                 .addOnSuccessListener(aVoid -> {

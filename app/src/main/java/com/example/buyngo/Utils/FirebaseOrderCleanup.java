@@ -1,4 +1,4 @@
-ckage com.example.buyngo.Utils;
+package com.example.buyngo.Utils;
 
 import android.util.Log;
 

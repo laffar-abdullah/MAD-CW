@@ -1,4 +1,4 @@
-ckage com.example.buyngo.UI;
+package com.example.buyngo.UI;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -11,7 +11,36 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-
+/**
+ * OrderStatusStore — single source of truth for delivery order state.
+ *
+ * All order data (current status, customer info, delivery history) is stored
+ * in SharedPreferences.  Every key is "scoped" to the currently logged-in
+ * rider so two riders working on the same device never see each other's data.
+ *
+ * The un-scoped (global) keys act as a read-only fallback for the customer
+ * tracking screen, which does not have a rider session.
+ *
+ * ── CHANGES FROM ORIGINAL ──────────────────────────────────────────────────
+ *  BUG FIX — appendDeliveryHistory() was reading the GLOBAL (un-scoped) keys
+ *  when building the history record snapshot.  Those keys always contained the
+ *  hard-coded default values ("BNG-001 / Alice Johnson / 12 Main Street")
+ *  because only the scoped keys were updated during a normal delivery flow.
+ *  Result: every completed delivery appeared as the same default order in
+ *  history, regardless of which order was actually delivered.
+ *
+ *  FIX: appendDeliveryHistory() now calls getCurrentOrder(context) — the
+ *  same helper used by the dashboard and status update screens — which already
+ *  knows how to prefer scoped keys over global fallbacks.  This ensures the
+ *  history record always captures the real order that was just delivered.
+ *
+ *  CHANGE — STATUS_PICKED_UP, STATUS_ON_THE_WAY, STATUS_DELIVERED are now
+ *  package-private (no modifier change needed, they already were), but
+ *  DEFAULT_STATUS is also exposed as a package-private constant so that
+ *  RidDashboardActivity can compare against it by name instead of relying
+ *  on a magic string literal.
+ * ───────────────────────────────────────────────────────────────────────────
+ */
 public final class OrderStatusStore {
 
     // SharedPreferences file shared by all order-related data.
@@ -46,7 +75,10 @@ public final class OrderStatusStore {
 
     // ── Status write / read ─────────────────────────────────────────────────
 
-    
+    /**
+     * Overwrites both the scoped AND global status so the customer tracking
+     * screen always reflects the latest rider update.
+     */
     static void setStatus(Context context, String status) {
         SharedPreferences prefs =
                 context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
@@ -58,7 +90,13 @@ public final class OrderStatusStore {
                 .apply();
     }
 
-    
+    /**
+     * Validates the status transition, applies it if legal, and archives the
+     * order when it reaches Delivered.
+     *
+     * @return {@code true} when the status was updated, {@code false} when the
+     *         requested transition is not allowed.
+     */
     static boolean updateStatus(Context context, String newStatus) {
         String currentStatus = getStatus(context);
         if (!isValidTransition(currentStatus, newStatus)) {
@@ -75,7 +113,11 @@ public final class OrderStatusStore {
         return true;
     }
 
-    
+    /**
+     * Returns the delivery status for the current rider.
+     * Scoped key is preferred; falls back to the global key so the very first
+     * login (before initialization) still returns a sensible value.
+     */
     static String getStatus(Context context) {
         SharedPreferences prefs =
                 context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
@@ -88,7 +130,11 @@ public final class OrderStatusStore {
 
     // ── Order snapshot ──────────────────────────────────────────────────────
 
-    
+    /**
+     * Returns the full order snapshot for the current rider.
+     * Used by RidDashboardActivity, RidStatusUpdateActivity, and
+     * RidProfileActivity (for delivery count).
+     */
     static OrderInfo getCurrentOrder(Context context) {
         SharedPreferences prefs =
                 context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
@@ -113,7 +159,10 @@ public final class OrderStatusStore {
 
     // ── Delivery history ────────────────────────────────────────────────────
 
-    
+    /**
+     * Returns every completed delivery archived for the current rider,
+     * oldest first.  The list is empty when no deliveries have been made yet.
+     */
     static List<DeliveryRecord> getDeliveryHistory(Context context) {
         SharedPreferences prefs =
                 context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
@@ -139,7 +188,11 @@ public final class OrderStatusStore {
 
     // ── Seed / initialisation ───────────────────────────────────────────────
 
-    
+    /**
+     * Writes default order values the first time a rider session starts so the
+     * dashboard and status update screens always have data to display.
+     * Does NOT overwrite keys that already exist.
+     */
     static void initializeDefaultsIfMissing(Context context) {
         SharedPreferences prefs =
                 context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
@@ -160,7 +213,7 @@ public final class OrderStatusStore {
         editor.apply();
     }
 
-    
+    /** Writes {@code value} only when {@code key} is not already present. */
     private static void conditionalPut(
             SharedPreferences.Editor editor,
             SharedPreferences prefs,
@@ -173,7 +226,13 @@ public final class OrderStatusStore {
 
     // ── Status transition validation ────────────────────────────────────────
 
-    
+    /**
+     * Defines the allowed forward-only delivery lifecycle:
+     *   Awaiting Pickup → Picked Up → On the Way → Delivered
+     *
+     * Idempotent writes (same → same) are also accepted so the UI can safely
+     * re-save the current status without triggering an error.
+     */
     private static boolean isValidTransition(String current, String next) {
         if (current.equals(next)) {
             return true;                    // Idempotent — allow
@@ -192,7 +251,23 @@ public final class OrderStatusStore {
 
     // ── History archival ────────────────────────────────────────────────────
 
-    
+    /**
+     * Appends a snapshot of the just-delivered order to the rider-scoped
+     * history list.
+     *
+     * ── BUG FIX ──────────────────────────────────────────────────────────
+     *  ORIGINAL: read from the global KEY_ORDER_ID / KEY_CUSTOMER_NAME /
+     *  KEY_CUSTOMER_ADDRESS keys.  These keys always held the hard-coded seed
+     *  values ("BNG-001", "Alice Johnson", "12 Main Street") because the
+     *  actual delivery data was only ever written to the SCOPED keys.  Every
+     *  history record therefore showed the same default order.
+     *
+     *  FIX: call getCurrentOrder(context) instead, which already knows how to
+     *  prefer scoped keys and fall back to global ones.  This guarantees the
+     *  archived snapshot always reflects the real order the rider just
+     *  completed, not the seed defaults.
+     * ─────────────────────────────────────────────────────────────────────
+     */
     private static void appendDeliveryHistory(Context context) {
         SharedPreferences prefs =
                 context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
@@ -220,7 +295,15 @@ public final class OrderStatusStore {
 
     // ── Key scoping helpers ─────────────────────────────────────────────────
 
-    
+    /**
+     * Converts a base key into a rider-scoped key by appending a normalised
+     * version of the rider's email address.
+     *
+     * Example: "order_status" + rider@buyngo.com → "order_status_rider_buyngo_com"
+     *
+     * Falls back to the un-scoped base key when no rider session is active
+     * (e.g. customer-side reads).
+     */
     private static String getScopedKey(Context context, String baseKey) {
         String email = RiderSessionStore.getCurrentRiderEmail(context);
         if (email == null || email.trim().isEmpty()) {
@@ -230,7 +313,7 @@ public final class OrderStatusStore {
         return baseKey + "_" + normalized;
     }
 
-    
+    /** Same scoping logic as {@link #getScopedKey} but for the history list. */
     private static String getScopedHistoryKey(Context context) {
         String email = RiderSessionStore.getCurrentRiderEmail(context);
         if (email == null || email.trim().isEmpty()) {
@@ -242,7 +325,7 @@ public final class OrderStatusStore {
 
     // ── Inner data classes ──────────────────────────────────────────────────
 
-    
+    /** Immutable snapshot of a current order (used by dashboard and status update). */
     static final class OrderInfo {
         final String orderId;
         final String customerName;
@@ -257,7 +340,7 @@ public final class OrderStatusStore {
         }
     }
 
-    
+    /** Immutable record of a completed delivery (used by history screen and profile). */
     static final class DeliveryRecord {
         final String orderId;
         final String customerName;
@@ -273,4 +356,3 @@ public final class OrderStatusStore {
         }
     }
 }
-

@@ -1,4 +1,4 @@
-ckage com.example.buyngo.UI;
+package com.example.buyngo.UI;
 
 import androidx.annotation.NonNull;
 import android.net.Uri;
@@ -577,4 +577,3 @@ final class FirebaseRiderRepository {
                 });
     }
 }
-

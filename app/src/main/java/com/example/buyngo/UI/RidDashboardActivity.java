@@ -1,4 +1,4 @@
-ckage com.example.buyngo.UI;
+package com.example.buyngo.UI;
 
 import android.content.Intent;
 import android.graphics.Typeface;
@@ -22,7 +22,12 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.Map;
 
-
+/**
+ * RidDashboardActivity — main home screen for the delivery rider.
+ *
+ * Shows all assigned delivery tasks and lets the rider navigate to
+ * Delivery History, Reviews, and Profile via a bottom navigation bar.
+ */
 public class RidDashboardActivity extends AppCompatActivity {
 
     private LinearLayout ordersContainer;
@@ -94,7 +99,9 @@ public class RidDashboardActivity extends AppCompatActivity {
 
     // ── Private helpers ─────────────────────────────────────────────────────
 
-    
+    /**
+     * Loads all orders assigned to the current rider from Firebase
+     */
     private void loadRiderOrders() {
         try {
             RiderSessionStore.RiderProfile profile = RiderSessionStore.getCurrentRider(this);
@@ -191,7 +198,9 @@ public class RidDashboardActivity extends AppCompatActivity {
         }
     }
 
-    
+    /**
+     * Displays a single order card with status and action buttons
+     */
     private void displayOrderCard(Order order) {
         // Enhanced logging to debug items display
         Log.d(TAG, "Displaying order: " + order.getOrderId() + 
@@ -326,7 +335,9 @@ public class RidDashboardActivity extends AppCompatActivity {
         ordersContainer.addView(separator);
     }
 
-    
+    /**
+     * Returns the appropriate color for a given order status
+     */
     private int getStatusColor(String status) {
         if (status == null) {
             return getResources().getColor(R.color.status_ordered, null);
@@ -347,7 +358,23 @@ public class RidDashboardActivity extends AppCompatActivity {
         }
     }
 
-    
+    /**
+     * Determines if an order status is "active" (still being delivered by rider).
+     * Active orders are shown in Assigned Tasks.
+     * Completed orders (Delivered, Received, etc.) are HIDDEN and moved to History tab.
+     * 
+     * ACTIVE statuses (show in assigned tasks):
+     * - Pending: Waiting for rider to pick up
+     * - Confirmed: Confirmed for rider
+     * - Awaiting Pickup: Rider assigned, ready to pick up
+     * - Picked Up: Rider picked from merchant
+     * - On the Way: Rider delivering to customer
+     * 
+     * COMPLETED statuses (HIDDEN, shown only in History):
+     * - Delivered: Rider delivered (now waiting for customer confirmation)
+     * - Received: Customer confirmed receipt
+     * - Delivered Successfully: Customer skipped review
+     */
     private boolean isActiveOrderStatus(String status) {
         if (status == null) {
             return true; // Show by default if status is null
@@ -361,5 +388,4 @@ public class RidDashboardActivity extends AppCompatActivity {
                status.equals("On the Way");
     }
 }
-
 

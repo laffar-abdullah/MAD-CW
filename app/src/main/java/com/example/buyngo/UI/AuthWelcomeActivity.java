@@ -1,4 +1,4 @@
-ckage com.example.buyngo.UI;
+package com.example.buyngo.UI;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -24,4 +24,3 @@ public class AuthWelcomeActivity extends AppCompatActivity {
                 startActivity(new Intent(this, RidLoginActivity.class)));
     }
 }
-

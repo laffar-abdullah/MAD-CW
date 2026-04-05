@@ -1,4 +1,4 @@
-ckage com.example.buyngo.UI;
+package com.example.buyngo.UI;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -28,6 +28,123 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * ═══════════════════════════════════════════════════════════════════════════════
+ *                       CUSTOMER CHECKOUT ACTIVITY
+ * ═══════════════════════════════════════════════════════════════════════════════
+ * 
+ * WHAT THIS SCREEN DOES:
+ * Final step before order placed. Customer enters delivery address, selects
+ * payment method (Card or Cash), reviews total price.
+ * 
+ * HOW IT CONNECTS TO FIREBASE:
+ * 1. loadCustomerAddress() reads customer's saved address from /users/{userId}/
+ * 2. When "Confirm Order" clicked:
+ *    - Reads cart items from CartStore (local storage)
+ *    - Creates Order model with cart data
+ *    - Saves Order to Firebase at /orders/{orderId}/
+ *    - Clears CartStore
+ *    - Navigates to feedback screen
+ * 
+ * DATA FLOW:
+ * CartStore (items) + User Profile → Combine into Order Model → Save to Firebase
+ *                                            ↓
+ *                                 /orders/{orderId}/
+ *                                            ↓
+ *                              Order visible in Admin/Rider/Customer apps
+ * 
+ * KEY CONNECTIONS:
+ * - Firebase Auth: Gets logged-in customer ID
+ * - Firebase Database: Reads user address, saves order
+ * - CartStore: Gets items to put in order
+ * - Order Model: Structure of order being saved
+ * ═══════════════════════════════════════════════════════════════════════════════
+ */
+public class CusCheckoutActivity extends AppCompatActivity {
+
+    // Views for order summary
+    private TextView totalPriceText;
+
+    // Delivery address fields
+    private EditText phoneEditText;
+    private EditText addressEditText;
+    private EditText cityEditText;
+
+    // Payment method radio buttons
+    private RadioGroup paymentRadioGroup;
+    private RadioButton radioCard;
+    private RadioButton radioCOD;
+
+    // Card details section (only shown when "Card" is selected)
+    private LinearLayout cardDetailsLayout;
+    private EditText cardNumberEditText;
+    private EditText cardExpiryEditText;
+    private EditText cardCvvEditText;
+
+    // The big "Confirm Order" button at the bottom
+    private Button confirmButton;
+
+    // Firebase connections - READ user address, WRITE new order
+    private FirebaseAuth firebaseAuth;
+    private FirebaseDatabase firebaseDatabase;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.cus_checkout);
+
+        // Set up Firebase auth and database connections
+        firebaseAuth = FirebaseAuth.getInstance();
+        firebaseDatabase = FirebaseDatabase.getInstance();
+
+        // Set up the top toolbar with a back arrow
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        toolbar.setNavigationOnClickListener(v -> finish());
+
+        // Bind all views from the layout file
+        bindViews();
+
+        // Pre-fill address from customer's saved profile so they don't retype it
+        loadCustomerAddress();
+
+        // Show the cart total at the top of the screen
+        updateTotalPrice();
+
+        // **FIXED: Set up payment method toggle with proper initialization**
+        setupPaymentMethodToggle();
+
+        // When the customer taps "Confirm Order", start the order placement flow
+        confirmButton.setOnClickListener(v -> placeOrder());
+    }
+
+    /**
+     * Bind all views safely with null checks
+     */
+    private void bindViews() {
+        totalPriceText = findViewById(R.id.totalPriceText);
+        phoneEditText = findViewById(R.id.phoneEditText);
+        addressEditText = findViewById(R.id.addressEditText);
+        cityEditText = findViewById(R.id.cityEditText);
+        paymentRadioGroup = findViewById(R.id.paymentRadioGroup);
+        radioCard = findViewById(R.id.radioCard);
+        radioCOD = findViewById(R.id.radioCOD);
+        cardDetailsLayout = findViewById(R.id.cardDetailsLayout);
+        cardNumberEditText = findViewById(R.id.cardNumberEditText);
+        cardExpiryEditText = findViewById(R.id.cardExpiryEditText);
+        cardCvvEditText = findViewById(R.id.cardCvvEditText);
+        confirmButton = findViewById(R.id.confirmButton);
+
+        // Safety check - make sure all critical views are found
+        if (confirmButton == null) {
+            Toast.makeText(this, "Error: Confirm button not found", Toast.LENGTH_SHORT).show();
+            finish();
+        }
+    }
+
+    /**
+     * **NEW: Properly set up payment method toggle with initial state handling**
+     */
     private void setupPaymentMethodToggle() {
         if (paymentRadioGroup == null || radioCard == null || radioCOD == null) {
             android.util.Log.e("Checkout", "Payment radio buttons not found!");
@@ -47,7 +164,9 @@ import java.util.Map;
         });
     }
 
-    
+    /**
+     * **NEW: Helper method to show/hide card fields based on selection**
+     */
     private void updateCardVisibility() {
         if (radioCard != null && radioCard.isChecked()) {
             // Card selected - show card details
@@ -62,7 +181,9 @@ import java.util.Map;
         }
     }
 
-    
+    /**
+     * Update the total price display
+     */
     private void updateTotalPrice() {
         if (totalPriceText != null) {
             double total = CartStore.getCartTotal(this);
@@ -70,7 +191,10 @@ import java.util.Map;
         }
     }
 
-    
+    /**
+     * Reads the customer's saved address and phone number from Firebase
+     * and fills in the form fields automatically.
+     */
     private void loadCustomerAddress() {
         if (firebaseAuth.getCurrentUser() == null) {
             Toast.makeText(this, "Please log in first", Toast.LENGTH_SHORT).show();
@@ -104,61 +228,54 @@ import java.util.Map;
                 });
     }
 
-    
-    // When customer clicks "Confirm Order" button
+    /**
+     * Validates all fields and the payment details, then triggers order creation.
+     */
     private void placeOrder() {
-        // Step 1: Check if customer entered delivery address
+        // Validate address fields
         if (!validateAddressFields()) {
             return;
         }
 
-        // Step 2: Check if customer selected payment method (Card or Cash)
+        // Validate payment method
         String paymentMethod = getSelectedPaymentMethod();
         if (paymentMethod == null) {
             Toast.makeText(this, "Please select a payment method", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Step 3: If Card selected, check if card details are valid
+        // Validate card details if card is selected
         if ("Card".equals(paymentMethod) && !validateCardDetails()) {
             return;
         }
 
-        // Step 4: Disable button while creating order (prevent double-click)
+        // Disable button during processing
         confirmButton.setEnabled(false);
         confirmButton.setText("Placing Order...");
 
-        // Step 5: Check if customer is logged in
         if (firebaseAuth.getCurrentUser() == null) {
             Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show();
             resetConfirmButton();
             return;
         }
 
-        // Step 6: Get customer ID from Firebase
         String userId = firebaseAuth.getCurrentUser().getUid();
-        
-        // Step 7: Get all items from shopping cart (stored in local phone storage)
         List<CartStore.CartItem> cartItems = CartStore.getCartItems(this);
 
-        // Step 8: Check if cart has items, if empty don't allow order
         if (cartItems.isEmpty()) {
             Toast.makeText(this, "Your cart is empty", Toast.LENGTH_SHORT).show();
             resetConfirmButton();
             return;
         }
 
-        // Step 9: Get customer's saved profile from Firebase database
+        // Get customer profile and create order
         firebaseDatabase.getReference("users").child(userId)
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot snapshot) {
-                        // Step 10: Check if customer profile exists
                         if (snapshot.exists()) {
-                            // Step 11: Convert Firebase data to User object
                             User user = snapshot.getValue(User.class);
                             if (user != null) {
-                                // Step 12: Create Order object and save to Firebase
                                 createAndSaveOrder(userId, user.getFullName(),
                                         cartItems, paymentMethod);
                             } else {
@@ -179,13 +296,14 @@ import java.util.Map;
                 });
     }
 
-    // Check if all address fields are filled
+    /**
+     * **NEW: Helper methods for validation**
+     */
     private boolean validateAddressFields() {
         String phone = phoneEditText != null ? phoneEditText.getText().toString().trim() : "";
         String address = addressEditText != null ? addressEditText.getText().toString().trim() : "";
         String city = cityEditText != null ? cityEditText.getText().toString().trim() : "";
 
-        // If any field is empty, show error
         if (phone.isEmpty() || address.isEmpty() || city.isEmpty()) {
             Toast.makeText(this, "Please fill in all address fields", Toast.LENGTH_SHORT).show();
             return false;
@@ -193,7 +311,6 @@ import java.util.Map;
         return true;
     }
 
-    // Get which payment method customer selected
     private String getSelectedPaymentMethod() {
         if (radioCard != null && radioCard.isChecked()) {
             return "Card";
@@ -225,7 +342,9 @@ import java.util.Map;
         confirmButton.setText("Confirm Order");
     }
 
-    
+    /**
+     * Builds the Order object and writes it to Firebase.
+     */
     private void createAndSaveOrder(String customerId, String customerName,
                                     List<CartStore.CartItem> cartItems,
                                     String paymentMethod) {
