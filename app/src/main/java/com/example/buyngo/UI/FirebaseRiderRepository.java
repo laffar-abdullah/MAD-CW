@@ -54,7 +54,7 @@ final class FirebaseRiderRepository {
         public String orderId;
         public String customerName;
         public String customerAddress;
-        public String customerPhone;      // NEW: Customer's contact number
+        public String customerPhone;      
         public String status;
         public String assignedRiderEmail;
         public java.util.List<Object> itemsList;  // Items list from Order model

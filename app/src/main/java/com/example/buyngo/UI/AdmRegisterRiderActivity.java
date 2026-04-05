@@ -26,6 +26,7 @@ public class AdmRegisterRiderActivity extends AppCompatActivity {
     private EditText etRiderPhone;
     private EditText etVehicleType;
     private EditText etVehicleNumber;
+    private EditText etLicenseExpireDate;
     private EditText etRiderEmail;
     private EditText etRiderPassword;
     private Button btnRegisterRider;
@@ -43,10 +44,12 @@ public class AdmRegisterRiderActivity extends AppCompatActivity {
         etRiderPhone = findViewById(R.id.etRiderPhone);
         etVehicleType = findViewById(R.id.etVehicleType);
         etVehicleNumber = findViewById(R.id.etVehicleNumber);
+        etLicenseExpireDate = findViewById(R.id.etLicenseExpireDate);
         etRiderEmail = findViewById(R.id.etRiderEmail);
         etRiderPassword = findViewById(R.id.etRiderPassword);
         btnRegisterRider = findViewById(R.id.btnRegisterRider);
 
+        etLicenseExpireDate.setOnClickListener(v -> showDatePicker());
         btnRegisterRider.setOnClickListener(v -> registerRider());
     }
 
@@ -55,6 +58,7 @@ public class AdmRegisterRiderActivity extends AppCompatActivity {
         String phone = etRiderPhone.getText().toString().trim();
         String vehicleType = etVehicleType.getText().toString().trim();
         String vehicleNumber = etVehicleNumber.getText().toString().trim().toUpperCase();
+        String licenseExpireDate = etLicenseExpireDate.getText().toString().trim();
         String email = etRiderEmail.getText().toString().trim().toLowerCase();
         String password = etRiderPassword.getText().toString();
 
@@ -80,6 +84,16 @@ public class AdmRegisterRiderActivity extends AppCompatActivity {
             etVehicleNumber.requestFocus();
             return;
         }
+        if (TextUtils.isEmpty(licenseExpireDate)) {
+            etLicenseExpireDate.setError("Select license expiry date");
+            etLicenseExpireDate.requestFocus();
+            return;
+        }
+        if (isLicenseExpired(licenseExpireDate)) {
+            etLicenseExpireDate.setError("License has already expired - must be future date");
+            etLicenseExpireDate.requestFocus();
+            return;
+        }
         if (TextUtils.isEmpty(email) || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             etRiderEmail.setError("Enter a valid email");
             etRiderEmail.requestFocus();
@@ -97,6 +111,7 @@ public class AdmRegisterRiderActivity extends AppCompatActivity {
                 phone,
                 vehicleType,
                 vehicleNumber,
+                licenseExpireDate,
                 email,
                 password,
                 new FirebaseRiderRepository.ResultCallback<FirebaseRiderRepository.RiderAccount>() {
@@ -137,8 +152,11 @@ public class AdmRegisterRiderActivity extends AppCompatActivity {
             Date licenseDate = dateFormat.parse(dateString);
             Date today = new Date();
             return licenseDate.before(today);
+
         } catch (Exception e) {
+
             Log.e(TAG, "Error parsing date", e);
+
             return false;
         }
     }
