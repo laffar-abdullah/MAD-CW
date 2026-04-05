@@ -174,7 +174,6 @@ public class RidProfileActivity extends AppCompatActivity {
 
         // BUG 1 FIX: these were commented-out in the original, causing NPE.
         imgProfilePicture = findViewById(R.id.imgProfilePicture);
-        btnChangePhoto    = findViewById(R.id.btnChangePhoto);
 
         // BUG 2 FIX: was R.id.btnChangePass (wrong ID), field stayed null.
         btnChangePassword = findViewById(R.id.btnChangePassword);

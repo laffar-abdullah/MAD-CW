@@ -83,17 +83,6 @@
                     btnChangePhoto — also launches the photo picker.
                     ID: R.id.btnChangePhoto
                 -->
-                <Button
-                    android:id="@+id/btnChangePhoto"
-                    android:layout_width="wrap_content"
-                    android:layout_height="30dp"
-                    android:layout_marginTop="8dp"
-                    android:paddingStart="16dp"
-                    android:paddingEnd="16dp"
-                    android:text="Change Photo"
-                    android:textColor="@color/white"
-                    android:textSize="11sp"
-                    android:background="@color/primary_green_dark" />
 
                 <!-- Rider's name — set in bindRiderData() from RiderSessionStore -->
                 <TextView
