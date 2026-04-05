@@ -230,9 +230,7 @@ public class AdmViewFeedbackActivity extends AppCompatActivity {
         return "Critical: " + negative + " out of " + total + " customers are dissatisfied. Immediate action required.";
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Adapter
-    // ─────────────────────────────────────────────────────────────────────────
+
 
     private class FeedbackAdapter extends RecyclerView.Adapter<FeedbackAdapter.FeedbackVH> {
 
@@ -293,6 +291,7 @@ public class AdmViewFeedbackActivity extends AppCompatActivity {
             h.btnReply.setOnClickListener(v -> showReplyDialog(snap));
             h.btnFlag.setOnClickListener(v -> toggleFlag(snap, Boolean.TRUE.equals(flagged)));
             h.btnDelete.setOnClickListener(v -> confirmDelete(snap));
+            h.itemView.setOnClickListener(v -> showFeedbackDetailsDialog(snap));
         }
 
         @Override
@@ -319,6 +318,45 @@ public class AdmViewFeedbackActivity extends AppCompatActivity {
                 layoutAdminReply = itemView.findViewById(R.id.layoutAdminReply);
             }
         }
+    }
+
+    private void showFeedbackDetailsDialog(DataSnapshot snap) {
+        String email      = snap.child("userEmail").getValue(String.class);
+        String comment    = snap.child("comment").getValue(String.class);
+        String adminReply = snap.child("adminReply").getValue(String.class);
+        Object ratingObj  = snap.child("rating").getValue();
+        Object tsObj      = snap.child("timestamp").getValue();
+        Boolean flagged   = snap.child("flagged").getValue(Boolean.class);
+
+        float rating = ratingObj != null ? Float.parseFloat(ratingObj.toString()) : 0;
+
+        String date = "";
+        if (tsObj != null) {
+            date = new SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault())
+                    .format(new Date(Long.parseLong(tsObj.toString())));
+        }
+
+        String ratingBadge;
+        if (rating >= 4) ratingBadge = "Positive (4-5 stars)";
+        else if (rating == 3) ratingBadge = "Neutral (3 stars)";
+        else ratingBadge = "Negative (1-2 stars)";
+
+        String detailsMessage =
+                "Email: " + (email != null ? email : "Anonymous") + "\n\n" +
+                        "Date: " + date + "\n\n" +
+                        "Rating: " + String.format(Locale.getDefault(), "%.1f", rating) + "/5.0 (" + ratingBadge + ")\n\n" +
+                        "Comment:\n" + (comment != null && !comment.isEmpty() ? comment : "No comment") + "\n\n" +
+                        (adminReply != null && !adminReply.isEmpty() ? "Admin Reply:\n" + adminReply + "\n\n" : "") +
+                        "Status: " + (Boolean.TRUE.equals(flagged) ? "🚩 Flagged" : "Not flagged");
+
+        new AlertDialog.Builder(this)
+                .setTitle("Feedback Details")
+                .setMessage(detailsMessage)
+                .setPositiveButton("Reply", (dialog, which) -> showReplyDialog(snap))
+                .setNegativeButton(Boolean.TRUE.equals(flagged) ? "Unflag" : "Flag", (dialog, which) ->
+                        toggleFlag(snap, Boolean.TRUE.equals(flagged)))
+                .setNeutralButton("Delete", (dialog, which) -> confirmDelete(snap))
+                .show();
     }
 
     private void showReplyDialog(DataSnapshot snap) {
