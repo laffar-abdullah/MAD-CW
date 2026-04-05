@@ -102,6 +102,7 @@ final class FirebaseRiderRepository {
             String phone,
             String vehicleType,
             String vehicleNumber,
+            String licenseExpireDate,
             String email,
             String password,
             ResultCallback<RiderAccount> callback) {
@@ -129,8 +130,16 @@ final class FirebaseRiderRepository {
 
                     riderRef.setValue(account)
                             .addOnSuccessListener(unused -> {
-                                Log.i(TAG, "registerRider() write success path=" + NODE_RIDERS + "/" + riderId);
-                                callback.onSuccess(account);
+                                // Save license expiry date separately
+                                riderRef.child("licenseExpireDate").setValue(licenseExpireDate)
+                                        .addOnSuccessListener(u -> {
+                                            Log.i(TAG, "registerRider() write success path=" + NODE_RIDERS + "/" + riderId);
+                                            callback.onSuccess(account);
+                                        })
+                                        .addOnFailureListener(e -> {
+                                            Log.e(TAG, "Failed to save license expiry date", e);
+                                            callback.onError("Failed to save license information");
+                                        });
                             })
                             .addOnFailureListener(e -> {
                                 Log.e(TAG, "registerRider() write failed", e);

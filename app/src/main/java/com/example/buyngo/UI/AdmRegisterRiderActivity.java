@@ -1,5 +1,6 @@
 package com.example.buyngo.UI;
 
+import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -11,6 +12,11 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import com.example.buyngo.R;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 
 public class AdmRegisterRiderActivity extends AppCompatActivity {
 
@@ -112,4 +118,29 @@ public class AdmRegisterRiderActivity extends AppCompatActivity {
                     }
                 });
     }
+
+    // Show calendar to select license expiry date
+    private void showDatePicker() {
+        Calendar calendar = Calendar.getInstance();
+        new DatePickerDialog(this, (view, year, month, dayOfMonth) -> {
+            Calendar selectedDate = Calendar.getInstance();
+            selectedDate.set(year, month, dayOfMonth);
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+            etLicenseExpireDate.setText(dateFormat.format(selectedDate.getTime()));
+        }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show();
+    }
+
+    // Check if license date is expired compared to today
+    private boolean isLicenseExpired(String dateString) {
+        try {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+            Date licenseDate = dateFormat.parse(dateString);
+            Date today = new Date();
+            return licenseDate.before(today);
+        } catch (Exception e) {
+            Log.e(TAG, "Error parsing date", e);
+            return false;
+        }
+    }
 }
+

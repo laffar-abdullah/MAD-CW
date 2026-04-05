@@ -7,6 +7,9 @@ public class Rider {
     private String email;
     private String status; // Available, Busy, Offline
     private String profileImageUrl;
+    private String vehicleType;
+    private String vehicleNumber;
+    private String licenseExpireDate;
     private long registrationDate;
 
     // Default constructor required for Firebase
@@ -77,5 +80,29 @@ public class Rider {
 
     public void setRegistrationDate(long registrationDate) {
         this.registrationDate = registrationDate;
+    }
+
+    public String getVehicleType() {
+        return vehicleType;
+    }
+
+    public void setVehicleType(String vehicleType) {
+        this.vehicleType = vehicleType;
+    }
+
+    public String getVehicleNumber() {
+        return vehicleNumber;
+    }
+
+    public void setVehicleNumber(String vehicleNumber) {
+        this.vehicleNumber = vehicleNumber;
+    }
+
+    public String getLicenseExpireDate() {
+        return licenseExpireDate;
+    }
+
+    public void setLicenseExpireDate(String licenseExpireDate) {
+        this.licenseExpireDate = licenseExpireDate;
     }
 }
