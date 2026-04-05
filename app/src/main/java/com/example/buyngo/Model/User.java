@@ -1,6 +1,4 @@
 package com.example.buyngo.Model;
-
-// Stores customer profile information
 public class User {
     private String userId;
     private String email;

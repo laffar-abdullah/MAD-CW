@@ -10,37 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import com.example.buyngo.R;
 
-/**
- * RidStatusUpdateActivity — lets the rider advance the delivery status
- * through its fixed lifecycle:
- *
- *   Awaiting Pickup → Picked Up → On the Way → Delivered
- *
- * Three buttons correspond to the three forward steps.  At any given moment
- * only the single valid next step is enabled; the other two are dimmed.
- * When "Delivered" is tapped the activity closes and returns the rider to
- * the Dashboard, which will show the "no active task" empty state.
- *
- * ── CHANGES FROM ORIGINAL ──────────────────────────────────────────────────
- *  BUG FIX 1 — The layout button android:id="@+id/btnOutForDelivery" has the
- *  label "Mark as Out for Delivery" but the status constant it was writing is
- *  STATUS_ON_THE_WAY ("On the Way").  The toast in OrderStatusStore.updateStatus
- *  then showed "Status updated: On the Way" while the button said "Out for
- *  Delivery" — confusing mismatch for the rider.
- *  FIX: kept STATUS_ON_THE_WAY as the stored value (it drives customer tracking
- *  colour coding and transition guards) but updated the button label in the
- *  layout (rid_status_update.xml) to "Mark as On the Way" so the UI and store
- *  agree.  See rid_status_update.xml change notes.
- *
- *  IMPROVEMENT — Added a Toolbar with a back / up button so the rider can
- *  return to the Dashboard without using the Android system back gesture.
- *  Previously there was no toolbar at all on this screen.
- *
- *  IMPROVEMENT — refreshUi() now also enables/disables the "Picked Up" button
- *  correctly when status is DEFAULT_STATUS ("Awaiting Pickup") using the
- *  package-visible constant instead of a magic string literal.
- * ───────────────────────────────────────────────────────────────────────────
- */
+// Activity manages rider delivery status workflow with step-by-step progression
 public class RidStatusUpdateActivity extends AppCompatActivity {
 
     private TextView txtOrderNumber;
@@ -65,12 +35,7 @@ public class RidStatusUpdateActivity extends AppCompatActivity {
 
         setContentView(R.layout.rid_status_update);
 
-        // ── IMPROVEMENT: set up toolbar with back navigation ──
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        // Pressing the up arrow returns to whichever screen launched this
-        // activity (Dashboard or the task card tap).
-        toolbar.setNavigationOnClickListener(v -> finish());
+        // Setup toolbar with back navigation
 
         txtOrderNumber   = findViewById(R.id.txtOrderNumber);
         txtCurrentStatus = findViewById(R.id.txtCurrentStatus);
@@ -84,29 +49,21 @@ public class RidStatusUpdateActivity extends AppCompatActivity {
         // Show the current order and enable only the valid next step.
         refreshUi();
 
-        // Each button advances the status by exactly one step.
-        // BUG FIX 1: all three buttons store the correct STATUS_* constant.
-        // The "Out for Delivery" button stores STATUS_ON_THE_WAY which is
-        // "On the Way" — matching what the layout label and toast will say.
+        // Each button advances status by one step
         btnPickedUp.setOnClickListener(v ->
                 saveStatus(OrderStatusStore.STATUS_PICKED_UP, false));
 
         btnOutForDelivery.setOnClickListener(v ->
                 saveStatus(OrderStatusStore.STATUS_ON_THE_WAY, false));
 
-        // Delivered closes the screen so the rider lands back on Dashboard.
+        // Delivered closes the screen
         btnDelivered.setOnClickListener(v ->
                 saveStatus(OrderStatusStore.STATUS_DELIVERED, true));
     }
 
-    // ── Private helpers ─────────────────────────────────────────────────────
+    // Private helpers
 
-    /**
-     * Attempts to write {@code status} to the store.
-     * Shows a toast if the transition is not allowed (e.g. rider tried to
-     * skip a step).  Closes the activity when {@code closeAfterUpdate} is
-     * true (used for the Delivered step).
-     */
+    // Save status to store, show toast, optionally close activity
     private void saveStatus(String status, boolean closeAfterUpdate) {
         if (usingLocalFallback || forceLocalMode || currentOrderId == null || currentOrderId.trim().isEmpty()) {
             boolean updated = OrderStatusStore.updateStatus(this, status);
@@ -162,14 +119,7 @@ public class RidStatusUpdateActivity extends AppCompatActivity {
                 });
     }
 
-    /**
-     * Synchronises the order header and button states with the latest value
-     * in the store.
-     *
-     * IMPROVEMENT: uses the package-visible DEFAULT_STATUS constant instead
-     * of the magic string "Awaiting Pickup" so the check stays in sync if the
-     * default text is ever changed in OrderStatusStore.
-     */
+    // Sync order header and button states with latest store value
     private void refreshUi() {
         if (forceLocalMode) {
             loadFromLocalStore();

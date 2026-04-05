@@ -310,7 +310,7 @@
             </androidx.cardview.widget.CardView>
 
             <androidx.cardview.widget.CardView
-                android:id="@+id/btnAssignRider"
+                android:id="@+id/btnManageRiders"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
@@ -330,7 +330,7 @@
                     <ImageView
                         android:layout_width="40dp"
                         android:layout_height="40dp"
-                        android:src="@android:drawable/ic_menu_directions"
+                        android:src="@android:drawable/ic_menu_close_clear_cancel"
                         app:tint="@color/primary_green" />
 
                     <TextView
@@ -338,7 +338,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:layout_marginStart="16dp"
-                        android:text="Assign Rider"
+                        android:text="Manage Riders"
                         android:textSize="16sp"
                         android:textStyle="bold"
                         android:textColor="@color/text_dark" />

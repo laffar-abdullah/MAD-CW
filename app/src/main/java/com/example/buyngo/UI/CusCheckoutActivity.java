@@ -28,6 +28,38 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * ═══════════════════════════════════════════════════════════════════════════════
+ *                       CUSTOMER CHECKOUT ACTIVITY
+ * ═══════════════════════════════════════════════════════════════════════════════
+ * 
+ * WHAT THIS SCREEN DOES:
+ * Final step before order placed. Customer enters delivery address, selects
+ * payment method (Card or Cash), reviews total price.
+ * 
+ * HOW IT CONNECTS TO FIREBASE:
+ * 1. loadCustomerAddress() reads customer's saved address from /users/{userId}/
+ * 2. When "Confirm Order" clicked:
+ *    - Reads cart items from CartStore (local storage)
+ *    - Creates Order model with cart data
+ *    - Saves Order to Firebase at /orders/{orderId}/
+ *    - Clears CartStore
+ *    - Navigates to feedback screen
+ * 
+ * DATA FLOW:
+ * CartStore (items) + User Profile → Combine into Order Model → Save to Firebase
+ *                                            ↓
+ *                                 /orders/{orderId}/
+ *                                            ↓
+ *                              Order visible in Admin/Rider/Customer apps
+ * 
+ * KEY CONNECTIONS:
+ * - Firebase Auth: Gets logged-in customer ID
+ * - Firebase Database: Reads user address, saves order
+ * - CartStore: Gets items to put in order
+ * - Order Model: Structure of order being saved
+ * ═══════════════════════════════════════════════════════════════════════════════
+ */
 public class CusCheckoutActivity extends AppCompatActivity {
 
     // Views for order summary
@@ -52,7 +84,7 @@ public class CusCheckoutActivity extends AppCompatActivity {
     // The big "Confirm Order" button at the bottom
     private Button confirmButton;
 
-    // Firebase connections
+    // Firebase connections - READ user address, WRITE new order
     private FirebaseAuth firebaseAuth;
     private FirebaseDatabase firebaseDatabase;
 
@@ -111,7 +143,7 @@ public class CusCheckoutActivity extends AppCompatActivity {
     }
 
     /**
-     * **NEW: Properly set up payment method toggle with initial state handling**
+     *  Properly set up payment method toggle with initial state handling**
      */
     private void setupPaymentMethodToggle() {
         if (paymentRadioGroup == null || radioCard == null || radioCOD == null) {
@@ -133,7 +165,7 @@ public class CusCheckoutActivity extends AppCompatActivity {
     }
 
     /**
-     * **NEW: Helper method to show/hide card fields based on selection**
+     *  Helper method to show/hide card fields based on selection**
      */
     private void updateCardVisibility() {
         if (radioCard != null && radioCard.isChecked()) {

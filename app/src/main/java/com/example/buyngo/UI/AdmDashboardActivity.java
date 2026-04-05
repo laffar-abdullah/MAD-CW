@@ -41,6 +41,10 @@ public class AdmDashboardActivity extends AppCompatActivity {
         tvTotalOrders   = findViewById(R.id.tvTotalOrders);
         tvPendingOrders = findViewById(R.id.tvPendingOrders);
 
+        // Make the product count card clickable - navigates to product list
+        tvTotalProducts.setOnClickListener(v ->
+                startActivity(new Intent(this, AdmProductManagementActivity.class)));
+
         findViewById(R.id.btnManageProducts).setOnClickListener(v ->
                 startActivity(new Intent(this, AdmProductManagementActivity.class)));
 
@@ -50,8 +54,8 @@ public class AdmDashboardActivity extends AppCompatActivity {
         findViewById(R.id.btnRegisterRider).setOnClickListener(v ->
                 startActivity(new Intent(this, AdmRegisterRiderActivity.class)));
 
-        findViewById(R.id.btnAssignRider).setOnClickListener(v ->
-                startActivity(new Intent(this, AdmAssignRiderActivity.class)));
+        findViewById(R.id.btnManageRiders).setOnClickListener(v ->
+                startActivity(new Intent(this, AdmManageRidersActivity.class)));
 
         findViewById(R.id.btnViewFeedbacks).setOnClickListener(v ->
                 startActivity(new Intent(this, AdmViewFeedbackActivity.class)));

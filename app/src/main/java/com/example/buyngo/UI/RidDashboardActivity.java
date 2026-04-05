@@ -22,28 +22,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.Map;
 
-/**
- * VIVA FOCUS: Rider Dashboard — Main Rider Home Screen
- *
- * Shows ONLY ACTIVE delivery tasks assigned to THIS RIDER.
- * Active tasks are those with status in: "Awaiting Pickup", "Picked Up", "On the Way"
- * 
- * KEY FEATURES:
- * 1. Real-time Firebase query with value listener (updates when orders change)
- * 2. Rider email filtering: Shows only orders assigned to current logged-in rider
- * 3. Status filtering: Completed orders ("Delivered Successfully") moved to History
- * 4. Dynamic UI: Cards added/removed as rider accepts/completes deliveries
- * 
- * CRITICAL BUG FIXED:
- * - Old: Called ordersContainer.addView(txtNoActiveTask) but view was already in XML
- * - Error: "Specified child already has a parent" crash on empty state
- * - Now: Use visibility toggle (VISIBLE/GONE) instead of addView()
- * 
- * NAVIGATION:
- * - Toolbar: Back button, header
- * - Bottom nav: This screen (Dashboard) + History, Reviews, Profile
- * - Each order card: Tappable to start delivery status update flow
- */
+
 public class RidDashboardActivity extends AppCompatActivity {
 
     private LinearLayout ordersContainer;
@@ -55,7 +34,7 @@ public class RidDashboardActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Rider screens are protected — redirect to login when session is missing.
+        // Check if rider is logged in
         if (!RiderSessionStore.isLoggedIn(this)) {
             startActivity(new Intent(this, RidLoginActivity.class));
             finish();
@@ -66,12 +45,11 @@ public class RidDashboardActivity extends AppCompatActivity {
 
         firebaseDatabase = FirebaseDatabase.getInstance("https://buyngo-5b43e-default-rtdb.firebaseio.com/");
 
-        // ── IMPROVEMENT: initialise toolbar so system ActionBar is replaced ──
+        // Setup toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        // Dashboard is the root screen — no back/up navigation icon needed.
 
-        // Bind views.
+        // Bind views
         ordersContainer = findViewById(R.id.ordersContainer);
         if (ordersContainer == null) {
             ordersContainer = new LinearLayout(this);
@@ -89,7 +67,7 @@ public class RidDashboardActivity extends AppCompatActivity {
             txtNoActiveTask.setPadding(16, 16, 16, 16);
         }
 
-        // ── Bottom navigation ──────────────────────────────────────────────
+        // Setup bottom navigation
         findViewById(R.id.navDashboard).setOnClickListener(v -> loadRiderOrders());
 
         findViewById(R.id.navHistory).setOnClickListener(v ->
@@ -113,11 +91,7 @@ public class RidDashboardActivity extends AppCompatActivity {
         loadRiderOrders();
     }
 
-    // ── Private helpers ─────────────────────────────────────────────────────
-
-    /**
-     * Loads all orders assigned to the current rider from Firebase
-     */
+    // Load all orders assigned to current rider
     private void loadRiderOrders() {
         try {
             RiderSessionStore.RiderProfile profile = RiderSessionStore.getCurrentRider(this);
@@ -159,11 +133,9 @@ public class RidDashboardActivity extends AppCompatActivity {
                                                     ", assigned rider email: " + assignedRiderEmail + 
                                                     ", status: " + status);
                                             
-                                            // Display order ONLY IF:
-                                            // 1. It's assigned to current rider
-                                            // 2. Status is ACTIVE (not Delivered, Received, or Delivered Successfully)
+                                            // Only show active orders for this rider
                                             if (assignedRiderEmail != null && profile.email.equals(assignedRiderEmail)) {
-                                                // Filter: Only show ACTIVE statuses (in-progress deliveries)
+                                                // Show active status orders only
                                                 if (isActiveOrderStatus(status)) {
                                                     ordersFound++;
                                                     Log.d(TAG, "✓ Displaying ACTIVE order: " + order.getOrderId() + " | Status: " + status);
@@ -208,28 +180,9 @@ public class RidDashboardActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Displays a single order card with status and action buttons
-     */
+    // Display a single order card
     private void displayOrderCard(Order order) {
-        // Enhanced logging to debug items display
-        Log.d(TAG, "Displaying order: " + order.getOrderId() + 
-              " | itemsList size: " + (order.getItemsList() != null ? order.getItemsList().size() : 0) +
-              " | items map size: " + (order.getItems() != null ? order.getItems().size() : 0) +
-              " | total: " + order.getTotalAmount() +
-              " | status: " + order.getStatus());
-        
-        if (order.getItemsList() != null && !order.getItemsList().isEmpty()) {
-            for (Order.OrderItem item : order.getItemsList()) {
-                Log.d(TAG, "  Item: " + item.quantity + "x " + item.name);
-            }
-        }
-        
-        if (order.getItems() != null && !order.getItems().isEmpty()) {
-            for (Map.Entry<String, Integer> entry : order.getItems().entrySet()) {
-                Log.d(TAG, "  Item (map): " + entry.getValue() + "x " + entry.getKey());
-            }
-        }
+        // Log order details for debugging
         
         LinearLayout orderLayout = new LinearLayout(this);
         orderLayout.setOrientation(LinearLayout.VERTICAL);
@@ -345,9 +298,7 @@ public class RidDashboardActivity extends AppCompatActivity {
         ordersContainer.addView(separator);
     }
 
-    /**
-     * Returns the appropriate color for a given order status
-     */
+    // Get color for order status
     private int getStatusColor(String status) {
         if (status == null) {
             return getResources().getColor(R.color.status_ordered, null);

@@ -1,6 +1,6 @@
 package com.example.buyngo.Model;
 
-// Stores customer reviews and ratings for orders
+
 public class Review {
     private String reviewId;
     private String orderId;

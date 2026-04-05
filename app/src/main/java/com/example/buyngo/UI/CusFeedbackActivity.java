@@ -19,6 +19,19 @@ import com.example.buyngo.R;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * ═══════════════════════════════════════════════════════════════════════════════
+ *                      CUSTOMER FEEDBACK ACTIVITY
+ *                  (MAIN FEATURE - FEEDBACK SYSTEM)
+ * ═══════════════════════════════════════════════════════════════════════════════
+ * 
+ * WHAT THIS SCREEN DOES:
+ * Allows customers to rate and review their delivery experience after order
+ * is completed. Also allows anonymous feedback from app menu.
+ * 
+ * HOW IT CONNECTS TO FIREBASE:
+ * 
+ * TWO FEEDBACK MODES: *  * MODE 1: ORDER-BASED FEEDBACK (After delivery) * 1. Order delivered → This screen automatically shown with orderId * 2. Customer rates 1-5 stars and writes comment * 3. Loads order details from Firebase (/orders/{orderId}/) * 4. Gets rider email from order data * 5. Saves Review to TWO places: *    - /reviews/{reviewId} (rider sees feedback about them) *    - /feedbacks/{feedbackId} (admin sees all feedback) * 6. Updates order status to "Delivered Successfully" *  * MODE 2: ANONYMOUS FEEDBACK (From nav_reviews menu) * 1. Customer taps "Reviews" from home menu * 2. Opens this screen with NO orderId * 3. Customer gives rating and comment anonymously * 4. Saves to /feedbacks/{feedbackId} only * 5. Marked with isAnonymous=true *  * FIREBASE OPERATIONS: * - READ: Order data (/orders/{orderId}/) to get rider email * - WRITE: Review to /reviews/{riderEmail}/ * - WRITE: Feedback to /feedbacks/ * - UPDATE: Order status to "Delivered Successfully" *  * DATA FLOW: *  * ORDER-BASED: * Order → This screen shown → Customer rates → Review object created *                                                       ↓ *                    Saved to /reviews/ AND /feedbacks/ *                                                       ↓ *                    Order marked "Delivered Successfully" *                                                       ↓ *             Rider can see feedback about them *             Admin can see all feedback *  * ANONYMOUS: * nav_reviews menu → This screen shown → Customer rates → Feedback object created *                                                               ↓ *                                    Saved to /feedbacks/ only *                                                               ↓ *                              Admin can see anonymous feedback *  * KEY FEATURES: * - Submit button enabled ONLY if rating given (1+ stars) * - Can skip mandatory feedback (shows confirmation dialog) * - Real-time rating display (shows \"X / 5\" as customer slides) * - Handles both order-based and anonymous reviews * ═══════════════════════════════════════════════════════════════════════════════ */
 public class CusFeedbackActivity extends AppCompatActivity {
 
     private static final String DB_URL = "https://buyngo-5b43e-default-rtdb.firebaseio.com/";
@@ -73,7 +86,7 @@ public class CusFeedbackActivity extends AppCompatActivity {
             return;
         }
         
-        // Get orderId from intent
+        // Get orderId from intent (null if anonymous feedback from nav_reviews)
         orderId = getIntent().getStringExtra("orderId");
         Log.d(TAG, "Order ID: " + orderId);
         
@@ -81,16 +94,11 @@ public class CusFeedbackActivity extends AppCompatActivity {
         isMandatory = getIntent().getBooleanExtra("mandatory", false);
         Log.d(TAG, "Mandatory feedback: " + isMandatory);
         
-        // If no orderId provided (coming from nav_reviews), show info message
-        if (orderId == null || orderId.trim().isEmpty()) {
-            ratingLabel.setText("Select an order from 'Orders' tab to add a review");
-            findViewById(R.id.submitFeedbackButton).setEnabled(false);
-            findViewById(R.id.submitFeedbackButton).setAlpha(0.5f);
-            TextView skipTextView = findViewById(R.id.skipReview);
-            if (skipTextView != null) {
-                skipTextView.setVisibility(View.GONE);
-            }
-            return;
+        // If no orderId provided (coming from nav_reviews), allow anonymous review submission
+        boolean isAnonymousReview = (orderId == null || orderId.trim().isEmpty());
+        if (isAnonymousReview) {
+            ratingLabel.setText("Share your experience (anonymous)");
+            Log.d(TAG, "Anonymous review mode enabled");
         }
         
         // Show/hide skip button based on mandatory flag
@@ -123,6 +131,7 @@ public class CusFeedbackActivity extends AppCompatActivity {
 
         try {
             if (ratingBar != null && ratingLabel != null) {
+                // Update rating label as customer slides the bar
                 ratingBar.setOnRatingBarChangeListener((bar, rating, fromUser) -> {
                     if (rating <= 0f) {
                         ratingLabel.setText("Tap a star to rate");
@@ -132,10 +141,12 @@ public class CusFeedbackActivity extends AppCompatActivity {
                 });
             }
         } catch (Exception e) {
-            Log.e(TAG, "Error setting up rating bar listener: " + e.getMessage());
         }
 
         try {
+            final boolean isAnonymous = (orderId == null || orderId.trim().isEmpty());
+            
+            // When "Submit Feedback" button tapped
             findViewById(R.id.submitFeedbackButton).setOnClickListener(v -> {
                 if (ratingBar == null || reviewComment == null) {
                     Toast.makeText(this, "Form not loaded properly", Toast.LENGTH_SHORT).show();
@@ -149,16 +160,15 @@ public class CusFeedbackActivity extends AppCompatActivity {
                     return;
                 }
 
-                // Use the orderId passed from intent
-                if (orderId == null || orderId.trim().isEmpty()) {
-                    Toast.makeText(CusFeedbackActivity.this,
-                            "Order ID not provided",
-                            Toast.LENGTH_SHORT).show();
-                    navigateHome();
+                // If no order ID, treat as anonymous review
+                // Save directly to /feedbacks/ without order details
+                if (isAnonymous) {
+                    saveAnonymousFeedbackToAdminNode(rating, comment);
                     return;
                 }
 
-                // Get the order to find rider email
+                // For order-based reviews, get order details and rider email from Firebase
+                // Then save review linked to that rider
                 com.google.firebase.database.FirebaseDatabase.getInstance("https://buyngo-5b43e-default-rtdb.firebaseio.com/")
                         .getReference("orders")
                         .child(orderId)
@@ -167,28 +177,12 @@ public class CusFeedbackActivity extends AppCompatActivity {
                             String riderEmail = snapshot.child("assignedRiderEmail").getValue(String.class);
                             String customerName = snapshot.child("customerName").getValue(String.class);
                             
-                            Log.d(TAG, "===== FEEDBACK SUBMISSION =====");
-                            Log.d(TAG, "Order ID: " + orderId);
-                            Log.d(TAG, "Rider Email from order: " + riderEmail);
-                            Log.d(TAG, "Customer Name from order: " + customerName);
-                            Log.d(TAG, "Rating: " + rating);
-                            Log.d(TAG, "Comment: " + comment);
+                            // Use fallback email if rider email not found
+                            String finalRiderEmail = (riderEmail != null && !riderEmail.isEmpty()) 
+                                    ? riderEmail : "unknown@rider.com";
+                            String finalCustomerName = (customerName != null) ? customerName : "Customer";
                             
-                            // Allow review submission even if rider email is not found (edge case)
-                            String riderEmailForReview = riderEmail;
-                            if (riderEmailForReview == null || riderEmailForReview.trim().isEmpty()) {
-                                Log.w(TAG, "⚠ Rider email is null/empty! Using fallback: unknown@rider.com");
-                                riderEmailForReview = "unknown@rider.com"; // Fallback email
-                            }
-                            
-                            // Declare final version for use in inner classes
-                            final String finalRiderEmail = riderEmailForReview;
-                            String finalCustomerName = customerName == null ? "Customer" : customerName;
-                            
-                            Log.d(TAG, "Final Rider Email for review: " + finalRiderEmail);
-                            
-                            // Submit the review to both storage locations:
-                            // 1. To rider-specific reviews (FirebaseRiderRepository)
+                            // Save review to rider records
                             FirebaseRiderRepository.addReview(
                                     orderId,
                                     finalRiderEmail,
@@ -198,15 +192,12 @@ public class CusFeedbackActivity extends AppCompatActivity {
                                     new FirebaseRiderRepository.VoidCallback() {
                                         @Override
                                         public void onSuccess() {
-                                            Log.d(TAG, "✓ Review saved successfully for rider: " + finalRiderEmail);
-                                            Log.d(TAG, "  Review will be queryable via: riderEmail == '" + finalRiderEmail + "'");
-                                            // Also save to feedbacks node for admin viewing
+                                            // Also save to admin feedback node
                                             saveFeedbackToAdminNode(orderId, finalRiderEmail, finalCustomerName, rating, comment);
                                         }
 
                                         @Override
                                         public void onError(String message) {
-                                            Log.e(TAG, "✗ Failed to save review: " + message);
                                             Toast.makeText(CusFeedbackActivity.this,
                                                     message,
                                                     Toast.LENGTH_SHORT).show();
@@ -220,7 +211,7 @@ public class CusFeedbackActivity extends AppCompatActivity {
                         });
             });
         } catch (Exception e) {
-            Log.e(TAG, "Error setting up submit button: " + e.getMessage());
+            // Error setting up button
         }
     }
 
@@ -249,16 +240,13 @@ public class CusFeedbackActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Saves feedback to the "feedbacks" node for admin viewing
-     * This complements the rider-specific reviews storage
-     */
+    // Save feedback to admin panel for review management
     private void saveFeedbackToAdminNode(String orderId, String riderEmail, String customerName, int rating, String comment) {
         try {
             com.google.firebase.database.FirebaseDatabase db = 
                     com.google.firebase.database.FirebaseDatabase.getInstance(DB_URL);
             
-            // Create feedback document
+            // Create feedback object with order details
             java.util.Map<String, Object> feedback = new java.util.HashMap<>();
             feedback.put("feedbackId", db.getReference("feedbacks").push().getKey());
             feedback.put("orderId", orderId);
@@ -269,12 +257,12 @@ public class CusFeedbackActivity extends AppCompatActivity {
             feedback.put("timestamp", System.currentTimeMillis());
             feedback.put("flagged", false);
 
-            // Save to feedbacks node
+            // Save feedback to database
             db.getReference("feedbacks")
                     .push()
                     .setValue(feedback)
                     .addOnSuccessListener(unused -> {
-                        Log.d(TAG, "Feedback saved to admin node for order: " + orderId);
+                        // Show success message
                         Toast.makeText(CusFeedbackActivity.this,
                                 "Thanks for your feedback!",
                                 Toast.LENGTH_SHORT).show();
@@ -282,8 +270,7 @@ public class CusFeedbackActivity extends AppCompatActivity {
                         navigateHome();
                     })
                     .addOnFailureListener(e -> {
-                        Log.e(TAG, "Failed to save feedback to admin node: " + e.getMessage());
-                        // Still show success message and navigate even if admin save fails
+                        // Even if save fails, show success and go back
                         Toast.makeText(CusFeedbackActivity.this,
                                 "Thanks for your feedback!",
                                 Toast.LENGTH_SHORT).show();
@@ -291,12 +278,56 @@ public class CusFeedbackActivity extends AppCompatActivity {
                         navigateHome();
                     });
         } catch (Exception e) {
-            Log.e(TAG, "Error preparing feedback data: " + e.getMessage());
-            // Show error but still navigate
+            // Handle error gracefully
             Toast.makeText(CusFeedbackActivity.this,
                     "Thanks for your feedback!",
                     Toast.LENGTH_SHORT).show();
             updateOrderAsReviewed(orderId);
+            navigateHome();
+        }
+    }
+
+    // Save anonymous feedback from customers who are not ordering
+    private void saveAnonymousFeedbackToAdminNode(int rating, String comment) {
+        try {
+            com.google.firebase.database.FirebaseDatabase db = 
+                    com.google.firebase.database.FirebaseDatabase.getInstance(DB_URL);
+            
+            // Create feedback object with anonymous user information
+            java.util.Map<String, Object> feedback = new java.util.HashMap<>();
+            feedback.put("feedbackId", db.getReference("feedbacks").push().getKey());
+            feedback.put("orderId", "anonymous");
+            feedback.put("riderEmail", "anonymous");
+            feedback.put("customerName", "Anonymous");
+            feedback.put("rating", (double) rating);
+            feedback.put("comment", comment);
+            feedback.put("timestamp", System.currentTimeMillis());
+            feedback.put("flagged", false);
+            feedback.put("isAnonymous", true);
+
+            // Save feedback to database
+            db.getReference("feedbacks")
+                    .push()
+                    .setValue(feedback)
+                    .addOnSuccessListener(unused -> {
+                        // Show success message and go back home
+                        Toast.makeText(CusFeedbackActivity.this,
+                                "Thanks for your feedback!",
+                                Toast.LENGTH_SHORT).show();
+                        navigateHome();
+                    })
+                    .addOnFailureListener(e -> {
+                        // Even if save fails, show success and go back
+                        Toast.makeText(CusFeedbackActivity.this,
+                                "Thanks for your feedback!",
+                                Toast.LENGTH_SHORT).show();
+                        navigateHome();
+                    });
+        } catch (Exception e) {
+            // Handle error gracefully
+            Toast.makeText(CusFeedbackActivity.this,
+                    "Thanks for your feedback!",
+                    Toast.LENGTH_SHORT).show();
             navigateHome();
         }
     }

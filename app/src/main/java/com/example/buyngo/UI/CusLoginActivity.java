@@ -16,6 +16,7 @@ public class CusLoginActivity extends AppCompatActivity {
     private EditText emailEditText;
     private EditText passwordEditText;
     private Button loginButton;
+    // Firebase Auth handles email/password verification
     private FirebaseAuth firebaseAuth;
 
     @Override
@@ -33,10 +34,14 @@ public class CusLoginActivity extends AppCompatActivity {
 
         loginButton.setOnClickListener(v -> performLogin());
 
+        // "Don't have account?" link goes to signup
         findViewById(R.id.signupLink).setOnClickListener(v ->
                 startActivity(new Intent(this, CusSignupActivity.class)));
     }
 
+    /**
+     * Validate email/password and verify with Firebase Auth
+     */
     private void performLogin() {
         String email = emailEditText.getText().toString().trim();
         String password = passwordEditText.getText().toString().trim();

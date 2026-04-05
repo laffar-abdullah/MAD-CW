@@ -14,19 +14,6 @@ import com.example.buyngo.R;
 import java.text.DateFormat;
 import java.util.List;
 
-/**
- *
- * Each card is inflated from {@code item_delivery_history.xml} and populated
- * with the order snapshot that was archived when the delivery was marked
- * "Delivered" in {@link RidStatusUpdateActivity}.
- *
-
- *
- *  IMPROVEMENT — onResume re-renders the list so newly completed deliveries
- *  appear immediately when the rider returns from the status update screen.
- *  (This was already present in the original; kept unchanged.)
- * ───────────────────────────────────────────────────────────────────────────
- */
 public class RidDeliveryHistoryActivity extends AppCompatActivity {
 
     // Container that receives the dynamically inflated history cards.
@@ -41,7 +28,7 @@ public class RidDeliveryHistoryActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Restrict history screen to logged-in riders only.
+        // Check if rider is logged in
         if (!RiderSessionStore.isLoggedIn(this)) {
             startActivity(new Intent(this, RidLoginActivity.class));
             finish();
@@ -50,25 +37,16 @@ public class RidDeliveryHistoryActivity extends AppCompatActivity {
 
         setContentView(R.layout.rid_delivery_history);
 
-        // Bind views.
+        // Bind views and setup toolbar
         historyContainer = findViewById(R.id.historyContainer);
         txtEmptyHistory  = findViewById(R.id.txtEmptyHistory);
-
-        // Toolbar with back navigation.
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setNavigationOnClickListener(v -> finish());
-
-        // ── Bottom navigation ──────────────────────────────────────────────
-        // "History" tab is the current screen — self-navigation would
-        // create a duplicate activity; pressing it simply refreshes the list.
         findViewById(R.id.navDashboard).setOnClickListener(v ->
                 startActivity(new Intent(this, RidDashboardActivity.class)));
 
-        // BUG FIX (minor): original wired navHistory to a new History intent
-        // while already ON the history screen — this stacked another copy of
-        // the same activity on the back stack.
-        // FIX: tapping the active "History" tab now just re-renders the list.
+        // Re-render list on history tab tap
         findViewById(R.id.navHistory).setOnClickListener(v -> renderHistory());
 
         findViewById(R.id.navReviews).setOnClickListener(v ->
@@ -88,19 +66,12 @@ public class RidDeliveryHistoryActivity extends AppCompatActivity {
         renderHistory();
     }
 
-    // ── Private helpers ─────────────────────────────────────────────────────
 
     /**
-     * Clears any previous cards and inflates one card per completed delivery,
-     * ordered newest-first.
-     *
-     * BUG FIX: historyContainer.removeAllViews() is now called ONLY when
-     * records exist, after we have confirmed txtEmptyHistory should be hidden.
-     * When the list is empty we update visibility without touching the
-     * container, so the empty-state TextView (which lives outside the
-     * container in the fixed layout) is always reachable.
+     * Display all delivered orders for the current rider
      */
     private void renderHistory() {
+        // Get current logged-in rider information
         RiderSessionStore.RiderProfile profile = RiderSessionStore.getCurrentRider(this);
         if (profile == null) {
             startActivity(new Intent(this, RidLoginActivity.class));
@@ -108,19 +79,16 @@ public class RidDeliveryHistoryActivity extends AppCompatActivity {
             return;
         }
 
-        // IMPORTANT: Fetch DIRECTLY from Firebase, not from session/local storage
-        // This ensures we get ALL past delivered orders, even from previous login sessions
+        // Fetch delivered orders from Firebase database
         FirebaseRiderRepository.getDeliveredOrdersForRider(
                 profile.email,
                 new FirebaseRiderRepository.ResultCallback<List<FirebaseRiderRepository.RiderOrder>>() {
                     @Override
                     public void onSuccess(List<FirebaseRiderRepository.RiderOrder> records) {
-                        android.util.Log.d("RidDeliveryHistory", "onSuccess called with " + (records != null ? records.size() : "null") + " records");
-                        
-                        // Ensure UI updates run on the main thread
+                        // Update UI on main thread
                         runOnUiThread(() -> {
+                            // If no orders found, show empty state message
                             if (records == null || records.isEmpty()) {
-                                android.util.Log.d("RidDeliveryHistory", "No records found, showing empty state");
                                 txtEmptyHistory.setVisibility(View.VISIBLE);
                                 historyContainer.removeAllViews();
                                 return;
@@ -131,6 +99,7 @@ public class RidDeliveryHistoryActivity extends AppCompatActivity {
                             txtEmptyHistory.setVisibility(View.GONE);
                             historyContainer.removeAllViews();
 
+                            // Create card for each delivered order
                             LayoutInflater inflater = LayoutInflater.from(RidDeliveryHistoryActivity.this);
                             DateFormat dateFormat = android.text.format.DateFormat
                                     .getMediumDateFormat(RidDeliveryHistoryActivity.this);
@@ -143,6 +112,7 @@ public class RidDeliveryHistoryActivity extends AppCompatActivity {
                                     View card = inflater.inflate(
                                             R.layout.item_delivery_history, historyContainer, false);
 
+                                    // Bind card views
                                     TextView txtOrderId = card.findViewById(R.id.txtHistoryOrderId);
                                     TextView txtCustomer = card.findViewById(R.id.txtHistoryCustomer);
                                     TextView txtAddress = card.findViewById(R.id.txtHistoryAddress);
@@ -175,22 +145,22 @@ public class RidDeliveryHistoryActivity extends AppCompatActivity {
                                     } else {
                                         addressInfo.append("Address: Not provided");
                                     }
-                                    
+
+                                    // Add phone number if available
                                     if (record.customerPhone != null && !record.customerPhone.isEmpty()) {
                                         addressInfo.append("\nPhone: ").append(record.customerPhone);
                                     }
-                                    
-                                    // Add items display
+
                                     String itemsDisplay = formatItemsList(record.itemsList, record.items);
                                     if (!itemsDisplay.isEmpty()) {
                                         addressInfo.append("\nItems: ").append(itemsDisplay);
                                     }
-                                    
-                                    // Add total display
+
+                                    // Add order total
                                     if (record.totalAmount > 0) {
                                         addressInfo.append("\nTotal: ").append(String.format("Rs. %.2f", record.totalAmount));
                                     }
-                                    
+
                                     txtAddress.setText(addressInfo.toString());
                                     txtDate.setText("Date: " + dateFormat.format(record.deliveredAt));
 
@@ -216,7 +186,7 @@ public class RidDeliveryHistoryActivity extends AppCompatActivity {
 
                     @Override
                     public void onError(String message) {
-                        android.util.Log.e("RidDeliveryHistory", "onError called: " + message);
+                        // Show empty state on error
                         txtEmptyHistory.setVisibility(View.VISIBLE);
                         historyContainer.removeAllViews();
                     }
@@ -226,9 +196,9 @@ public class RidDeliveryHistoryActivity extends AppCompatActivity {
     // Helper method to format items list
     private String formatItemsList(java.util.List<Object> itemsList, java.util.Map<String, Integer> itemsMap) {
         StringBuilder sb = new StringBuilder();
-        
+
         if (itemsList != null && !itemsList.isEmpty()) {
-            // Try to format from itemsList
+            // Format from itemsList
             for (Object item : itemsList) {
                 if (item instanceof java.util.Map) {
                     java.util.Map<String, Object> itemMap = (java.util.Map<String, Object>) item;

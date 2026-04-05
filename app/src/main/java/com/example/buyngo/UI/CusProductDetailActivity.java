@@ -24,6 +24,7 @@ public class CusProductDetailActivity extends AppCompatActivity {
     private TextView productPrice;
     private TextView productDescription;
     private EditText quantityInput;
+    // Firebase connection - read product details
     private DatabaseReference db;
     private Product currentProduct;
     private String productId;
@@ -33,6 +34,7 @@ public class CusProductDetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.cus_product_detail);
 
+        // Connect to Firebase to read product data
         db = FirebaseDatabase.getInstance().getReference();
 
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -45,6 +47,7 @@ public class CusProductDetailActivity extends AppCompatActivity {
         productDescription = findViewById(R.id.productDescription);
         quantityInput = findViewById(R.id.quantityInput);
 
+        // Get product ID passed from CusHomeActivity
         Intent intent = getIntent();
         productId = intent.getStringExtra("productId");
 
@@ -54,8 +57,10 @@ public class CusProductDetailActivity extends AppCompatActivity {
             return;
         }
 
+        // Load product details from Firebase
         loadProductFromFirebase(productId);
 
+        // When "Add to Cart" clicked, save to CartStore and return
         findViewById(R.id.addToCartButton).setOnClickListener(v -> {
             if (currentProduct == null) {
                 Toast.makeText(this, "Product data not loaded yet", Toast.LENGTH_SHORT).show();
@@ -70,6 +75,7 @@ public class CusProductDetailActivity extends AppCompatActivity {
                 return;
             }
 
+            // Add to CartStore (local phone storage)
             CartStore.addToCart(
                     this,
                     currentProduct.getId(),
@@ -85,7 +91,9 @@ public class CusProductDetailActivity extends AppCompatActivity {
         });
     }
 
-    // Fetch product details from Firebase database
+    /**
+     * Load product details from Firebase database
+     */
     private void loadProductFromFirebase(String productId) {
         db.child("products").child(productId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override

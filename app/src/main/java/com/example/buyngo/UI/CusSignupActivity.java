@@ -14,6 +14,27 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.FirebaseDatabase;
 
+/**
+ * ═══════════════════════════════════════════════════════════════════════════════
+ *                         CUSTOMER SIGNUP ACTIVITY
+ * ═══════════════════════════════════════════════════════════════════════════════
+ * 
+ * WHAT THIS SCREEN DOES:
+ * This is the first screen customers see. They enter their info (name, email,
+ * password, phone, address) to create an account.
+ *  * HOW IT CONNECTS TO FIREBASE:
+ * 1. Customer taps "Create Account" with form filled in
+ * 2. performSignup() validates all fields
+ * 3. firebaseAuth.createUserWithEmailAndPassword() - Creates auth account in Firebase
+ * 4. If success, saveUserProfile() creates a User model object
+ * 5. Saves User object to Firebase database at /users/{userId}/
+ * 6. Now customer is registered and can login * DATA FLOW:
+ * Customer Form Input → Validation → Firebase Auth (email/password)
+ *                         ↓
+ *                   User Model Creation
+ *                         ↓
+ *                   Firebase Database Save (/users/{userId}/) * KEY FIREBASE CONNECTIONS:
+ * - FirebaseAuth: Stores email and password securely * - FirebaseDatabase: Stores user profile info (name, phone, address) */
 public class CusSignupActivity extends AppCompatActivity {
     private EditText nameEditText;
     private EditText emailEditText;
@@ -22,17 +43,19 @@ public class CusSignupActivity extends AppCompatActivity {
     private EditText addressEditText;
     private EditText cityEditText;
     private Button signupButton;
-    private FirebaseAuth firebaseAuth;
-    private FirebaseDatabase firebaseDatabase;
+    private FirebaseAuth firebaseAuth;                // Manages login/signup
+    private FirebaseDatabase firebaseDatabase;       // Stores user profiles
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.cus_signup);
 
-        firebaseAuth = FirebaseAuth.getInstance();
-        firebaseDatabase = FirebaseDatabase.getInstance();
+        // Connect to Firebase services
+        firebaseAuth = FirebaseAuth.getInstance();        // For authentication
+        firebaseDatabase = FirebaseDatabase.getInstance(); // For user data
 
+        // Bind all form fields from layout
         nameEditText = findViewById(R.id.nameEditText);
         emailEditText = findViewById(R.id.emailEditText);
         passwordEditText = findViewById(R.id.passwordEditText);
@@ -41,12 +64,16 @@ public class CusSignupActivity extends AppCompatActivity {
         cityEditText = findViewById(R.id.cityEditText);
         signupButton = findViewById(R.id.signupButton);
 
+        // When "Create Account" tapped, start signup process
         signupButton.setOnClickListener(v -> performSignup());
 
+        // "Already have account?" link goes back to login
         findViewById(R.id.loginLink).setOnClickListener(v -> finish());
     }
 
-    // Validate input and create account in Firebase
+    /**
+     * Validates all form fields and creates account in Firebase
+     */
     private void performSignup() {
         String fullName = nameEditText.getText().toString().trim();
         String email = emailEditText.getText().toString().trim();

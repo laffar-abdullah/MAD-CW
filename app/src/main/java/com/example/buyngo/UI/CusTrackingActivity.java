@@ -26,8 +26,8 @@ import java.util.List;
 public class CusTrackingActivity extends AppCompatActivity {
 
     private LinearLayout ordersContainer;
-    private FirebaseAuth firebaseAuth;
-    private FirebaseDatabase firebaseDatabase;
+    private FirebaseAuth firebaseAuth;              // Get logged-in customer
+    private FirebaseDatabase firebaseDatabase;     // Read orders from Firebase
     private static final String TAG = "CusTracking";
     private List<Order> activeOrders = new ArrayList<>();
     private List<Order> completedOrders = new ArrayList<>();
@@ -46,16 +46,20 @@ public class CusTrackingActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         toolbar.setNavigationOnClickListener(v -> finish());
 
+        // Load customer orders from Firebase (with real-time updates)
         loadCustomerOrders();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        // Refresh orders when returning to this screen
         loadCustomerOrders();
     }
 
-    // Load all orders for the logged-in customer from Firebase
+    /**
+     * Load all orders for logged-in customer from Firebase with real-time updates
+     */
     private void loadCustomerOrders() {
         if (firebaseAuth.getCurrentUser() == null) {
             Toast.makeText(this, "Please log in first", Toast.LENGTH_SHORT).show();

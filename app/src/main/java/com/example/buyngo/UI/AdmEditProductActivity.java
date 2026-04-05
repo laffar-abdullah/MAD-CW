@@ -1,10 +1,13 @@
 package com.example.buyngo.UI;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.TextUtils;
+import android.util.Base64;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -26,13 +29,13 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -42,14 +45,14 @@ import java.util.Map;
 public class AdmEditProductActivity extends AppCompatActivity {
 
     private static final String DB_URL = "https://buyngo-5b43e-default-rtdb.firebaseio.com/";
+    private static final int MAX_IMAGE_PX = 600;
 
     private EditText etName, etPrice, etCategory, etDescription, etStock, etBarcode;
     private ImageView ivProductImage;
     private ProgressBar progressBar;
     private DatabaseReference db;
-    private StorageReference storageRef;
     private String productId;
-    private String existingImageUrl = ""; // keeps current image if user doesn't change it
+    private String existingImageUrl = "";
 
     private Uri selectedImageUri = null;
     private Uri cameraImageUri   = null;
@@ -87,8 +90,8 @@ public class AdmEditProductActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.adm_edit_product);
 
-        db         = FirebaseDatabase.getInstance(DB_URL).getReference();
-        storageRef = FirebaseStorage.getInstance().getReference("product_images");
+        // Firebase Realtime Database only — no Storage needed
+        db = FirebaseDatabase.getInstance(DB_URL).getReference();
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -96,7 +99,6 @@ public class AdmEditProductActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         toolbar.setNavigationOnClickListener(v -> finish());
 
-        // Bind views
         etName         = findViewById(R.id.etProductName);
         etPrice        = findViewById(R.id.etProductPrice);
         etCategory     = findViewById(R.id.etProductCategory);
@@ -113,10 +115,8 @@ public class AdmEditProductActivity extends AppCompatActivity {
             return;
         }
 
-        // Image picker button
         findViewById(R.id.btnPickImage).setOnClickListener(v -> showImagePickerDialog());
 
-        // Barcode scanner button
         findViewById(R.id.btnScanBarcode).setOnClickListener(v -> {
             ScanOptions options = new ScanOptions();
             options.setPrompt("Scan new barcode for product");
@@ -125,7 +125,6 @@ public class AdmEditProductActivity extends AppCompatActivity {
             barcodeLauncher.launch(options);
         });
 
-        // Update button
         findViewById(R.id.btnUpdateProductSubmit).setOnClickListener(v -> updateProduct());
 
         loadProductData();
@@ -198,11 +197,13 @@ public class AdmEditProductActivity extends AppCompatActivity {
                         if (stock       != null) etStock.setText(
                                 String.valueOf(((Long) stock).intValue()));
 
-                        // Load existing product image
+                        // Load existing product image — supports both Base64 and plain URLs
                         if (imageUrl != null && !imageUrl.isEmpty()) {
                             existingImageUrl = imageUrl;
                             Glide.with(AdmEditProductActivity.this)
-                                    .load(imageUrl)
+                                    .load(imageUrl.startsWith("data:image")
+                                            ? decodeBase64ToBitmap(imageUrl)
+                                            : imageUrl)
                                     .placeholder(R.drawable.ic_launcher_foreground)
                                     .centerCrop()
                                     .into(ivProductImage);
@@ -257,32 +258,76 @@ public class AdmEditProductActivity extends AppCompatActivity {
         progressBar.setVisibility(View.VISIBLE);
         findViewById(R.id.btnUpdateProductSubmit).setEnabled(false);
 
-        // If a new image was selected, upload it first
         if (selectedImageUri != null) {
-            uploadImageThenUpdate(name, price, category, description, stock, barcode);
+            // New image selected — convert to Base64
+            String base64Image = uriToBase64(selectedImageUri);
+            if (base64Image == null) {
+                progressBar.setVisibility(View.GONE);
+                findViewById(R.id.btnUpdateProductSubmit).setEnabled(true);
+                Toast.makeText(this, "Failed to process image", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            saveUpdatesToDatabase(name, price, category, description, stock, barcode,
+                    "data:image/jpeg;base64," + base64Image);
         } else {
-            // Keep the existing image URL
+            // Keep the existing image URL (could be Base64 or empty)
             saveUpdatesToDatabase(name, price, category, description,
                     stock, barcode, existingImageUrl);
         }
     }
 
-    private void uploadImageThenUpdate(String name, double price, String category,
-                                       String description, int stock, String barcode) {
-        String fileName = "product_" + System.currentTimeMillis() + ".jpg";
-        StorageReference imageRef = storageRef.child(fileName);
+    /**
+     * Down-samples the image from URI, encodes as JPEG Base64.
+     */
+    private String uriToBase64(Uri uri) {
+        try {
+            BitmapFactory.Options opts = new BitmapFactory.Options();
+            opts.inJustDecodeBounds = true;
+            try (InputStream probe = getContentResolver().openInputStream(uri)) {
+                BitmapFactory.decodeStream(probe, null, opts);
+            }
+            int sampleSize = 1;
+            int w = opts.outWidth, h = opts.outHeight;
+            while (w / sampleSize > MAX_IMAGE_PX || h / sampleSize > MAX_IMAGE_PX) {
+                sampleSize *= 2;
+            }
+            opts.inJustDecodeBounds = false;
+            opts.inSampleSize = sampleSize;
 
-        imageRef.putFile(selectedImageUri)
-                .addOnSuccessListener(taskSnapshot ->
-                        imageRef.getDownloadUrl().addOnSuccessListener(uri ->
-                                saveUpdatesToDatabase(name, price, category, description,
-                                        stock, barcode, uri.toString())))
-                .addOnFailureListener(e -> {
-                    progressBar.setVisibility(View.GONE);
-                    findViewById(R.id.btnUpdateProductSubmit).setEnabled(true);
-                    Toast.makeText(this, "Image upload failed: " + e.getMessage(),
-                            Toast.LENGTH_LONG).show();
-                });
+            Bitmap bitmap;
+            try (InputStream stream = getContentResolver().openInputStream(uri)) {
+                bitmap = BitmapFactory.decodeStream(stream, null, opts);
+            }
+            if (bitmap == null) return null;
+
+            int maxDim = Math.max(bitmap.getWidth(), bitmap.getHeight());
+            if (maxDim > MAX_IMAGE_PX) {
+                float scale = (float) MAX_IMAGE_PX / maxDim;
+                int newW = Math.round(bitmap.getWidth()  * scale);
+                int newH = Math.round(bitmap.getHeight() * scale);
+                bitmap = Bitmap.createScaledBitmap(bitmap, newW, newH, true);
+            }
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 75, baos);
+            return Base64.encodeToString(baos.toByteArray(), Base64.NO_WRAP);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Decodes a data-URI Base64 string back to a Bitmap for Glide.
+     */
+    private Bitmap decodeBase64ToBitmap(String dataUri) {
+        try {
+            String base64 = dataUri.substring(dataUri.indexOf(",") + 1);
+            byte[] bytes = Base64.decode(base64, Base64.NO_WRAP);
+            return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private void saveUpdatesToDatabase(String name, double price, String category,

@@ -17,7 +17,9 @@ import com.google.firebase.database.ValueEventListener;
 
 public class CusProfileActivity extends AppCompatActivity {
     private TextView tvProfileName, tvFullName, tvEmail, tvPhoneNumber, tvAddress;
+    // Get logged-in customer ID
     private FirebaseAuth firebaseAuth;
+    // Read customer's profile data
     private FirebaseDatabase firebaseDatabase;
 
     @Override
@@ -39,6 +41,7 @@ public class CusProfileActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         toolbar.setNavigationOnClickListener(v -> finish());
 
+        // Logout button - sign out from Firebase and go back to login
         findViewById(R.id.btnLogout).setOnClickListener(v -> {
             firebaseAuth.signOut();
             Intent intent = new Intent(this, AuthWelcomeActivity.class);
@@ -46,10 +49,13 @@ public class CusProfileActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
+        // Load and display customer's profile info
         loadUserProfile();
     }
 
-    // Load profile data for logged-in user from Firebase
+    /**
+     * Read logged-in customer's profile from Firebase and display it
+     */
     private void loadUserProfile() {
         FirebaseUser currentUser = firebaseAuth.getCurrentUser();
 

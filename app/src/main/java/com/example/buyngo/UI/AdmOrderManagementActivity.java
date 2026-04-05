@@ -221,7 +221,7 @@ public class AdmOrderManagementActivity extends AppCompatActivity {
             tvAssignedRider.setVisibility(View.GONE);
         }
 
-        // LOGIC: New workflow - Assign Rider FIRST, then Confirm
+        // Workflow: Assign Rider FIRST, then Confirm
         if (order.getStatus() == null || order.getStatus().equals("Pending")) {
             // For Pending orders, check if rider is already assigned
             

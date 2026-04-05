@@ -74,10 +74,8 @@ public class RidProfileActivity extends AppCompatActivity {
         // ── Bottom navigation ─────────────────────────────────────────────────
         findViewById(R.id.navDashboard).setOnClickListener(v ->
                 startActivity(new Intent(this, RidDashboardActivity.class)));
-
         findViewById(R.id.navHistory).setOnClickListener(v ->
                 startActivity(new Intent(this, RidDeliveryHistoryActivity.class)));
-
         findViewById(R.id.navReviews).setOnClickListener(v ->
                 startActivity(new Intent(this, RidReviewsActivity.class)));
 
@@ -144,7 +142,6 @@ public class RidProfileActivity extends AppCompatActivity {
                         int count = orders.size();
                         txtTotalDeliveriesValue.setText(count + " Deliveries");
                     }
-
                     @Override
                     public void onError(String message) {
                         txtTotalDeliveriesValue.setText("— Deliveries");
@@ -171,7 +168,6 @@ public class RidProfileActivity extends AppCompatActivity {
                         txtReviewsSummaryValue.setText(
                                 String.format(java.util.Locale.US, "%.1f ★ ", avg));
                     }
-
                     @Override
                     public void onError(String message) {
                         txtReviewsSummaryValue.setText(" ★");

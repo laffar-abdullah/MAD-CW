@@ -1,6 +1,4 @@
 package com.example.buyngo.Model;
-
-// Represents a product available in the store
 public class Product {
     private String id;
     private String name;
