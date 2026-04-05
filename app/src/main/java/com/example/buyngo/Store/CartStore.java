@@ -1,4 +1,4 @@
-﻿ackage com.example.buyngo.Store;
+ackage com.example.buyngo.Store;
 
 import android.content.Context;
 import android.content.SharedPreferences;

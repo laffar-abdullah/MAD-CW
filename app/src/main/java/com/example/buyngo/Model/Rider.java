@@ -1,4 +1,4 @@
-﻿ackage com.example.buyngo.Model;
+ackage com.example.buyngo.Model;
 
 public class Rider {
     private String riderId;

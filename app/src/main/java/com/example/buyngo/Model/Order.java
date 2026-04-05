@@ -1,4 +1,4 @@
-﻿ackage com.example.buyngo.Model;
+ackage com.example.buyngo.Model;
 
 import java.util.ArrayList;
 import java.util.HashMap;

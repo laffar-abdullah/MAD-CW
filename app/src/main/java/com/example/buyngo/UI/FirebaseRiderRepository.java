@@ -1,4 +1,4 @@
-﻿ackage com.example.buyngo.UI;
+ackage com.example.buyngo.UI;
 
 import androidx.annotation.NonNull;
 import android.net.Uri;

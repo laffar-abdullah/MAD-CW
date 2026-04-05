@@ -1,4 +1,4 @@
-﻿ackage com.example.buyngo.UI;
+ackage com.example.buyngo.UI;
 
 import android.content.Intent;
 import android.graphics.Typeface;
