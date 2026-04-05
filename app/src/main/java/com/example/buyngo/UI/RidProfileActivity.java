@@ -110,12 +110,6 @@ import java.util.List;
  */
 public class RidProfileActivity extends AppCompatActivity {
 
-    // ── Photo picker launcher ────────────────────────────────────────────────
-    // Registered in onCreate(); result handled in handleProfileImageSelected().
-    private ActivityResultLauncher<String> profileImagePicker;
-
-    private static final String TAG = "RidProfile";
-
     // ── Views — all IDs must match rid_profile.xml exactly ──────────────────
     private TextView  txtProfileNameHeader;
     private TextView  txtFullNameValue;
@@ -123,10 +117,8 @@ public class RidProfileActivity extends AppCompatActivity {
     private TextView  txtPhoneValue;
     private TextView  txtVehicleValue;
     private TextView  txtTotalDeliveriesValue;   // shows "N Deliveries"
-    private TextView  txtReviewsSummaryValue;    // shows "4.5 ★ (N reviews)"
+    private TextView  txtReviewsSummaryValue;    // shows "4.5 ★"
     private ImageView imgProfilePicture;
-    private Button    btnChangePhoto;
-    private Button    btnChangePassword;
 
     // ── Firebase Realtime Database ───────────────────────────────────────────
     // Used only for the password-change flow (reads /riders node directly).
@@ -147,14 +139,23 @@ public class RidProfileActivity extends AppCompatActivity {
 
         setContentView(R.layout.rid_profile);
 
+    private static final String TAG = "RidProfile";
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        // Session guard — unauthenticated users go to login immediately.
+        if (!RiderSessionStore.isLoggedIn(this)) {
+            startActivity(new Intent(this, RidLoginActivity.class));
+            finish();
+            return;
+        }
+
+        setContentView(R.layout.rid_profile);
+
         // Initialise Firebase Realtime Database root reference (for password changes).
         dbRef = FirebaseDatabase.getInstance().getReference();
-
-        // Register the photo picker — Android handles the gallery UI,
-        // we just receive the selected URI in handleProfileImageSelected().
-        profileImagePicker = registerForActivityResult(
-                new ActivityResultContracts.GetContent(),
-                this::handleProfileImageSelected);
 
         // ── Toolbar ──────────────────────────────────────────────────────────
         // setSupportActionBar wires up the Toolbar as the ActionBar so the
@@ -172,20 +173,14 @@ public class RidProfileActivity extends AppCompatActivity {
         txtTotalDeliveriesValue = findViewById(R.id.txtTotalDeliveriesValue);
         txtReviewsSummaryValue  = findViewById(R.id.txtReviewsSummaryValue);
 
-        // BUG 1 FIX: these were commented-out in the original, causing NPE.
-        imgProfilePicture = findViewById(R.id.imgProfilePicture);
+    // BUG 1 FIX: these were commented-out in the original, causing NPE.
+    imgProfilePicture = findViewById(R.id.imgProfilePicture);
 
-        // BUG 2 FIX: was R.id.btnChangePass (wrong ID), field stayed null.
-        btnChangePassword = findViewById(R.id.btnChangePassword);
+    // BUG 2 FIX: was R.id.btnChangePass (wrong ID), field stayed null.
+    btnChangePassword = findViewById(R.id.btnChangePassword);
 
-        // Both the avatar image and the "Change Photo" button open the picker.
-        imgProfilePicture.setOnClickListener(v -> profileImagePicker.launch("image/*"));
-        btnChangePhoto.setOnClickListener(v    -> profileImagePicker.launch("image/*"));
-
-        // BUG 3 FIX: calls our own dialog which queries Firebase directly.
-        btnChangePassword.setOnClickListener(v -> showChangePasswordDialog());
-
-        // ── Bottom navigation ─────────────────────────────────────────────────
+    // BUG 3 FIX: calls our own dialog which queries Firebase directly.
+    btnChangePassword.setOnClickListener(v -> showChangePasswordDialog());        // ── Bottom navigation ─────────────────────────────────────────────────
         // Each tab navigates to the corresponding screen, EXCEPT navProfile
         // which refreshes data in-place (BUG 4 FIX — was launching a duplicate).
         findViewById(R.id.navDashboard).setOnClickListener(v ->
@@ -364,13 +359,11 @@ public class RidProfileActivity extends AppCompatActivity {
                         }
                         double avg = total / reviews.size();
 
-                        // Format to one decimal place.  e.g. "4.5 ★  (8 reviews)"
+                        // Format to one decimal place.  e.g. "4.5 ★"
                         String summary = String.format(
                                 java.util.Locale.US,
-                                "%.1f \u2605  (%d %s)",
-                                avg,
-                                reviews.size(),
-                                reviews.size() == 1 ? "review" : "reviews");
+                                "%.1f ★",
+                                avg);
 
                         Log.d(TAG, "Average rating: " + avg + " | Summary: " + summary);
                         txtReviewsSummaryValue.setText(summary);
@@ -383,27 +376,6 @@ public class RidProfileActivity extends AppCompatActivity {
                         txtReviewsSummaryValue.setText("— reviews");
                     }
                 });
-    }
-
-    // ════════════════════════════════════════════════════════════════════════
-    // Photo picker
-    // ════════════════════════════════════════════════════════════════════════
-    /**
-     * Called automatically when the rider selects an image from the gallery.
-     * The image is displayed locally via Glide — no Firebase Storage upload
-     * is performed here (add your upload logic if Storage is configured).
-     *
-     * @param imageUri URI returned by the system photo picker, or null if cancelled
-     */
-    private void handleProfileImageSelected(Uri imageUri) {
-        if (imageUri == null || imgProfilePicture == null) return;
-
-        com.bumptech.glide.Glide.with(this)
-                .load(imageUri)
-                .placeholder(R.mipmap.ic_launcher_round)
-                .into(imgProfilePicture);
-
-        Toast.makeText(this, "Profile photo updated locally", Toast.LENGTH_SHORT).show();
     }
 
     // ════════════════════════════════════════════════════════════════════════

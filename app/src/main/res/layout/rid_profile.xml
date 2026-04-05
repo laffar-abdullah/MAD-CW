@@ -63,8 +63,7 @@
                 android:paddingBottom="24dp">
 
                 <!--
-                    imgProfilePicture — loaded by Glide in bindRiderData().
-                    Tapping it launches the system photo picker.
+                    imgProfilePicture — shows rider's profile picture
                     ID: R.id.imgProfilePicture
                 -->
                 <ImageView
@@ -74,15 +73,8 @@
                     android:src="@mipmap/ic_launcher_round"
                     android:scaleType="centerCrop"
                     android:contentDescription="Profile picture"
-                    android:clickable="true"
-                    android:focusable="true"
                     android:background="@color/primary_green_dark"
                     android:padding="2dp" />
-
-                <!--
-                    btnChangePhoto — also launches the photo picker.
-                    ID: R.id.btnChangePhoto
-                -->
 
                 <!-- Rider's name — set in bindRiderData() from RiderSessionStore -->
                 <TextView
@@ -181,7 +173,7 @@
                         android:padding="16dp">
 
                         <!--
-                            Reviews summary — e.g. "4.5 ★  (8 reviews)"
+                            Reviews summary — e.g. "4.5 ★"
                             Set by FirebaseRiderRepository.getReviewsForRider()
                             called from loadReviewsSummary() in Java.
                             ID: R.id.txtReviewsSummaryValue
