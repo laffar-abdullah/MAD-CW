@@ -39,7 +39,7 @@ public class CusCartActivity extends AppCompatActivity {
 
         // When "Checkout" tapped, validate cart and go to payment screen
         checkoutButton.setOnClickListener(v -> {
-            // Get items from CartStore (local storage)
+            // Get items from CartStore
             List<CartStore.CartItem> items = CartStore.getCartItems(this);
             if (items.isEmpty()) {
                 Toast.makeText(this, "Cart is empty", Toast.LENGTH_SHORT).show();

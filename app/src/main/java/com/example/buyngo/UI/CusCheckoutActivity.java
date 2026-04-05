@@ -143,7 +143,7 @@ public class CusCheckoutActivity extends AppCompatActivity {
     }
 
     /**
-     * **NEW: Properly set up payment method toggle with initial state handling**
+     *  Properly set up payment method toggle with initial state handling**
      */
     private void setupPaymentMethodToggle() {
         if (paymentRadioGroup == null || radioCard == null || radioCOD == null) {
@@ -165,7 +165,7 @@ public class CusCheckoutActivity extends AppCompatActivity {
     }
 
     /**
-     * **NEW: Helper method to show/hide card fields based on selection**
+     *  Helper method to show/hide card fields based on selection**
      */
     private void updateCardVisibility() {
         if (radioCard != null && radioCard.isChecked()) {

@@ -11,19 +11,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.buyngo.R;
 
-/**
- * RidLoginActivity — entry point for the rider flow.
- *
- * Shows an email / password form and delegates authentication to
- * {@link RiderSessionStore}.  On success the rider is taken to
- * {@link RidDashboardActivity} and this activity is finished so the back
- * button does not return to the login screen.
- *
- * ── CHANGES FROM ORIGINAL ──────────────────────────────────────────────────
- *  • No logic changes needed — this activity was already correct.
- *  • Added comments explaining each key decision.
- * ───────────────────────────────────────────────────────────────────────────
- */
+
 public class RidLoginActivity extends AppCompatActivity {
 
     private EditText riderEmailEditText;
