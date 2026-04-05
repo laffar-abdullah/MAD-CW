@@ -1,63 +1,11 @@
-ackage com.example.buyngo.Model;
+package com.example.buyngo.Model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * ═══════════════════════════════════════════════════════════════════════════════
- *                             ORDER MODEL FILE
- * ═══════════════════════════════════════════════════════════════════════════════
- * 
- * WHAT THIS FILE DOES:
- * This file defines the structure of a customer's order. It contains everything
- * about an order: what items, total price, customer info, rider info, and status.
- * 
- * HOW IT CONNECTS TO FIREBASE:
- * 1. Customer clicks "Place Order" in CusCheckoutActivity
- * 2. App creates an Order object with cart items, total, address
- * 3. Sets status = "Order Placed"
- * 4. Saves to Firebase: database.getReference("orders").child(orderId).setValue(order)
- * 5. Order is now in Firebase database visible to:
- *    - Admin (to assign rider)
- *    - Rider (to see delivery instructions)
- *    - Customer (to track order)
- * 
- * HOW CUSTOMER MODULE USES IT:
- * - CusCheckoutActivity: Creates order from cart and saves to Firebase
- * - CusTrackingActivity: Gets all orders for logged-in customer, displays status
- * - CusFeedbackActivity: Loads order details to show feedback for delivered order
- * - Firebase Admin: Assigns rider by updating "assignedRiderEmail" field
- * - Rider App: Updates status (Picked Up → On the Way → Delivered)
- * 
- * ORDER LIFECYCLE (STATUS TRANSITIONS):
- * "Order Placed" → "Picked Up" → "On the Way" → "Delivered" → "Delivered Successfully"
- *  (Customer made order)  (Rider got)  (Rider delivering)   (Rider done)  (Customer reviewed)
- * 
- * DATA FLOW:
- * Checkout Cart → Order Model → Firebase /orders/{orderId}/ → Customer sees in Tracking
- *                                    ↓
- *                           Admin assigns rider
- *                                    ↓
- *                           Rider updates status
- *                                    ↓
- *                           Customer sees update in real-time
- *                                    ↓
- *                           Customer submits feedback
- * 
- * KEY FIELDS:
- * - orderId: Unique identifier (e.g., "BNG-001")
- * - customerId: Links to customer who placed order
- * - customerName, customerAddress, customerPhone: Delivery information
- * - items/itemsList: Products in order and quantities
- * - totalAmount: Total price customer will pay
- * - status: Current status (see lifecycle above)
- * - assignedRiderEmail: Which rider is delivering (set by admin)
- * - paymentMethod: "Card" or "Cash"
- * - createdAt/updatedAt: Timestamps for when order created and last updated
- * ═══════════════════════════════════════════════════════════════════════════════
- */
+
 public class Order {
     private String orderId;
     private String customerId;

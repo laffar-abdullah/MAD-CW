@@ -1,4 +1,4 @@
-ackage com.example.buyngo.UI;
+ckage com.example.buyngo.UI;
 
 import android.Manifest;
 import android.content.Intent;

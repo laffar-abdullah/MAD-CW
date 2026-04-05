@@ -1,4 +1,4 @@
-ackage com.example.buyngo.Model;
+ckage com.example.buyngo.Model;
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════════
