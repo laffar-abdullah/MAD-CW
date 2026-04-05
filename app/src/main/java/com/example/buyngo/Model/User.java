@@ -1,43 +1,4 @@
 package com.example.buyngo.Model;
-
-/**
- * ═══════════════════════════════════════════════════════════════════════════════
- *                              USER MODEL FILE
- * ═══════════════════════════════════════════════════════════════════════════════
- * 
- * WHAT THIS FILE DOES:
- * This file defines the structure of customer profile data. Think of it as a
- * TEMPLATE that tells Firebase what fields should exist for each user.
- * 
- * HOW IT CONNECTS TO FIREBASE:
- * 1. When customer SIGNS UP → CusSignupActivity creates a User object
- * 2. Fills in name, email, phone, address from form
- * 3. Calls Firebase to save: database.getReference("users").child(userId).setValue(user)
- * 4. Firebase automatically converts this User object to JSON and stores it
- * 5. Result: User profile visible in Firebase Dashboard under /users/{userId}
- * 
- * HOW CUSTOMER MODULE USES IT:
- * - CusSignupActivity: Creates and saves new user during registration
- * - CusLoginActivity: Verifies email/password against Firebase Auth
- * - CusProfileActivity: Retrieves and displays user info on profile screen
- * - CusCheckoutActivity: Gets user's address to pre-fill delivery address
- * 
- * DATA FLOW:
- * Customer Signup Form → User Model → Firebase Database → /users/{userId}/
- *                                  ↓
- *                        Profile Screen Shows Data
- *                                  ↓
- *                        Checkout Uses Address
- * 
- * IMPORTANT FIELDS:
- * - userId: Unique identifier (matched with Firebase Auth UID)
- * - email: Used for login and order notifications
- * - fullName: Displayed on receipts and profiles
- * - phoneNumber: For rider to contact during delivery
- * - address: Pre-filled at checkout for delivery
- * - registrationDate: When customer joined (for admin reports)
- * ═══════════════════════════════════════════════════════════════════════════════
- */
 public class User {
     private String userId;
     private String email;
