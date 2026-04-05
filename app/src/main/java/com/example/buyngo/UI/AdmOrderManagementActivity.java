@@ -195,6 +195,7 @@ public class AdmOrderManagementActivity extends AppCompatActivity {
         TextView tvStatus = cardView.findViewById(R.id.tvStatus);
         TextView tvAssignedRider = cardView.findViewById(R.id.tvAssignedRider);
         Button btnConfirmOrder = cardView.findViewById(R.id.btnConfirmOrder);
+        Button btnAssignRider = cardView.findViewById(R.id.btnAssignRider);
 
         tvOrderId.setText("Order #" + order.getOrderId());
         tvCustomerName.setText("Customer: " + customerName);
@@ -220,14 +221,35 @@ public class AdmOrderManagementActivity extends AppCompatActivity {
             tvAssignedRider.setVisibility(View.GONE);
         }
 
-        // Only show confirm button for Pending orders
+        // Workflow: Assign Rider FIRST, then Confirm
         if (order.getStatus() == null || order.getStatus().equals("Pending")) {
-            btnConfirmOrder.setVisibility(View.VISIBLE);
-            btnConfirmOrder.setEnabled(true);
-            btnConfirmOrder.setOnClickListener(v -> confirmOrder(order.getOrderId(), tvStatus, btnConfirmOrder));
+            // For Pending orders, check if rider is already assigned
+            
+            if (order.getAssignedRiderEmail() == null || order.getAssignedRiderEmail().isEmpty()) {
+                // NO RIDER ASSIGNED YET - Show ONLY "Assign Rider" button
+                Log.d(TAG, "Order " + order.getOrderId() + " is Pending with NO rider - showing assign rider button");
+                btnAssignRider.setVisibility(View.VISIBLE);
+                btnAssignRider.setEnabled(true);
+                btnAssignRider.setOnClickListener(v ->
+                        openAssignRider(order.getOrderId(), customerName, customerAddress));
+                
+                // Hide confirm button until rider is assigned
+                btnConfirmOrder.setVisibility(View.GONE);
+            } else {
+                // RIDER ALREADY ASSIGNED - Show ONLY "Confirm" button
+                Log.d(TAG, "Order " + order.getOrderId() + " has rider assigned (" + order.getAssignedRiderEmail() + ") - showing confirm button");
+                btnConfirmOrder.setVisibility(View.VISIBLE);
+                btnConfirmOrder.setEnabled(true);
+                btnConfirmOrder.setOnClickListener(v -> confirmOrder(order.getOrderId(), tvStatus, btnConfirmOrder));
+                
+                // Hide assign rider button - already assigned
+                btnAssignRider.setVisibility(View.GONE);
+            }
         } else {
-            // Hide button for confirmed or completed orders
+            // Order is Confirmed or beyond - Hide both buttons
+            Log.d(TAG, "Order " + order.getOrderId() + " status is " + order.getStatus() + " - hiding all buttons");
             btnConfirmOrder.setVisibility(View.GONE);
+            btnAssignRider.setVisibility(View.GONE);
         }
 
         ordersContainer.addView(cardView);
