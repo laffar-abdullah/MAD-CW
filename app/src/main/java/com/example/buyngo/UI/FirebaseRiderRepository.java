@@ -1,5 +1,7 @@
 package com.example.buyngo.UI;
 
+
+
 import androidx.annotation.NonNull;
 import android.net.Uri;
 import android.util.Log;
@@ -39,6 +41,7 @@ final class FirebaseRiderRepository {
         public String name;
         public String phone;
         public String email;
+        public String birthdate;
         public String password;
         public String vehicle;
         public String vehicleNumber;
@@ -54,10 +57,10 @@ final class FirebaseRiderRepository {
         public String orderId;
         public String customerName;
         public String customerAddress;
-        public String customerPhone;      // NEW: Customer's contact number
+        public String customerPhone;
         public String status;
         public String assignedRiderEmail;
-        public java.util.List<Object> itemsList;  // Items list from Order model
+        public java.util.List<Object> itemsList;  // Items list from order model
         public java.util.Map<String, Integer> items;  // Backup items map
         public double totalAmount;  // Order total price
         public long updatedAt;
@@ -102,6 +105,7 @@ final class FirebaseRiderRepository {
             String phone,
             String vehicleType,
             String vehicleNumber,
+            String birthdate,
             String email,
             String password,
             ResultCallback<RiderAccount> callback) {
@@ -121,6 +125,7 @@ final class FirebaseRiderRepository {
                     account.riderId = riderId;
                     account.name = name;
                     account.phone = phone;
+                    account.birthdate = birthdate;
                     account.email = email;
                     account.password = password;
                     account.vehicle = vehicleType;
@@ -164,43 +169,6 @@ final class FirebaseRiderRepository {
                         e.getMessage() == null ? "Login failed" : e.getMessage()));
     }
 
-    static void updateRiderProfileImage(String email, Uri imageUri, ResultCallback<RiderAccount> callback) {
-        if (imageUri == null) {
-            callback.onError("Please choose a profile picture");
-            return;
-        }
-
-        String riderId = riderIdFromEmail(email);
-        DatabaseReference riderRef = db().child(NODE_RIDERS).child(riderId);
-        StorageReference imageRef = FirebaseStorage.getInstance()
-                .getReference()
-                .child("rider_profiles")
-                .child(riderId)
-                .child("profile.jpg");
-
-        imageRef.putFile(imageUri)
-                .addOnSuccessListener(taskSnapshot -> imageRef.getDownloadUrl()
-                        .addOnSuccessListener(downloadUri -> riderRef.get()
-                                .addOnSuccessListener(snapshot -> {
-                                    RiderAccount account = snapshot.getValue(RiderAccount.class);
-                                    if (account == null) {
-                                        callback.onError("Rider account not found");
-                                        return;
-                                    }
-
-                                    account.profileImageUrl = downloadUri.toString();
-                                    riderRef.setValue(account)
-                                            .addOnSuccessListener(unused -> callback.onSuccess(account))
-                                            .addOnFailureListener(e -> callback.onError(
-                                                    e.getMessage() == null ? "Failed to save profile picture" : e.getMessage()));
-                                })
-                                .addOnFailureListener(e -> callback.onError(
-                                        e.getMessage() == null ? "Failed to load rider account" : e.getMessage())))
-                        .addOnFailureListener(e -> callback.onError(
-                                e.getMessage() == null ? "Failed to resolve profile picture URL" : e.getMessage())))
-                .addOnFailureListener(e -> callback.onError(
-                        e.getMessage() == null ? "Failed to upload profile picture" : e.getMessage()));
-    }
 
     static void changeRiderPassword(
             String email,
@@ -358,7 +326,6 @@ final class FirebaseRiderRepository {
         });
     }
 
-    // New signature: accepts riderEmail so it can be saved when order is updated
     static void updateOrderStatus(String orderId, String newStatus, String riderEmail, VoidCallback callback) {
         DatabaseReference orderRef = db().child(NODE_ORDERS).child(orderId);
         orderRef.get()
@@ -374,6 +341,12 @@ final class FirebaseRiderRepository {
                         return;
                     }
 
+                    // CRITICAL: Ensure orderId is always set from Firebase key
+                    if (order.orderId == null || order.orderId.isEmpty()) {
+                        order.orderId = orderId;
+                        Log.d(TAG, "Set orderId from Firebase key: " + orderId);
+                    }
+                    
                     order.status = newStatus;
                     order.updatedAt = System.currentTimeMillis();
                     
@@ -381,14 +354,19 @@ final class FirebaseRiderRepository {
                     // This ensures historical delivery data persists across logout/login
                     if (riderEmail != null && !riderEmail.isEmpty()) {
                         order.assignedRiderEmail = riderEmail;
+                        Log.d(TAG, "updateOrderStatus: Set assignedRiderEmail=" + riderEmail + " for orderId=" + orderId);
                     }
                     
                     if (OrderStatusStore.STATUS_DELIVERED.equals(newStatus)) {
                         order.deliveredAt = System.currentTimeMillis();
+                        Log.d(TAG, "updateOrderStatus: Marked as Delivered, deliveredAt=" + order.deliveredAt + " for rider=" + riderEmail);
                     }
 
                     orderRef.setValue(order)
-                            .addOnSuccessListener(unused -> callback.onSuccess())
+                            .addOnSuccessListener(unused -> {
+                                Log.d(TAG, "✓ Order status updated and saved: orderId=" + orderId + " | status=" + newStatus + " | riderEmail=" + riderEmail);
+                                callback.onSuccess();
+                            })
                             .addOnFailureListener(e -> callback.onError(
                                     e.getMessage() == null ? "Failed to update status" : e.getMessage()));
                 })
@@ -402,7 +380,9 @@ final class FirebaseRiderRepository {
     }
 
     static void getDeliveredOrdersForRider(String riderEmail, ResultCallback<List<RiderOrder>> callback) {
-        // Get all orders from Firebase database
+        // Fetch all orders and filter for delivered orders assigned to this rider
+        Log.d(TAG, "=".repeat(80));
+        Log.d(TAG, "getDeliveredOrdersForRider called for email: " + riderEmail);
         db().child(NODE_ORDERS).get()
                 .addOnSuccessListener(snapshot -> {
                     // Create a list to store delivered orders for this rider
@@ -410,30 +390,54 @@ final class FirebaseRiderRepository {
                     
                     // Check each order one by one
                     for (DataSnapshot child : snapshot.getChildren()) {
+                        String firebaseKey = child.getKey();
                         RiderOrder order = child.getValue(RiderOrder.class);
                         if (order != null) {
-                            // Check if order has "Delivered" or "Delivered Successfully" status
-                            boolean isDelivered = "Delivered".equals(order.status) || 
-                                                  "Delivered Successfully".equals(order.status);
+                            // CRITICAL: Ensure orderId is set from Firebase key if missing
+                            if (order.orderId == null || order.orderId.isEmpty()) {
+                                order.orderId = firebaseKey;
+                            }
                             
-                            // Check if this order belongs to the current rider
-                            boolean isRiderOrder = riderEmail != null && 
-                                                   order.assignedRiderEmail != null &&
-                                                   riderEmail.equals(order.assignedRiderEmail);
-                            
-                            // Add order if it's both delivered and assigned to this rider
-                            if (isDelivered && isRiderOrder) {
-                                delivered.add(order);
+                            // Collect all orders with "Delivered Successfully" status for logging
+                            if ("Delivered Successfully".equals(order.status)) {
+                                deliveredCount++;
+                                Log.d(TAG, "Found delivered order: " + firebaseKey + 
+                                      " | orderId: " + order.orderId +
+                                      " | assignedRiderEmail='" + order.assignedRiderEmail + 
+                                      "' | status: " + order.status +
+                                      " | deliveredAt: " + order.deliveredAt +
+                                      " | itemsList: " + (order.itemsList != null ? order.itemsList.size() + " items" : "null") +
+                                      " | total: " + order.totalAmount);
+                                
+                                // Include if assignedRiderEmail matches THIS rider
+                                if (riderEmail != null && 
+                                    order.assignedRiderEmail != null &&
+                                    riderEmail.equals(order.assignedRiderEmail)) {
+                                    matchedCount++;
+                                    Log.d(TAG, "✓ MATCH! Adding delivered order: " + order.orderId + " for rider: " + riderEmail);
+                                    delivered.add(order);
+                                } else {
+                                    Log.d(TAG, "⊘ SKIP - Rider mismatch. Query rider=" + riderEmail + " | Order assignedRiderEmail=" + order.assignedRiderEmail);
+                                }
+                            } else {
+                                Log.d(TAG, "Skip order " + firebaseKey + " - status is " + order.status + ", not Delivered Successfully");
                             }
                         }
                     }
+                    Log.d(TAG, "getDeliveredOrdersForRider Summary:");
+                    Log.d(TAG, "  Total delivered orders in system: " + deliveredCount);
+                    Log.d(TAG, "  Matched for rider (" + riderEmail + "): " + matchedCount);
+                    Log.d(TAG, "  Will return: " + delivered.size() + " orders");
+                    Log.d(TAG, "=".repeat(80));
                     
                     // Sort orders by newest first (most recent deliveries at the top)
                     delivered.sort((a, b) -> Long.compare(b.deliveredAt, a.deliveredAt));
                     callback.onSuccess(delivered);
                 })
                 .addOnFailureListener(e -> {
-                    // If there's an error, return empty list
+                    Log.e(TAG, "Error fetching delivered orders: " + e.getMessage());
+                    e.printStackTrace();
+                    // Return empty list on error instead of failing callback
                     callback.onSuccess(new ArrayList<>());
                 });
     }
@@ -497,7 +501,10 @@ final class FirebaseRiderRepository {
                     callback.onSuccess(reviews);
                 })
                 .addOnFailureListener(e -> {
-                    callback.onError(e.getMessage() == null ? "Failed to load reviews" : e.getMessage());
+                    android.util.Log.e("FirebaseRiderRepository", "✗ Indexed Query FAILED: " + e.getMessage());
+                    android.util.Log.d("FirebaseRiderRepository", "Falling back to client-side filtering...");
+                    // Fallback to client-side filtering when index is not available
+                    getReviewsForRiderFallback(riderEmail, callback);
                 });
     }
 

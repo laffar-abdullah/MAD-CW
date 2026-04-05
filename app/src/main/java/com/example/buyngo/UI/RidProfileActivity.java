@@ -6,7 +6,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.text.InputType;
 import android.text.TextUtils;
-import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -18,43 +17,32 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
-import com.google.firebase.database.ValueEventListener;
-
 import com.example.buyngo.R;
 
 import java.util.List;
 
-/**
- * Shows rider profile with total deliveries and average reviews
- */
+
 public class RidProfileActivity extends AppCompatActivity {
 
-    // ── Views — all IDs must match rid_profile.xml exactly ──────────────────
+    // ── Photo picker launcher ────────────────────────────────────────────────
+    private ActivityResultLauncher<String> profileImagePicker;
+
+    // References to layout views
     private TextView  txtProfileNameHeader;
     private TextView  txtFullNameValue;
     private TextView  txtEmailValue;
     private TextView  txtPhoneValue;
     private TextView  txtVehicleValue;
-    private TextView  txtTotalDeliveriesValue;   // shows "N Deliveries"
-    private TextView  txtReviewsSummaryValue;    // shows "4.5 ★"
+    private TextView  txtBirthdateValue;
+    private TextView  txtTotalDeliveriesValue;
+    private TextView  txtReviewsSummaryValue;
     private ImageView imgProfilePicture;
-    private Button    btnChangePassword;
-
-    // ── Firebase Realtime Database ───────────────────────────────────────────
-    // Used only for the password-change flow (reads /riders node directly).
-    private DatabaseReference dbRef;
-    private static final String TAG = "RidProfile";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Session guard — unauthenticated users go to login immediately.
+        // Session guard
         if (!RiderSessionStore.isLoggedIn(this)) {
             startActivity(new Intent(this, RidLoginActivity.class));
             finish();
@@ -62,9 +50,6 @@ public class RidProfileActivity extends AppCompatActivity {
         }
 
         setContentView(R.layout.rid_profile);
-
-        // Initialize Firebase
-        dbRef = FirebaseDatabase.getInstance().getReference();
 
         // Setup toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -77,22 +62,26 @@ public class RidProfileActivity extends AppCompatActivity {
         txtEmailValue          = findViewById(R.id.txtEmailValue);
         txtPhoneValue          = findViewById(R.id.txtPhoneValue);
         txtVehicleValue        = findViewById(R.id.txtVehicleValue);
+        txtBirthdateValue      = findViewById(R.id.txtBirthdateValue);
         txtTotalDeliveriesValue = findViewById(R.id.txtTotalDeliveriesValue);
         txtReviewsSummaryValue  = findViewById(R.id.txtReviewsSummaryValue);
-        imgProfilePicture = findViewById(R.id.imgProfilePicture);
-        btnChangePassword = findViewById(R.id.btnChangePassword);
+        imgProfilePicture      = findViewById(R.id.imgProfilePicture);
+
+        Button btnChangePassword = findViewById(R.id.btnChangePassword);
+
         btnChangePassword.setOnClickListener(v -> showChangePasswordDialog());
 
-        // Setup bottom navigation
+        // ── Bottom navigation ─────────────────────────────────────────────────
         findViewById(R.id.navDashboard).setOnClickListener(v ->
                 startActivity(new Intent(this, RidDashboardActivity.class)));
         findViewById(R.id.navHistory).setOnClickListener(v ->
                 startActivity(new Intent(this, RidDeliveryHistoryActivity.class)));
         findViewById(R.id.navReviews).setOnClickListener(v ->
                 startActivity(new Intent(this, RidReviewsActivity.class)));
+
         findViewById(R.id.navProfile).setOnClickListener(v -> bindRiderData());
 
-        // Setup logout
+        // ── Logout ────────────────────────────────────────────────────────────
         findViewById(R.id.btnLogout).setOnClickListener(v -> {
             RiderSessionStore.clearSession(this);
             Intent intent = new Intent(this, AuthWelcomeActivity.class);
@@ -109,7 +98,6 @@ public class RidProfileActivity extends AppCompatActivity {
         bindRiderData();
     }
 
-    // Load rider profile and stats
     private void bindRiderData() {
         RiderSessionStore.RiderProfile profile = RiderSessionStore.getCurrentRider(this);
 
@@ -124,20 +112,20 @@ public class RidProfileActivity extends AppCompatActivity {
         txtEmailValue.setText(profile.email);
         txtPhoneValue.setText(profile.phone);
         txtVehicleValue.setText(profile.vehicle);
+        txtBirthdateValue.setText(!TextUtils.isEmpty(profile.birthdate) ? profile.birthdate : "Not set");
 
         txtTotalDeliveriesValue.setText("Loading…");
         txtReviewsSummaryValue.setText("Loading…");
 
-        // Load profile image
         if (imgProfilePicture != null) {
             if (!TextUtils.isEmpty(profile.profileImageUrl)) {
                 com.bumptech.glide.Glide.with(this)
                         .load(profile.profileImageUrl)
-                        .placeholder(R.mipmap.ic_launcher_round)
-                        .error(R.mipmap.ic_launcher_round)
+                        .placeholder(R.drawable.buyngologo)
+                        .error(R.drawable.buyngologo)
                         .into(imgProfilePicture);
             } else {
-                imgProfilePicture.setImageResource(R.mipmap.ic_launcher_round);
+                imgProfilePicture.setImageResource(R.drawable.buyngologo);
             }
         }
 
@@ -145,7 +133,6 @@ public class RidProfileActivity extends AppCompatActivity {
         loadReviewsSummary(profile.email);
     }
 
-    // Load total deliveries
     private void loadDeliveryCount(String riderEmail) {
         FirebaseRiderRepository.getDeliveredOrdersForRider(
                 riderEmail,
@@ -162,36 +149,33 @@ public class RidProfileActivity extends AppCompatActivity {
                 });
     }
 
-    // Load average reviews rating
     private void loadReviewsSummary(String riderEmail) {
-        Log.d(TAG, "Loading reviews for: " + riderEmail);
-        FirebaseRiderRepository.getReviewsForRiderFallback(
+        FirebaseRiderRepository.getReviewsForRider(
                 riderEmail,
                 new FirebaseRiderRepository.ResultCallback<List<FirebaseRiderRepository.RiderReview>>() {
                     @Override
                     public void onSuccess(List<FirebaseRiderRepository.RiderReview> reviews) {
-                        if (reviews.isEmpty()) {
+                        if (reviews == null || reviews.isEmpty()) {
                             txtReviewsSummaryValue.setText("No reviews yet");
                             return;
                         }
 
-                        double total = 0;
-                        for (FirebaseRiderRepository.RiderReview review : reviews) {
-                            total += review.rating;
+                        double sum = 0;
+                        for (FirebaseRiderRepository.RiderReview r : reviews) {
+                            sum += r.rating;
                         }
-                        double avg = total / reviews.size();
-                        String summary = String.format(java.util.Locale.US, "%.1f ★", avg);
-                        txtReviewsSummaryValue.setText(summary);
+                        double avg = sum / reviews.size();
+                        txtReviewsSummaryValue.setText(
+                                String.format(java.util.Locale.US, "%.1f ★ ", avg));
                     }
                     @Override
                     public void onError(String message) {
-                        Log.e(TAG, "Failed to load reviews: " + message);
-                        txtReviewsSummaryValue.setText("— reviews");
+                        txtReviewsSummaryValue.setText(" ★");
                     }
                 });
     }
 
-    // Show password change dialog
+
     private void showChangePasswordDialog() {
         RiderSessionStore.RiderProfile profile = RiderSessionStore.getCurrentRider(this);
         if (profile == null) {
@@ -205,58 +189,55 @@ public class RidProfileActivity extends AppCompatActivity {
         container.setOrientation(android.widget.LinearLayout.VERTICAL);
         container.setPadding(dp16, dp16, dp16, dp16);
 
-        EditText etCurrent = new EditText(this);
-        etCurrent.setHint("Current password");
+        final EditText etCurrent = new EditText(this);
+        etCurrent.setHint("Current Password");
         etCurrent.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
         container.addView(etCurrent);
 
-        EditText etNew = new EditText(this);
-        etNew.setHint("New password");
+        final EditText etNew = new EditText(this);
+        etNew.setHint("New Password");
         etNew.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
         container.addView(etNew);
 
-        EditText etConfirm = new EditText(this);
-        etConfirm.setHint("Confirm new password");
+        final EditText etConfirm = new EditText(this);
+        etConfirm.setHint("Confirm New Password");
         etConfirm.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
         container.addView(etConfirm);
 
         new AlertDialog.Builder(this)
                 .setTitle("Change Password")
                 .setView(container)
-                .setNegativeButton("Cancel", (d, w) -> d.dismiss())
-                .setPositiveButton("Save", (d, w) -> {
-                    String current = etCurrent.getText().toString().trim();
-                    String next    = etNew.getText().toString();
+                .setPositiveButton("Save", (dialog, which) -> {
+                    String current = etCurrent.getText().toString();
+                    String newPass = etNew.getText().toString();
                     String confirm = etConfirm.getText().toString();
 
-                    if (TextUtils.isEmpty(current) || TextUtils.isEmpty(next) || TextUtils.isEmpty(confirm)) {
-                        Toast.makeText(this, "Fill in all password fields", Toast.LENGTH_SHORT).show();
+                    if (TextUtils.isEmpty(current) || TextUtils.isEmpty(newPass)) {
+                        Toast.makeText(this, "All fields required", Toast.LENGTH_SHORT).show();
                         return;
                     }
-                    if (!next.equals(confirm)) {
-                        Toast.makeText(this, "New passwords do not match", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                    if (next.length() < 6) {
-                        Toast.makeText(this, "Password must be at least 6 characters", Toast.LENGTH_SHORT).show();
+                    if (!newPass.equals(confirm)) {
+                        Toast.makeText(this, "Passwords do not match", Toast.LENGTH_SHORT).show();
                         return;
                     }
 
                     FirebaseRiderRepository.changeRiderPassword(
-                            profile.email, current, next,
+                            profile.email,
+                            current,
+                            newPass,
                             new FirebaseRiderRepository.ResultCallback<FirebaseRiderRepository.RiderAccount>() {
                                 @Override
-                                public void onSuccess(FirebaseRiderRepository.RiderAccount account) {
-                                    Toast.makeText(RidProfileActivity.this,
-                                            "Password updated successfully", Toast.LENGTH_SHORT).show();
+                                public void onSuccess(FirebaseRiderRepository.RiderAccount result) {
+                                    Toast.makeText(RidProfileActivity.this, "Password updated successfully", Toast.LENGTH_SHORT).show();
                                 }
+
                                 @Override
                                 public void onError(String message) {
-                                    Toast.makeText(RidProfileActivity.this,
-                                            message, Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(RidProfileActivity.this, "Error: " + message, Toast.LENGTH_LONG).show();
                                 }
                             });
                 })
+                .setNegativeButton("Cancel", null)
                 .show();
     }
 }

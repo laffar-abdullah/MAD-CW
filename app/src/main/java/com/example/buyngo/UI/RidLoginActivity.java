@@ -68,8 +68,9 @@ public class RidLoginActivity extends AppCompatActivity {
                                 account.name,
                                 account.email,
                                 account.phone,
-                            vehicleDisplay,
-                            account.profileImageUrl);
+                                vehicleDisplay,
+                                account.birthdate != null ? account.birthdate : "Not set",
+                                account.profileImageUrl);
 
                         RiderSessionStore.saveSession(RidLoginActivity.this, profile);
                         OrderStatusStore.initializeDefaultsIfMissing(RidLoginActivity.this);

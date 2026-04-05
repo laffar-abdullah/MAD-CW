@@ -5,7 +5,8 @@ public class Rider {
     private String riderName;
     private String phoneNumber;
     private String email;
-    private String status; // Available, Busy, Offline
+    private String birthdate;
+    private String status;
     private String profileImageUrl;
     private long registrationDate;
 
@@ -69,6 +70,14 @@ public class Rider {
 
     public void setProfileImageUrl(String profileImageUrl) {
         this.profileImageUrl = profileImageUrl;
+    }
+
+    public String getBirthdate() {
+        return birthdate;
+    }
+
+    public void setBirthdate(String birthdate) {
+        this.birthdate = birthdate;
     }
 
     public long getRegistrationDate() {

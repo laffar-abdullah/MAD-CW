@@ -12,34 +12,8 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * OrderStatusStore — single source of truth for delivery order state.
- *
- * All order data (current status, customer info, delivery history) is stored
- * in SharedPreferences.  Every key is "scoped" to the currently logged-in
- * rider so two riders working on the same device never see each other's data.
- *
- * The un-scoped (global) keys act as a read-only fallback for the customer
- * tracking screen, which does not have a rider session.
- *
- * ── CHANGES FROM ORIGINAL ──────────────────────────────────────────────────
- *  BUG FIX — appendDeliveryHistory() was reading the GLOBAL (un-scoped) keys
- *  when building the history record snapshot.  Those keys always contained the
- *  hard-coded default values ("BNG-001 / Alice Johnson / 12 Main Street")
- *  because only the scoped keys were updated during a normal delivery flow.
- *  Result: every completed delivery appeared as the same default order in
- *  history, regardless of which order was actually delivered.
- *
- *  FIX: appendDeliveryHistory() now calls getCurrentOrder(context) — the
- *  same helper used by the dashboard and status update screens — which already
- *  knows how to prefer scoped keys over global fallbacks.  This ensures the
- *  history record always captures the real order that was just delivered.
- *
- *  CHANGE — STATUS_PICKED_UP, STATUS_ON_THE_WAY, STATUS_DELIVERED are now
- *  package-private (no modifier change needed, they already were), but
- *  DEFAULT_STATUS is also exposed as a package-private constant so that
- *  RidDashboardActivity can compare against it by name instead of relying
- *  on a magic string literal.
- * ───────────────────────────────────────────────────────────────────────────
+ * Manages order status and delivery history in local storage
+ * Stores rider-specific data in SharedPreferences scoped by rider email
  */
 public final class OrderStatusStore {
 
@@ -59,7 +33,7 @@ public final class OrderStatusStore {
     // them without magic strings.
     static final String STATUS_PICKED_UP   = "Picked Up";
     static final String STATUS_ON_THE_WAY  = "On the Way";
-    static final String STATUS_DELIVERED   = "Delivered";
+    static final String STATUS_DELIVERED   = "Delivered Successfully";
 
     // ── CHANGE: DEFAULT_STATUS is now package-private so RidDashboardActivity
     // can compare the status chip color correctly without a magic string.
@@ -226,13 +200,7 @@ public final class OrderStatusStore {
 
     // ── Status transition validation ────────────────────────────────────────
 
-    /**
-     * Defines the allowed forward-only delivery lifecycle:
-     *   Awaiting Pickup → Picked Up → On the Way → Delivered
-     *
-     * Idempotent writes (same → same) are also accepted so the UI can safely
-     * re-save the current status without triggering an error.
-     */
+
     private static boolean isValidTransition(String current, String next) {
         if (current.equals(next)) {
             return true;                    // Idempotent — allow
@@ -251,23 +219,7 @@ public final class OrderStatusStore {
 
     // ── History archival ────────────────────────────────────────────────────
 
-    /**
-     * Appends a snapshot of the just-delivered order to the rider-scoped
-     * history list.
-     *
-     * ── BUG FIX ──────────────────────────────────────────────────────────
-     *  ORIGINAL: read from the global KEY_ORDER_ID / KEY_CUSTOMER_NAME /
-     *  KEY_CUSTOMER_ADDRESS keys.  These keys always held the hard-coded seed
-     *  values ("BNG-001", "Alice Johnson", "12 Main Street") because the
-     *  actual delivery data was only ever written to the SCOPED keys.  Every
-     *  history record therefore showed the same default order.
-     *
-     *  FIX: call getCurrentOrder(context) instead, which already knows how to
-     *  prefer scoped keys and fall back to global ones.  This guarantees the
-     *  archived snapshot always reflects the real order the rider just
-     *  completed, not the seed defaults.
-     * ─────────────────────────────────────────────────────────────────────
-     */
+
     private static void appendDeliveryHistory(Context context) {
         SharedPreferences prefs =
                 context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
